@@ -1,24 +1,29 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Refactoring
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class AllowMembersOrderingAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Public Shared ReadOnly Id As String = DiagnosticIds.AllowMembersOrderingDiagnosticId
+        Private Const Category As String = SupportedCategories.Refactoring
+        Private Const MessageFormat As String = "Ordering member inside this type."
+        Private Const Title As String = "Ordering member inside this type."
 
-        Friend Const Title As String = "Ordering member inside this type."
-        Friend Const MessageFormat As String = "Ordering member inside this type."
-        Friend Const Category As String = SupportedCategories.Refactoring
         Friend Shared Rule As New DiagnosticDescriptor(
-            DiagnosticIds.AllowMembersOrderingDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Hidden,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.AllowMembersOrderingDiagnosticId))
+                                AllowMembersOrderingDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                Category,
+                                DiagnosticSeverity.Hidden,
+                                isEnabledByDefault:=True,
+                                description:=MessageFormat,
+                                helpLinkUri:=ForDiagnostic(AllowMembersOrderingDiagnosticId),
+                                Array.Empty(Of String))
+
+        Public Shared ReadOnly Id As String = AllowMembersOrderingDiagnosticId
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
@@ -26,13 +31,7 @@ Namespace Refactoring
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.Analyze, SyntaxKind.ClassBlock, SyntaxKind.StructureBlock, SyntaxKind.ModuleBlock)
-        End Sub
-
-        Public Sub Analyze(context As SyntaxNodeAnalysisContext)
+        Public Shared Sub Analyze(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
             Dim typeSyntax As TypeBlockSyntax = TryCast(context.Node, TypeBlockSyntax)
             If typeSyntax Is Nothing Then Exit Sub
@@ -42,5 +41,13 @@ Namespace Refactoring
                 context.ReportDiagnostic(Diagnostic.Create(Rule, typeSyntax.GetLocation()))
             End If
         End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Analyze, SyntaxKind.ClassBlock, SyntaxKind.StructureBlock, SyntaxKind.ModuleBlock)
+        End Sub
+
     End Class
+
 End Namespace

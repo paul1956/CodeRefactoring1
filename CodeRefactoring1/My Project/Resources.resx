@@ -156,4 +156,13 @@
   <data name="NameOfCodeFixProvider_Title" xml:space="preserve">
     <value>Use nameof()</value>
   </data>
+  <data name="RemoveByValDescription" xml:space="preserve">
+    <value>Remove ByVal from function declaration</value>
+  </data>
+  <data name="RemoveByValMessageFormat" xml:space="preserve">
+    <value>Remove ByVal from parameter {0}</value>
+  </data>
+  <data name="RemoveByValTitle" xml:space="preserve">
+    <value>Remove ByVal</value>
+  </data>
 </root>

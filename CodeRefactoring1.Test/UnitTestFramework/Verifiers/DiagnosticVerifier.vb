@@ -36,7 +36,7 @@ Namespace TestHelper
         ''' <param name="expected"> DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyCSharpDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            Me.VerifyDiagnostics({source}, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -47,7 +47,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyBasicDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            Me.VerifyDiagnostics({source}, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -58,7 +58,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyCSharpDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            Me.VerifyDiagnostics(sources, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -69,7 +69,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyBasicDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            Me.VerifyDiagnostics(sources, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -80,7 +80,7 @@ Namespace TestHelper
         ''' <param name="language">The language of the classes represented by the source strings</param>
         ''' <param name="analyzer">The analyzer to be run on the source code</param>
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
-        Private Sub VerifyDiagnostics(sources As String(), language As String, analyzer As DiagnosticAnalyzer, ParamArray expected As DiagnosticResult())
+        Private Shared Sub VerifyDiagnostics(sources As String(), language As String, analyzer As DiagnosticAnalyzer, ParamArray expected As DiagnosticResult())
             Dim diagnostics As Diagnostic() = GetSortedDiagnostics(sources, language, analyzer)
             VerifyDiagnosticResults(diagnostics, analyzer, expected)
         End Sub
@@ -97,8 +97,8 @@ Namespace TestHelper
         ''' <param name="expectedResults">Diagnostic Results that should have appeared in the code</param>
         Private Shared Sub VerifyDiagnosticResults(actualResults As IEnumerable(Of Diagnostic), analyzer As DiagnosticAnalyzer, ParamArray expectedResults As DiagnosticResult())
 
-            Dim expectedCount As Integer = expectedResults.Count()
             Dim actualCount As Integer = actualResults.Count()
+            Dim expectedCount As Integer = expectedResults.Count()
 
             If expectedCount <> actualCount Then
 

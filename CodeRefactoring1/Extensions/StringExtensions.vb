@@ -57,8 +57,8 @@ Public Module StringExtensions
 
     <Extension>
     Public Function ConvertTabToSpace(textSnippet As String, tabSize As Integer, initialColumn As Integer, endPosition As Integer) As Integer
-        Contract.Requires(tabSize > 0)
-        Contract.Requires(endPosition >= 0 AndAlso endPosition <= textSnippet.Length)
+        Requires(tabSize > 0)
+        Requires(endPosition >= 0 AndAlso endPosition <= textSnippet.Length)
 
         Dim column As Integer = initialColumn
 
@@ -131,7 +131,6 @@ Public Module StringExtensions
         Return str.Substring(Math.Max(str.Length, Length) - Length)
     End Function
 
-
     <Extension()>
     Public Function TitleCaseSplit(str As String, Optional delim As String = " ", Optional upper_case_indicator As String = "") As String
         Dim chr As String, out As String
@@ -175,7 +174,7 @@ Public Module StringExtensions
     ''' <remarks>MaxStringLenght must be >=0 </remarks>
     <Extension()>
     Public Function Truncate(ByRef StrIn As String, ByVal MaxStringLenght As Integer) As String
-        Contract.Requires(MaxStringLenght >= 0, "MaxStringLenght can't be less than 0")
+        Requires(MaxStringLenght >= 0, "MaxStringLenght can't be less than 0")
         If StrIn.IsEmptyNullOrWhitespace Then
             Return String.Empty
         End If

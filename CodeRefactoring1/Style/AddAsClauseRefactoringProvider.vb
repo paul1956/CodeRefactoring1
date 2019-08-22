@@ -11,19 +11,18 @@ Namespace Style
         Inherits CodeRefactoringProvider
 
         Private Const Title As String = "Add As Clause refactoring"
-
         Private ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(
-            DiagnosticIds.AddAsClauseDiagnosticId,
-            DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
-            DiagnosticIds.ERR_NameNotDeclared1DiagnosticId,
-            DiagnosticIds.ERR_StrictDisallowImplicitObjectDiagnosticId,
-            DiagnosticIds.ERR_StrictDisallowsImplicitProcDiagnosticId,
-            DiagnosticIds.ERR_EnumNotExpression1DiagnosticId,
-            DiagnosticIds.ERR_TypeNotExpression1DiagnosticId,
-            DiagnosticIds.ERR_ClassNotExpression1DiagnosticId,
-            DiagnosticIds.ERR_StructureNotExpression1DiagnosticId,
-            DiagnosticIds.ERR_InterfaceNotExpression1DiagnosticId,
-            DiagnosticIds.ERR_NamespaceNotExpression1DiagnosticId
+            AddAsClauseDiagnosticId,
+            AddAsClauseForLambdaDiagnosticId,
+            ERR_NameNotDeclared1DiagnosticId,
+            ERR_StrictDisallowImplicitObjectDiagnosticId,
+            ERR_StrictDisallowsImplicitProcDiagnosticId,
+            ERR_EnumNotExpression1DiagnosticId,
+            ERR_TypeNotExpression1DiagnosticId,
+            ERR_ClassNotExpression1DiagnosticId,
+            ERR_StructureNotExpression1DiagnosticId,
+            ERR_InterfaceNotExpression1DiagnosticId,
+            ERR_NamespaceNotExpression1DiagnosticId
             )
 
         Public NotOverridable Overrides Async Function ComputeRefactoringsAsync(context As CodeRefactoringContext) As Task
@@ -84,5 +83,7 @@ Namespace Style
                 context.RegisterRefactoring(CodeAction.Create(Title, Function(c As CancellationToken) AddAsClauseAsync(_Document, ForEachStatement, c)))
             End If
         End Function
+
     End Class
+
 End Namespace

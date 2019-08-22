@@ -31,7 +31,7 @@ Namespace TestHelper
         Public Property Locations As DiagnosticResultLocation()
             Get
                 If Me.innerlocations Is Nothing Then
-                    Me.innerlocations = {}
+                    Me.innerlocations = Array.Empty(Of DiagnosticResultLocation)()
                 End If
                 Return Me.innerlocations
             End Get
@@ -49,31 +49,22 @@ Namespace TestHelper
         End Property
 
         Public Property Severity As DiagnosticSeverity
-    End Structure
 
-    ''' <summary>
-    ''' Location where the diagnostic appears, as determined by path, line number, And column number.
-    ''' </summary>
-    Public Structure DiagnosticResultLocation
+        Public Shared Operator =(left As DiagnosticResult, right As DiagnosticResult) As Boolean
+            Return left.Equals(right)
+        End Operator
 
-        Public Sub New(path As String, line As Integer, column As Integer)
-            If line < -1 Then
-                Throw New ArgumentOutOfRangeException(NameOf(line), "line must be >= -1")
-            End If
+        Public Shared Operator <>(left As DiagnosticResult, right As DiagnosticResult) As Boolean
+            Return Not left = right
+        End Operator
 
-            If column < -1 Then
-                Throw New ArgumentOutOfRangeException(NameOf(column), "column must be >= -1")
-            End If
+        Public Overrides Function Equals(obj As Object) As Boolean
+            Throw New NotImplementedException()
+        End Function
 
-            Me.Path = path
-            Me.Line = line
-            Me.Column = column
-
-        End Sub
-
-        Public Property Column As Integer
-        Public Property Line As Integer
-        Public Property Path As String
+        Public Overrides Function GetHashCode() As Integer
+            Throw New NotImplementedException()
+        End Function
     End Structure
 
 End Namespace

@@ -13,6 +13,7 @@ Partial Friend Class SymbolEquivalenceComparer
         Private ReadOnly _parameterAggregator As Func(Of Integer, IParameterSymbol, Integer)
         Private ReadOnly _symbolAggregator As Func(Of Integer, ISymbol, Integer)
         Private ReadOnly _symbolEquivalenceComparer As SymbolEquivalenceComparer
+
         Public Sub New(ByVal symbolEquivalenceComparer As SymbolEquivalenceComparer, ByVal compareMethodTypeParametersByIndex As Boolean, ByVal objectAndDynamicCompareEqually As Boolean)
             Me._symbolEquivalenceComparer = symbolEquivalenceComparer
             Me._compareMethodTypeParametersByIndex = compareMethodTypeParametersByIndex
@@ -23,6 +24,22 @@ Partial Friend Class SymbolEquivalenceComparer
 
         Private Shared Function CombineHashCodes(Of T)(ByVal array As ImmutableArray(Of T), ByVal currentHash As Integer, ByVal func As Func(Of Integer, T, Integer)) As Integer
             Return array.Aggregate(currentHash, func)
+        End Function
+
+        Private Shared Function CombineHashCodes(ByVal x As ILabelSymbol, ByVal currentHash As Integer) As Integer
+            Return CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash))
+        End Function
+
+        Private Shared Function CombineHashCodes(ByVal x As ILocalSymbol, ByVal currentHash As Integer) As Integer
+            Return CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash)
+        End Function
+
+        Private Shared Function CombineHashCodes(ByVal x As IRangeVariableSymbol, ByVal currentHash As Integer) As Integer
+            Return CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash)
+        End Function
+
+        Private Shared Function CombineHashCodes(ByVal x As IPreprocessingSymbol, ByVal currentHash As Integer) As Integer
+            Return CodeRefactoringHash.Combine(x.GetHashCode(), currentHash)
         End Function
 
         Private Function CombineAnonymousTypeHashCode(ByVal x As INamedTypeSymbol, ByVal currentHash As Integer) As Integer
@@ -47,14 +64,6 @@ Partial Friend Class SymbolEquivalenceComparer
 
         Private Function CombineHashCodes(ByVal x As IFieldSymbol, ByVal currentHash As Integer) As Integer
             Return CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.ContainingSymbol, currentHash))
-        End Function
-
-        Private Function CombineHashCodes(ByVal x As ILabelSymbol, ByVal currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Name, CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash))
-        End Function
-
-        Private Function CombineHashCodes(ByVal x As ILocalSymbol, ByVal currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash)
         End Function
 
         Private Function CombineHashCodes(ByVal x As IMethodSymbol, ByVal currentHash As Integer) As Integer
@@ -122,14 +131,6 @@ Partial Friend Class SymbolEquivalenceComparer
             Return CodeRefactoringHash.Combine(x.Name, Me.GetHashCode(x.ContainingSymbol, currentHash))
         End Function
 
-        Private Function CombineHashCodes(ByVal x As IRangeVariableSymbol, ByVal currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(x.Locations.FirstOrDefault(), currentHash)
-        End Function
-
-        Private Function CombineHashCodes(ByVal x As IPreprocessingSymbol, ByVal currentHash As Integer) As Integer
-            Return CodeRefactoringHash.Combine(DirectCast(x, Object).GetHashCode(), currentHash)
-        End Function
-
         Private Function CombineNamedTypeHashCode(ByVal x As INamedTypeSymbol, ByVal currentHash As Integer) As Integer
             If x.IsTupleType Then
                 Return CodeRefactoringHash.Combine(currentHash, CodeRefactoringHash.CombineValues(x.TupleElements))
@@ -157,9 +158,9 @@ Partial Friend Class SymbolEquivalenceComparer
                 Case SymbolKind.Field
                     Return Me.CombineHashCodes(DirectCast(x, IFieldSymbol), currentHash)
                 Case SymbolKind.Label
-                    Return Me.CombineHashCodes(DirectCast(x, ILabelSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, ILabelSymbol), currentHash)
                 Case SymbolKind.Local
-                    Return Me.CombineHashCodes(DirectCast(x, ILocalSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, ILocalSymbol), currentHash)
                 Case SymbolKind.Method
                     Return Me.CombineHashCodes(DirectCast(x, IMethodSymbol), currentHash)
                 Case SymbolKind.NetModule
@@ -175,18 +176,18 @@ Partial Friend Class SymbolEquivalenceComparer
                 Case SymbolKind.Property
                     Return Me.CombineHashCodes(DirectCast(x, IPropertySymbol), currentHash)
                 Case SymbolKind.RangeVariable
-                    Return Me.CombineHashCodes(DirectCast(x, IRangeVariableSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IRangeVariableSymbol), currentHash)
                 Case SymbolKind.TypeParameter
                     Return Me.CombineHashCodes(DirectCast(x, ITypeParameterSymbol), currentHash)
                 Case SymbolKind.Preprocessing
-                    Return Me.CombineHashCodes(DirectCast(x, IPreprocessingSymbol), currentHash)
+                    Return CombineHashCodes(DirectCast(x, IPreprocessingSymbol), currentHash)
                 Case Else
                     Return -1
             End Select
         End Function
 
         Public Function CombineHashCodes(ByVal x As ITypeParameterSymbol, ByVal currentHash As Integer) As Integer
-            Contract.Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
+            Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
 
             currentHash = CodeRefactoringHash.Combine(x.Ordinal, CodeRefactoringHash.Combine(CInt(Math.Truncate(x.TypeParameterKind)), currentHash))
 
@@ -224,6 +225,7 @@ Partial Friend Class SymbolEquivalenceComparer
 
             Return Me.GetHashCodeWorker(x, currentHash)
         End Function
+
     End Class
 
 End Class

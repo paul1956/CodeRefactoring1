@@ -1,54 +1,73 @@
-﻿Imports Microsoft.CodeAnalysis.Diagnostics
-Imports System.Collections.Immutable
+﻿Imports System.Collections.Immutable
+
+Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Design
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class NameOfAnalyzer
         Inherits DiagnosticAnalyzer
 
-       Public Const Title As String = "You should use nameof instead of the parameter element name string"
-        Public Const MessageFormat As String = "Use 'NameOf({0})' instead of specifying the program element name."
-        Public Const Category As String = SupportedCategories.Design
-        Public Const Description As String = "In VB14 the NameOf() operator should be used to specify the name of a program element instead of a string literal as it produces code that is easier to refactor."
-        Protected Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.NameOfDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.NameOfDiagnosticId))
-        Protected Shared RuleExtenal As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.NameOf_ExternalDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.NameOf_ExternalDiagnosticId))
+        Private Const Category As String = SupportedCategories.Design
+
+        Private Const Description As String = "In VB14 or later the NameOf() operator should be used to specify the name of a program element instead of a string literal as it produces code that is easier to refactor."
+
+        Private Const MessageFormat As String = "Use 'NameOf({0})' instead of specifying the program element name."
+
+        Private Const Title As String = "You should use nameof instead of the parameter element name string"
+
+        Protected Shared Rule As New DiagnosticDescriptor(
+                                                                NameOfDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                Category,
+                                DiagnosticSeverity.Warning,
+                                isEnabledByDefault:=True,
+                                Description,
+                                helpLinkUri:=ForDiagnostic(NameOfDiagnosticId),
+                                Array.Empty(Of String)
+                                )
+
+        Protected Shared RuleExtenal As New DiagnosticDescriptor(
+                        NameOf_ExternalDiagnosticId,
+                        Title,
+                        MessageFormat,
+                        Category,
+                        DiagnosticSeverity.Warning,
+                        isEnabledByDefault:=True,
+                        Description,
+                        helpLinkUri:=ForDiagnostic(NameOf_ExternalDiagnosticId),
+                        Array.Empty(Of String))
 
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule, RuleExtenal)
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(LanguageVersion.VisualBasic14, AddressOf Me.Analyzer, SyntaxKind.StringLiteralExpression)
-        End Sub
+        Private Shared Function Found(programElement As String) As Boolean
+            Return Not String.IsNullOrEmpty(programElement)
+        End Function
 
-        Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
-            Dim stringLiteral As LiteralExpressionSyntax = DirectCast(context.Node, LiteralExpressionSyntax)
-            If String.IsNullOrWhiteSpace(stringLiteral?.Token.ValueText) Then Return
+        Private Shared Function GetParameterNameThatMatchesStringLiteral(stringLiteral As LiteralExpressionSyntax) As String
+            Dim ancestorThatMightHaveParameters As SyntaxNode = stringLiteral.FirstAncestorOfType(GetType(AttributeListSyntax), GetType(MethodBlockSyntax), GetType(SubNewStatementSyntax), GetType(InvocationExpressionSyntax))
+            Dim parameterName As String = String.Empty
+            If ancestorThatMightHaveParameters IsNot Nothing Then
+                Dim parameters As SeparatedSyntaxList(Of ParameterSyntax) = New SeparatedSyntaxList(Of ParameterSyntax)()
+                Select Case ancestorThatMightHaveParameters.Kind
+                    Case SyntaxKind.SubBlock, SyntaxKind.FunctionBlock
+                        Dim method As MethodBlockSyntax = DirectCast(ancestorThatMightHaveParameters, MethodBlockSyntax)
+                        If method.SubOrFunctionStatement.ParameterList Is Nothing Then
+                            Return Nothing
+                        End If
+                        parameters = method.SubOrFunctionStatement.ParameterList.Parameters
+                    Case SyntaxKind.AttributeList
+                End Select
+                parameterName = GetParameterWithIdentifierEqualToStringLiteral(stringLiteral, parameters)?.Identifier.Identifier.Text
 
-            Dim externalSymbol As Boolean = False
-            Dim programElementName As String = GetProgramElementNameThatMatchesStringLiteral(stringLiteral, context.SemanticModel, externalSymbol)
-            If (Found(programElementName)) Then
-                Dim diag As Diagnostic = Diagnostic.Create(If(externalSymbol, RuleExtenal, Rule), stringLiteral.GetLocation(), programElementName)
-                context.ReportDiagnostic(diag)
             End If
-        End Sub
+            Return parameterName
+        End Function
+
+        Private Shared Function GetParameterWithIdentifierEqualToStringLiteral(stringLiteral As LiteralExpressionSyntax, parameters As SeparatedSyntaxList(Of ParameterSyntax)) As ParameterSyntax
+            Return parameters.FirstOrDefault(Function(m As ParameterSyntax) String.Equals(m.Identifier.Identifier.Text, stringLiteral.Token.ValueText, StringComparison.Ordinal))
+        End Function
 
         Private Shared Function GetProgramElementNameThatMatchesStringLiteral(stringLiteral As LiteralExpressionSyntax, model As SemanticModel, ByRef externalSymbol As Boolean) As String
             Dim programElementName As String = GetParameterNameThatMatchesStringLiteral(stringLiteral)
@@ -77,37 +96,29 @@ Namespace Design
             Return programElementName
         End Function
 
-        Private Shared Function GetParameterNameThatMatchesStringLiteral(stringLiteral As LiteralExpressionSyntax) As String
-            Dim ancestorThatMightHaveParameters As SyntaxNode = stringLiteral.FirstAncestorOfType(GetType(AttributeListSyntax), GetType(MethodBlockSyntax), GetType(SubNewStatementSyntax), GetType(InvocationExpressionSyntax))
-            Dim parameterName As String = String.Empty
-            If ancestorThatMightHaveParameters IsNot Nothing Then
-                Dim parameters As SeparatedSyntaxList(Of ParameterSyntax) = New SeparatedSyntaxList(Of ParameterSyntax)()
-                Select Case ancestorThatMightHaveParameters.Kind
-                    Case SyntaxKind.SubBlock, SyntaxKind.FunctionBlock
-                        Dim method As MethodBlockSyntax = DirectCast(ancestorThatMightHaveParameters, MethodBlockSyntax)
-                        If method.SubOrFunctionStatement.ParameterList Is Nothing Then
-                            Return Nothing
-                        End If
-                        parameters = method.SubOrFunctionStatement.ParameterList.Parameters
-                    Case SyntaxKind.AttributeList
-                End Select
-                parameterName = GetParameterWithIdentifierEqualToStringLiteral(stringLiteral, parameters)?.Identifier.Identifier.Text
+        Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
+            If (context.Node.IsGenerated()) Then Return
+            Dim stringLiteral As LiteralExpressionSyntax = DirectCast(context.Node, LiteralExpressionSyntax)
+            If String.IsNullOrWhiteSpace(stringLiteral?.Token.ValueText) Then Return
 
+            Dim externalSymbol As Boolean = False
+            Dim programElementName As String = GetProgramElementNameThatMatchesStringLiteral(stringLiteral, context.SemanticModel, externalSymbol)
+            If (Found(programElementName)) Then
+                Dim diag As Diagnostic = Diagnostic.Create(If(externalSymbol, RuleExtenal, Rule), stringLiteral.GetLocation(), programElementName)
+                context.ReportDiagnostic(diag)
             End If
-            Return parameterName
-        End Function
-
-        Private Shared Function Found(programElement As String) As Boolean
-            Return Not String.IsNullOrEmpty(programElement)
-        End Function
+        End Sub
 
         Public Shared Function IncludeOnlyPartsThatAreName(displayPart As SymbolDisplayPart) As Boolean
             Return displayPart.IsAnyKind(SymbolDisplayPartKind.ClassName, SymbolDisplayPartKind.DelegateName, SymbolDisplayPartKind.EnumName, SymbolDisplayPartKind.EventName, SymbolDisplayPartKind.FieldName, SymbolDisplayPartKind.InterfaceName, SymbolDisplayPartKind.LocalName, SymbolDisplayPartKind.MethodName, SymbolDisplayPartKind.NamespaceName, SymbolDisplayPartKind.ParameterName, SymbolDisplayPartKind.PropertyName, SymbolDisplayPartKind.StructName)
         End Function
 
-        Private Shared Function GetParameterWithIdentifierEqualToStringLiteral(stringLiteral As LiteralExpressionSyntax, parameters As SeparatedSyntaxList(Of ParameterSyntax)) As ParameterSyntax
-            Return parameters.FirstOrDefault(Function(m As ParameterSyntax) String.Equals(m.Identifier.Identifier.Text, stringLiteral.Token.ValueText, StringComparison.Ordinal))
-        End Function
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(LanguageVersion.VisualBasic14, AddressOf Me.Analyzer, SyntaxKind.StringLiteralExpression)
+        End Sub
 
     End Class
+
 End Namespace

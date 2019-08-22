@@ -1,35 +1,34 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Reliability
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class UseConfigureAwaitFalseAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "Use ConfigureAwait(False) on awaited task."
-        Friend Const MessageFormat As String = "Consider using ConfigureAwait(False) on the awaited task."
-        Friend Const Category As String = SupportedCategories.Reliability
+        Private Const Category As String = SupportedCategories.Reliability
+        Private Const MessageFormat As String = "Consider using ConfigureAwait(False) on the awaited task."
+        Private Const Title As String = "Use ConfigureAwait(False) on awaited task."
 
-        Friend Shared Rule As New DiagnosticDescriptor(
-        DiagnosticIds.UseConfigureAwaitFalseDiagnosticId,
-        Title,
-        MessageFormat,
-        Category,
-        DiagnosticSeverity.Hidden,
-        isEnabledByDefault:=True,
-        helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.UseConfigureAwaitFalseDiagnosticId))
+        Protected Shared Rule As New DiagnosticDescriptor(
+                        UseConfigureAwaitFalseDiagnosticId,
+                        Title,
+                        MessageFormat,
+                        Category,
+                        DiagnosticSeverity.Hidden,
+                        isEnabledByDefault:=True,
+                        description:=MessageFormat,
+                        helpLinkUri:=ForDiagnostic(UseConfigureAwaitFalseDiagnosticId),
+                        Array.Empty(Of String)
+                        )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
                 Return ImmutableArray.Create(Rule)
             End Get
         End Property
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.AwaitExpression)
-        End Sub
 
         Private Shared Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -53,5 +52,13 @@ Namespace Reliability
             End If
             Return type.Equals(taskType)
         End Function
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.AwaitExpression)
+        End Sub
+
     End Class
+
 End Namespace

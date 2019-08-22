@@ -1,33 +1,31 @@
-﻿Imports Microsoft.CodeAnalysis.Diagnostics
-Imports System.Collections.Immutable
+﻿Imports System.Collections.Immutable
+
+Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Performance
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class StringBuilderInLoopAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Public Shared ReadOnly Id As String = DiagnosticIds.StringBuilderInLoopDiagnosticId
-        Public Const Title As String = "Don't concatenate strings in loops"
-        Public Const MessageFormat As String = "Don't concatenate '{0}' in a loop."
-        Public Const Category As String = SupportedCategories.Performance
-        Public Const Description As String = "Do not concatenate a string in a loop. It will allocate a lot of memory. Use a StringBuilder instead. It will require less allocation, less garbage collection work, less CPU cycles, and less overall time."
-        Protected Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.StringBuilderInLoopDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.StringBuilderInLoopDiagnosticId))
+        Private Const Category As String = SupportedCategories.Performance
+        Private Const Description As String = "Do not concatenate a string in a loop. It will allocate a lot of memory. Use a StringBuilder instead. It will require less allocation, less garbage collection work, less CPU cycles, and less overall time."
+        Private Const MessageFormat As String = "Don't concatenate '{0}' in a loop."
+        Private Const Title As String = "Don't concatenate strings in loops"
 
+        Protected Shared Rule As New DiagnosticDescriptor(
+                            StringBuilderInLoopDiagnosticId,
+                            Title,
+                            MessageFormat,
+                            Category,
+                            DiagnosticSeverity.Warning,
+                            isEnabledByDefault:=True,
+                            Description,
+                            helpLinkUri:=ForDiagnostic(StringBuilderInLoopDiagnosticId),
+                            Array.Empty(Of String))
+
+        Public Shared ReadOnly Id As String = StringBuilderInLoopDiagnosticId
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.Analyze, SyntaxKind.AddAssignmentStatement, SyntaxKind.ConcatenateAssignmentStatement, SyntaxKind.SimpleAssignmentStatement)
-        End Sub
 
         Private Sub Analyze(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -75,5 +73,13 @@ Namespace Performance
             Dim diag As Diagnostic = Diagnostic.Create(Rule, assignmentExpression.GetLocation(), props, assignmentExpression.Left.ToString())
             context.ReportDiagnostic(diag)
         End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyze, SyntaxKind.AddAssignmentStatement, SyntaxKind.ConcatenateAssignmentStatement, SyntaxKind.SimpleAssignmentStatement)
+        End Sub
+
     End Class
+
 End Namespace

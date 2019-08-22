@@ -19,15 +19,13 @@ Friend MustInherit Class Matcher(Of T)
         Return New ChoiceMatcher(matcher1, matcher2)
     End Function
 
-    'INSTANT VB NOTE: The parameter matcher was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-    Friend Shared Function OneOrMore(ByVal matcher_Renamed As Matcher(Of T)) As Matcher(Of T)
+    Friend Shared Function OneOrMore(ByVal M As Matcher(Of T)) As Matcher(Of T)
         ' m+ is the same as (m m*)
-        Return Sequence(matcher_Renamed, Repeat(matcher_Renamed))
+        Return Sequence(M, Repeat(M))
     End Function
 
-    'INSTANT VB NOTE: The parameter matcher was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-    Friend Shared Function Repeat(ByVal matcher_Renamed As Matcher(Of T)) As Matcher(Of T)
-        Return New RepeatMatcher(matcher_Renamed)
+    Friend Shared Function Repeat(ByVal M As Matcher(Of T)) As Matcher(Of T)
+        Return New RepeatMatcher(M)
     End Function
 
     Friend Shared Function Sequence(ParamArray ByVal matchers() As Matcher(Of T)) As Matcher(Of T)
@@ -60,9 +58,8 @@ Friend MustInherit Class Matcher(Of T)
 
         Private ReadOnly _matcher As Matcher(Of T)
 
-        'INSTANT VB NOTE: The parameter matcher was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-        Public Sub New(ByVal matcher_Renamed As Matcher(Of T))
-            Me._matcher = matcher_Renamed
+        Public Sub New(ByVal M As Matcher(Of T))
+            Me._matcher = M
         End Sub
 
         Public Overrides Function ToString() As String
@@ -93,12 +90,11 @@ Friend MustInherit Class Matcher(Of T)
 
         Public Overrides Function TryMatch(ByVal sequence As IList(Of T), ByRef index As Integer) As Boolean
             Dim currentIndex As Integer = index
-            'INSTANT VB NOTE: The variable matcher was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-            For Each matcher_Renamed As Matcher(Of T) In Me._matchers
-                If Not matcher_Renamed.TryMatch(sequence, currentIndex) Then
+            For Each M As Matcher(Of T) In Me._matchers
+                If Not M.TryMatch(sequence, currentIndex) Then
                     Return False
                 End If
-            Next matcher_Renamed
+            Next M
 
             index = currentIndex
             Return True
@@ -153,9 +149,8 @@ Friend MustInherit Class Matcher
     ''' <summary>
     ''' Matcher equivalent to (m+)
     ''' </summary>
-    'INSTANT VB NOTE: The parameter matcher was renamed since it may cause conflicts with calls to static members of the user-defined type with this name:
-    Public Shared Function OneOrMore(Of T)(ByVal matcher_Renamed As Matcher(Of T)) As Matcher(Of T)
-        Return Matcher(Of T).OneOrMore(matcher_Renamed)
+    Public Shared Function OneOrMore(Of T)(ByVal M As Matcher(Of T)) As Matcher(Of T)
+        Return Matcher(Of T).OneOrMore(M)
     End Function
 
     ''' <summary>

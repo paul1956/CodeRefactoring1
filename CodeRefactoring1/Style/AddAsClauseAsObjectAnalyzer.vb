@@ -2,30 +2,35 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.Collections.Immutable
+
 Imports CodeRefactoring1
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Style
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class AddAsClauseAsObjectAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "As Object should not be used when a more specific type is available"
-        Friend Const MessageFormat As String = "As Object should not be used."
-        Friend Const Category As String = SupportedCategories.Style
+        Private Const Category As String = SupportedCategories.Style
         Private Const Description As String = "You should replace 'As Object' with more specific type."
+        Private Const MessageFormat As String = "As Object should not be used."
+        Private Const Title As String = "As Object should not be used when a more specific type is available"
 
         Friend Shared Rule As New DiagnosticDescriptor(
-            DiagnosticIds.ChangeAsObjectToMoreSpecificDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Error,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=ForDiagnostic(DiagnosticIds.ChangeAsObjectToMoreSpecificDiagnosticId)
-        )
+                    ChangeAsObjectToMoreSpecificDiagnosticId,
+                    Title,
+                    MessageFormat,
+                    Category,
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault:=True,
+                    Description,
+                    helpLinkUri:=ForDiagnostic(ChangeAsObjectToMoreSpecificDiagnosticId),
+                    Array.Empty(Of String)
+                    )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
@@ -33,12 +38,62 @@ Namespace Style
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassVariable, SyntaxKind.VariableDeclarator)
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassForStatement, SyntaxKind.ForStatement)
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassForEachStatement, SyntaxKind.ForEachStatement)
+        Private Shared Sub AnalyzeClassForEachStatement(context As SyntaxNodeAnalysisContext)
+            Try
+                Dim model As SemanticModel = context.SemanticModel
+                If model.OptionStrict = OptionStrict.On AndAlso model.OptionInfer = True Then Exit Sub
+                Dim ForEachStatementDeclaration As ForEachStatementSyntax = DirectCast(context.Node, ForEachStatementSyntax)
+                If ForEachStatementDeclaration Is Nothing Then Exit Sub
+                Dim ControlVariable As VisualBasicSyntaxNode = ForEachStatementDeclaration.ControlVariable
+                If ControlVariable Is Nothing Then Exit Sub
+                Select Case ControlVariable.Kind
+                    Case SyntaxKind.IdentifierName
+                        If CType(ControlVariable, IdentifierNameSyntax).IsExplicitlyDeclared(model) Then
+                            Exit Sub
+                        End If
+                    Case SyntaxKind.VariableDeclarator
+                        Exit Sub
+                    Case Else
+                        Stop
+                End Select
+
+                Dim diag As Diagnostic = Diagnostic.Create(Rule, ControlVariable.GetLocation())
+                context.ReportDiagnostic(diag)
+            Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
+                Stop
+                Throw
+            End Try
+        End Sub
+
+        Private Shared Sub AnalyzeClassForStatement(context As SyntaxNodeAnalysisContext)
+            Try
+                Dim model As SemanticModel = context.SemanticModel
+                If model.OptionStrict = OptionStrict.On AndAlso model.OptionInfer = True Then Exit Sub
+                Dim ForStatementDeclaration As ForStatementSyntax = DirectCast(context.Node, ForStatementSyntax)
+                If ForStatementDeclaration Is Nothing Then Exit Sub
+                Dim ControlVariable As VisualBasicSyntaxNode = ForStatementDeclaration.ControlVariable
+                If ControlVariable Is Nothing Then Exit Sub
+                Select Case ControlVariable.Kind
+                    Case SyntaxKind.IdentifierName
+                        Dim ID As SimpleNameSyntax = CType(ControlVariable, SimpleNameSyntax)
+                        If IsExplicitlyDeclared(CType(ID, IdentifierNameSyntax), model) Then
+                            Exit Sub
+                        End If
+                    Case SyntaxKind.VariableDeclarator
+                        If CType(ControlVariable, VariableDeclaratorSyntax).AsClause IsNot Nothing Then
+                            Exit Sub
+                        End If
+                    Case Else
+                        Stop
+                        Exit Sub
+                End Select
+
+                Dim diag As Diagnostic = Diagnostic.Create(Rule, ControlVariable.GetLocation())
+                context.ReportDiagnostic(diag)
+            Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
+                Stop
+                Throw
+            End Try
         End Sub
 
         Private Shared Sub AnalyzeClassVariable(context As SyntaxNodeAnalysisContext)
@@ -91,63 +146,15 @@ Namespace Style
                 Throw
             End Try
         End Sub
-        Private Shared Sub AnalyzeClassForStatement(context As SyntaxNodeAnalysisContext)
-            Try
-                Dim model As SemanticModel = context.SemanticModel
-                If model.OptionStrict = OptionStrict.On AndAlso model.OptionInfer = True Then Exit Sub
-                Dim ForStatementDeclaration As ForStatementSyntax = DirectCast(context.Node, ForStatementSyntax)
-                If ForStatementDeclaration Is Nothing Then Exit Sub
-                Dim ControlVariable As VisualBasicSyntaxNode = ForStatementDeclaration.ControlVariable
-                If ControlVariable Is Nothing Then Exit Sub
-                Select Case ControlVariable.Kind
-                    Case SyntaxKind.IdentifierName
-                        Dim ID As SimpleNameSyntax = CType(ControlVariable, SimpleNameSyntax)
-                        If IsExplicitlyDeclared(CType(ID, IdentifierNameSyntax), model) Then
-                            Exit Sub
-                        End If
-                    Case SyntaxKind.VariableDeclarator
-                        If CType(ControlVariable, VariableDeclaratorSyntax).AsClause IsNot Nothing Then
-                            Exit Sub
-                        End If
-                    Case Else
-                        Stop
-                        Exit Sub
-                End Select
 
-
-                Dim diag As Diagnostic = Diagnostic.Create(Rule, ControlVariable.GetLocation())
-                context.ReportDiagnostic(diag)
-            Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
-                Throw
-            End Try
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassVariable, SyntaxKind.VariableDeclarator)
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassForStatement, SyntaxKind.ForStatement)
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeClassForEachStatement, SyntaxKind.ForEachStatement)
         End Sub
 
-        Private Shared Sub AnalyzeClassForEachStatement(context As SyntaxNodeAnalysisContext)
-            Try
-                Dim model As SemanticModel = context.SemanticModel
-                If model.OptionStrict = OptionStrict.On AndAlso model.OptionInfer = True Then Exit Sub
-                Dim ForEachStatementDeclaration As ForEachStatementSyntax = DirectCast(context.Node, ForEachStatementSyntax)
-                If ForEachStatementDeclaration Is Nothing Then Exit Sub
-                Dim ControlVariable As VisualBasicSyntaxNode = ForEachStatementDeclaration.ControlVariable
-                If ControlVariable Is Nothing Then Exit Sub
-                Select Case ControlVariable.Kind
-                    Case SyntaxKind.IdentifierName
-                        If CType(ControlVariable, IdentifierNameSyntax).IsExplicitlyDeclared(model) Then
-                            Exit Sub
-                        End If
-                    Case SyntaxKind.VariableDeclarator
-                        Exit Sub
-                    Case Else
-                        Stop
-                End Select
-
-                Dim diag As Diagnostic = Diagnostic.Create(Rule, ControlVariable.GetLocation())
-                context.ReportDiagnostic(diag)
-            Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
-                Throw
-            End Try
-        End Sub
     End Class
+
 End Namespace

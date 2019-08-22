@@ -158,6 +158,8 @@
     <Compile Include="Style\AddAsClauseCodeFixAllProvider.vb" />
     <Compile Include="Style\AddAsClauseCodeFixProvider.vb" />
     <Compile Include="Style\AddAsClauseAsObjectAnalyzer.vb" />
+    <Compile Include="Style\ByValAnalyzer_FixAnalyzer.vb" />
+    <Compile Include="Style\ByValAnalyzer_FixCodeFixProvider.vb" />
     <Compile Include="Style\MoveClassToFileCodeRefactoringProvider.vb" />
     <Compile Include="Refactoring\ParameterRefactoryAnalyzer.vb" />
     <Compile Include="Refactoring\ParameterRefactoryCodeFixProvider.vb" />
@@ -186,10 +188,7 @@
     <Compile Include="Style\TernaryOperatorCodeFixProviders.vb" />
     <Compile Include="Usage\ArgumentExceptionAnalyzer.vb" />
     <Compile Include="Usage\ArgumentExceptionCodeFixProvider.vb" />
-    <Compile Include="Usage\DisposableFieldNotDisposedAnalyzer.vb" />
     <Compile Include="Usage\DisposableFieldNotDisposedCodeFixProvider.vb" />
-    <Compile Include="Usage\DisposablesShouldCallSuppressFinalizeAnalyzer.vb" />
-    <Compile Include="Usage\DisposablesShouldCallSuppressFinalizeCodeFixProvider.vb" />
     <Compile Include="Usage\IPAddressAnalyzer.vb" />
     <Compile Include="Usage\JsonNetAnalyzer.vb" />
     <Compile Include="Usage\MethodAnalyzers\MethodChecker.vb" />
@@ -211,9 +210,7 @@
     <Compile Include="Extensions\IAssemblySymbolExtensions.vb" />
     <Compile Include="Utils\KeyVlauePair.vb" />
     <Compile Include="Utils\MemoryUsage.vb" />
-    <Compile Include="Utils\SyntaxList`1_cs.vb" />
     <Compile Include="Utils\ObjectExtensions.vb" />
-    <Compile Include="Utils\SpecializedCollections.vb" />
     <Compile Include="Extensions\ExpressionSyntaxExtensions.vb" />
     <Compile Include="Utils\Matcher.vb" />
     <Compile Include="Utils\GettextCatalog.vb" />
@@ -224,6 +221,7 @@
     <Compile Include="Utils\SupportedCategories.vb" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
@@ -278,7 +276,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis">
-      <Version>3.2.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
       <Version>2.9.4</Version>

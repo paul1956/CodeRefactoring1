@@ -1,60 +1,17 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
 Imports Microsoft.CodeAnalysis.VisualBasic.VisualBasicExtensions
 
 Namespace Usage
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(DisposableFieldNotDisposedCodeFixProvider)), Composition.Shared>
     Public Class DisposableFieldNotDisposedCodeFixProvider
         Inherits CodeFixProvider
 
-        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
-            Dim diagnostic As Diagnostic = context.Diagnostics.First
-            context.RegisterCodeFix(CodeAction.Create($"Dispose field '{diagnostic.Properties!variableIdentifier}",
-                                              Function(c As CancellationToken) Me.DisposeField(context.Document, diagnostic, c),
-                                              NameOf(DisposableFieldNotDisposedCodeFixProvider)),
-                            diagnostic)
-            Return Task.FromResult(0)
-        End Function
-
-        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(DiagnosticIds.DisposableFieldNotDisposed_CreatedDiagnosticId, DiagnosticIds.DisposableFieldNotDisposed_ReturnedDiagnosticId)
-
-        Public Overrides Function GetFixAllProvider() As FixAllProvider
-            Return WellKnownFixAllProviders.BatchFixer
-        End Function
-
-        Private Async Function DisposeField(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Document)
-            Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
-            Dim span As TextSpan = diagnostic.Location.SourceSpan
-            Dim variableDeclarator As VariableDeclaratorSyntax = root.FindToken(span.Start).Parent.FirstAncestorOrSelf(Of VariableDeclaratorSyntax)()
-
-            Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
-            Dim type As ClassBlockSyntax = variableDeclarator.FirstAncestorOrSelf(Of ClassBlockSyntax)
-            Dim typeSymbol As INamedTypeSymbol = semanticModel.GetDeclaredSymbol(type)
-            Dim newTypeImplementingIDisposable As ClassBlockSyntax = AddIDisposableImplementationToType(type, typeSymbol)
-            Dim newTypeWithDisposeMethod As TypeBlockSyntax = AddDisposeDeclarationToDisposeMethod(variableDeclarator, newTypeImplementingIDisposable, typeSymbol)
-            Dim newRoot As SyntaxNode = root.ReplaceNode(type, newTypeWithDisposeMethod)
-            Dim newDocument As Document = document.WithSyntaxRoot(newRoot)
-            Return newDocument
-        End Function
-
-        Private Shared Function AddIDisposableImplementationToType(type As ClassBlockSyntax, typeSymbol As INamedTypeSymbol) As ClassBlockSyntax
-            Dim iDisposableInterface As INamedTypeSymbol = typeSymbol.AllInterfaces.FirstOrDefault(Function(i As INamedTypeSymbol) i.ToString.EndsWith(NameOf(IDisposable)))
-            If iDisposableInterface IsNot Nothing Then Return type
-            Dim implementIdisposable As ImplementsStatementSyntax = SyntaxFactory.ImplementsStatement(SyntaxFactory.ParseName("System.IDisposable")).
-                WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed).
-                WithAdditionalAnnotations(Simplifier.Annotation)
-
-            Dim newImplementsList As SyntaxList(Of ImplementsStatementSyntax) = If(Not type.Implements.Any(),
-            type.Implements.Add(implementIdisposable),
-            New SyntaxList(Of ImplementsStatementSyntax)().
-                              Add(implementIdisposable))
-
-            Dim newType As ClassBlockSyntax = type.WithImplements(newImplementsList).
-            WithAdditionalAnnotations(Formatter.Annotation)
-            Return newType
-        End Function
+        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(DisposableFieldNotDisposed_CreatedDiagnosticId, DisposableFieldNotDisposed_ReturnedDiagnosticId)
 
         Private Shared Function AddDisposeDeclarationToDisposeMethod(variableDeclarator As VariableDeclaratorSyntax, type As ClassBlockSyntax, typeSymbol As INamedTypeSymbol) As TypeBlockSyntax
             Dim disposableMethod As IMethodSymbol = typeSymbol.GetMembers("Dispose").OfType(Of IMethodSymbol).FirstOrDefault(Function(d As IMethodSymbol) d.Arity = 0)
@@ -101,5 +58,52 @@ Namespace Usage
             End If
             Return newType
         End Function
+
+        Private Shared Function AddIDisposableImplementationToType(type As ClassBlockSyntax, typeSymbol As INamedTypeSymbol) As ClassBlockSyntax
+            Dim iDisposableInterface As INamedTypeSymbol = typeSymbol.AllInterfaces.FirstOrDefault(Function(i As INamedTypeSymbol) i.ToString.EndsWith(NameOf(IDisposable)))
+            If iDisposableInterface IsNot Nothing Then Return type
+            Dim implementIdisposable As ImplementsStatementSyntax = SyntaxFactory.ImplementsStatement(SyntaxFactory.ParseName("System.IDisposable")).
+                WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed).
+                WithAdditionalAnnotations(Simplifier.Annotation)
+
+            Dim newImplementsList As SyntaxList(Of ImplementsStatementSyntax) = If(Not type.Implements.Any(),
+            type.Implements.Add(implementIdisposable),
+            New SyntaxList(Of ImplementsStatementSyntax)().
+                              Add(implementIdisposable))
+
+            Dim newType As ClassBlockSyntax = type.WithImplements(newImplementsList).
+            WithAdditionalAnnotations(Formatter.Annotation)
+            Return newType
+        End Function
+
+        Private Async Function DisposeField(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
+            Dim span As TextSpan = diagnostic.Location.SourceSpan
+            Dim variableDeclarator As VariableDeclaratorSyntax = root.FindToken(span.Start).Parent.FirstAncestorOrSelf(Of VariableDeclaratorSyntax)()
+
+            Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
+            Dim type As ClassBlockSyntax = variableDeclarator.FirstAncestorOrSelf(Of ClassBlockSyntax)
+            Dim typeSymbol As INamedTypeSymbol = semanticModel.GetDeclaredSymbol(type)
+            Dim newTypeImplementingIDisposable As ClassBlockSyntax = AddIDisposableImplementationToType(type, typeSymbol)
+            Dim newTypeWithDisposeMethod As TypeBlockSyntax = AddDisposeDeclarationToDisposeMethod(variableDeclarator, newTypeImplementingIDisposable, typeSymbol)
+            Dim newRoot As SyntaxNode = root.ReplaceNode(type, newTypeWithDisposeMethod)
+            Dim newDocument As Document = document.WithSyntaxRoot(newRoot)
+            Return newDocument
+        End Function
+
+        Public Overrides Function GetFixAllProvider() As FixAllProvider
+            Return WellKnownFixAllProviders.BatchFixer
+        End Function
+
+        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
+            Dim diagnostic As Diagnostic = context.Diagnostics.First
+            context.RegisterCodeFix(CodeAction.Create($"Dispose field '{diagnostic.Properties!variableIdentifier}",
+                                              Function(c As CancellationToken) Me.DisposeField(context.Document, diagnostic, c),
+                                              NameOf(DisposableFieldNotDisposedCodeFixProvider)),
+                            diagnostic)
+            Return Task.FromResult(0)
+        End Function
+
     End Class
+
 End Namespace

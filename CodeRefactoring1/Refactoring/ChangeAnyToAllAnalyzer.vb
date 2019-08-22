@@ -1,58 +1,50 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Refactoring
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class ChangeAnyToAllAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const MessageAny As String = "Change Any to All"
-        Friend Const MessageAll As String = "Change All to Any"
-        Friend Const TitleAny As String = MessageAny
-        Friend Const TitleAll As String = MessageAll
-        Friend Const Category As String = SupportedCategories.Refactoring
+        Private Const Category As String = SupportedCategories.Refactoring
+        Private Const MessageAll As String = "Change All to Any"
+        Private Const MessageAny As String = "Change Any to All"
+        Private Const TitleAll As String = MessageAll
+        Private Const TitleAny As String = MessageAny
 
-        Friend Shared RuleAny As New DiagnosticDescriptor(
-            DiagnosticIds.ChangeAnyToAllDiagnosticId,
-            TitleAny,
-            MessageAny,
-            Category,
-            DiagnosticSeverity.Hidden,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.ChangeAnyToAllDiagnosticId))
-        Friend Shared RuleAll As New DiagnosticDescriptor(
-            DiagnosticIds.ChangeAllToAnyDiagnosticId,
-            TitleAll,
-            MessageAll,
-            Category,
-            DiagnosticSeverity.Hidden,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.ChangeAllToAnyDiagnosticId))
+        Protected Shared RuleAll As New DiagnosticDescriptor(
+                                ChangeAllToAnyDiagnosticId,
+                                TitleAll,
+                                MessageAll,
+                                Category,
+                                DiagnosticSeverity.Hidden,
+                                isEnabledByDefault:=True,
+                                description:="",
+                                helpLinkUri:=ForDiagnostic(ChangeAllToAnyDiagnosticId),
+                                Array.Empty(Of String))
+
+        Protected Shared RuleAny As New DiagnosticDescriptor(
+                                ChangeAnyToAllDiagnosticId,
+                                TitleAny,
+                                MessageAny,
+                                Category,
+                                DiagnosticSeverity.Hidden,
+                                isEnabledByDefault:=True,
+                                description:="",
+                                helpLinkUri:=ForDiagnostic(ChangeAnyToAllDiagnosticId),
+                                Array.Empty(Of String))
+
+        Public Shared ReadOnly AllName As IdentifierNameSyntax = SyntaxFactory.IdentifierName(NameOf(Enumerable.All))
+
+        Public Shared ReadOnly AnyName As IdentifierNameSyntax = SyntaxFactory.IdentifierName(NameOf(Enumerable.Any))
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
                 Return ImmutableArray.Create(RuleAll, RuleAny)
             End Get
         End Property
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeInvocation, SyntaxKind.InvocationExpression)
-        End Sub
-
-        Public Shared ReadOnly AllName As IdentifierNameSyntax = SyntaxFactory.IdentifierName(NameOf(Enumerable.All))
-        Public Shared ReadOnly AnyName As IdentifierNameSyntax = SyntaxFactory.IdentifierName(NameOf(Enumerable.Any))
-
-        Private Sub AnalyzeInvocation(context As SyntaxNodeAnalysisContext)
-            If context.Node.IsGenerated() Then Exit Sub
-            Dim invocation As InvocationExpressionSyntax = DirectCast(context.Node, InvocationExpressionSyntax)
-            If invocation.Parent.IsKind(SyntaxKind.ExpressionStatement) Then Exit Sub
-            Dim diagnosticToRaise As DiagnosticDescriptor = GetCorrespondingDiagnostic(context.SemanticModel, invocation)
-            If diagnosticToRaise Is Nothing Then Exit Sub
-            Dim diag As Diagnostic = Diagnostic.Create(diagnosticToRaise, DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.GetLocation())
-            context.ReportDiagnostic(diag)
-        End Sub
 
         Private Shared Function GetCorrespondingDiagnostic(model As SemanticModel, invocation As InvocationExpressionSyntax) As DiagnosticDescriptor
             Dim methodName As String = TryCast(invocation?.Expression, MemberAccessExpressionSyntax)?.Name?.ToString()
@@ -73,5 +65,23 @@ Namespace Refactoring
             If arg Is Nothing Then Return True ' Empty body
             Return arg.GetExpression().Kind = SyntaxKind.SingleLineFunctionLambdaExpression
         End Function
+
+        Private Sub AnalyzeInvocation(context As SyntaxNodeAnalysisContext)
+            If context.Node.IsGenerated() Then Exit Sub
+            Dim invocation As InvocationExpressionSyntax = DirectCast(context.Node, InvocationExpressionSyntax)
+            If invocation.Parent.IsKind(SyntaxKind.ExpressionStatement) Then Exit Sub
+            Dim diagnosticToRaise As DiagnosticDescriptor = GetCorrespondingDiagnostic(context.SemanticModel, invocation)
+            If diagnosticToRaise Is Nothing Then Exit Sub
+            Dim diag As Diagnostic = Diagnostic.Create(diagnosticToRaise, DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.GetLocation())
+            context.ReportDiagnostic(diag)
+        End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeInvocation, SyntaxKind.InvocationExpression)
+        End Sub
+
     End Class
+
 End Namespace

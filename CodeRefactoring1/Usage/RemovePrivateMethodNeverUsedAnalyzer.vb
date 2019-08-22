@@ -1,24 +1,29 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Usage
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class RemovePrivateMethodNeverUsedAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "Unused Method"
-        Friend Const Message As String = "Method is not used."
         Private Const Description As String = "When a private method is declared but not used, remove it to avoid confusion."
+        Private Const Message As String = "Method is not used."
+        Private Const Title As String = "Unused Method"
+        Private Shared ReadOnly excludedAttributeNames As String() = {"Fact", "ContractInvariantMethod", "DataMember"}
 
         Friend Shared Rule As New DiagnosticDescriptor(
-            DiagnosticIds.RemovePrivateMethodNeverUsedDiagnosticId,
-            Title,
-            Message,
-            SupportedCategories.Usage,
-            DiagnosticSeverity.Info,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.RemovePrivateMethodNeverUsedDiagnosticId))
+                        RemovePrivateMethodNeverUsedDiagnosticId,
+                        Title,
+                        Message,
+                        SupportedCategories.Usage,
+                        DiagnosticSeverity.Info,
+                        isEnabledByDefault:=True,
+                        Description,
+                        helpLinkUri:=ForDiagnostic(RemovePrivateMethodNeverUsedDiagnosticId),
+                        Array.Empty(Of String)
+                        )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
@@ -26,25 +31,11 @@ Namespace Usage
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.SubStatement, SyntaxKind.FunctionStatement)
-        End Sub
+        Private Shared Function IsExcludedAttributeName(attributeName As String) As Boolean
+            Return excludedAttributeNames.Contains(attributeName)
+        End Function
 
-        Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
-            Dim methodStatement As MethodStatementSyntax = DirectCast(context.Node, MethodStatementSyntax)
-            If methodStatement.HandlesClause IsNot Nothing Then Exit Sub
-            If Not methodStatement.Modifiers.Any(Function(a) a.ValueText = SyntaxFactory.Token(SyntaxKind.PrivateKeyword).ValueText) Then Exit Sub
-            If (Me.IsMethodAttributeAnException(methodStatement)) Then Return
-            If Me.IsMethodUsed(methodStatement, context.SemanticModel) Then Exit Sub
-            Dim props As ImmutableDictionary(Of String, String) = New Dictionary(Of String, String) From {{"identifier", methodStatement.Identifier.Text}}.ToImmutableDictionary()
-            Dim diag As Diagnostic = Diagnostic.Create(Rule, methodStatement.GetLocation(), props)
-            context.ReportDiagnostic(diag)
-        End Sub
-
-        Private Function IsMethodAttributeAnException(methodStatement As MethodStatementSyntax) As Boolean
+        Private Shared Function IsMethodAttributeAnException(methodStatement As MethodStatementSyntax) As Boolean
             For Each attributeList As AttributeListSyntax In methodStatement.AttributeLists
                 For Each attribute As AttributeSyntax In attributeList.Attributes
                     Dim identifierName As IdentifierNameSyntax = TryCast(attribute.Name, IdentifierNameSyntax)
@@ -64,13 +55,7 @@ Namespace Usage
             Return False
         End Function
 
-        Private Shared ReadOnly excludedAttributeNames As String() = {"Fact", "ContractInvariantMethod", "DataMember"}
-
-        Private Shared Function IsExcludedAttributeName(attributeName As String) As Boolean
-            Return excludedAttributeNames.Contains(attributeName)
-        End Function
-
-        Private Function IsMethodUsed(methodTarget As MethodStatementSyntax, semanticModel As SemanticModel) As Boolean
+        Private Shared Function IsMethodUsed(methodTarget As MethodStatementSyntax, semanticModel As SemanticModel) As Boolean
             Dim typeDeclaration As ClassBlockSyntax = TryCast(methodTarget.Parent.Parent, ClassBlockSyntax)
             If typeDeclaration Is Nothing Then Return True
 
@@ -78,21 +63,38 @@ Namespace Usage
             If classStatement Is Nothing Then Return True
 
             If Not classStatement.Modifiers.Any(SyntaxKind.PartialKeyword) Then
-                Return Me.IsMethodUsed(methodTarget, typeDeclaration)
+                Return IsMethodUsed(methodTarget, typeDeclaration)
             End If
 
             Dim symbol As INamedTypeSymbol = semanticModel.GetDeclaredSymbol(typeDeclaration)
 
-            Return symbol Is Nothing OrElse symbol.DeclaringSyntaxReferences.Any(Function(r) Me.IsMethodUsed(methodTarget, r.GetSyntax().Parent))
+            Return symbol Is Nothing OrElse symbol.DeclaringSyntaxReferences.Any(Function(r) IsMethodUsed(methodTarget, r.GetSyntax().Parent))
         End Function
 
-        Private Function IsMethodUsed(methodTarget As MethodStatementSyntax, typeDeclaration As SyntaxNode) As Boolean
-            Dim hasIdentifier As IEnumerable(Of VisualBasic.Syntax.IdentifierNameSyntax) = typeDeclaration?.DescendantNodes()?.OfType(Of IdentifierNameSyntax)()
+        Private Shared Function IsMethodUsed(methodTarget As MethodStatementSyntax, typeDeclaration As SyntaxNode) As Boolean
+            Dim hasIdentifier As IEnumerable(Of IdentifierNameSyntax) = typeDeclaration?.DescendantNodes()?.OfType(Of IdentifierNameSyntax)()
             If (hasIdentifier Is Nothing OrElse Not hasIdentifier.Any()) Then Return False
             Return hasIdentifier.Any(Function(a) a IsNot Nothing AndAlso a.Identifier.ValueText.Equals(methodTarget?.Identifier.ValueText))
         End Function
 
+        Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
+            If (context.Node.IsGenerated()) Then Return
+            Dim methodStatement As MethodStatementSyntax = DirectCast(context.Node, MethodStatementSyntax)
+            If methodStatement.HandlesClause IsNot Nothing Then Exit Sub
+            If Not methodStatement.Modifiers.Any(Function(a) a.ValueText = SyntaxFactory.Token(SyntaxKind.PrivateKeyword).ValueText) Then Exit Sub
+            If (IsMethodAttributeAnException(methodStatement)) Then Return
+            If IsMethodUsed(methodStatement, context.SemanticModel) Then Exit Sub
+            Dim props As ImmutableDictionary(Of String, String) = New Dictionary(Of String, String) From {{"identifier", methodStatement.Identifier.Text}}.ToImmutableDictionary()
+            Dim diag As Diagnostic = Diagnostic.Create(Rule, methodStatement.GetLocation(), props)
+            context.ReportDiagnostic(diag)
+        End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.SubStatement, SyntaxKind.FunctionStatement)
+        End Sub
+
     End Class
+
 End Namespace
-
-

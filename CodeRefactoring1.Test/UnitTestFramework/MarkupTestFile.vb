@@ -82,7 +82,7 @@ Namespace Roslyn.UnitTestFramework
                     ' Is it starting a new match, or ending an existing match.  As a workaround, we
                     ' special case these and consider it ending a match if we have something on the
                     ' stack already.
-                    If (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = SpanEndString AndAlso spanStartStack.Peek().Item2 = String.Empty) OrElse (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = NamedSpanEndString AndAlso spanStartStack.Peek().Item2 <> String.Empty) Then
+                    If (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = SpanEndString AndAlso String.IsNullOrEmpty(spanStartStack.Peek().Item2)) OrElse (matches(0).Item2 = SpanStartString AndAlso matches(1).Item2 = NamedSpanEndString AndAlso Not String.IsNullOrEmpty(spanStartStack.Peek().Item2)) Then
                         orderedMatches.RemoveAt(0)
                     End If
                 End If
@@ -246,10 +246,10 @@ Namespace Roslyn.UnitTestFramework
                     sb.Append(PositionString)
                 End If
 
-                AddSpanString(sb, spans.Where(Function(kvp) kvp.Key <> String.Empty), i, start:=True)
-                AddSpanString(sb, spans.Where(Function(kvp) kvp.Key = String.Empty), i, start:=True)
-                AddSpanString(sb, spans.Where(Function(kvp) kvp.Key = String.Empty), i, start:=False)
-                AddSpanString(sb, spans.Where(Function(kvp) kvp.Key <> String.Empty), i, start:=False)
+                AddSpanString(sb, spans.Where(Function(kvp) Not String.IsNullOrEmpty(kvp.Key)), i, start:=True)
+                AddSpanString(sb, spans.Where(Function(kvp) String.IsNullOrEmpty(kvp.Key)), i, start:=True)
+                AddSpanString(sb, spans.Where(Function(kvp) String.IsNullOrEmpty(kvp.Key)), i, start:=False)
+                AddSpanString(sb, spans.Where(Function(kvp) Not String.IsNullOrEmpty(kvp.Key)), i, start:=False)
 
                 If i < code.Length Then
                     sb.Append(code.Chars(i))
@@ -263,7 +263,7 @@ Namespace Roslyn.UnitTestFramework
             For Each kvp As KeyValuePair(Of String, IList(Of TextSpan)) In items
                 For Each span As TextSpan In kvp.Value
                     If start AndAlso span.Start = position Then
-                        If kvp.Key = String.Empty Then
+                        If String.IsNullOrEmpty(kvp.Key) Then
                             sb.Append(SpanStartString)
                         Else
                             sb.Append(NamedSpanStartString)
@@ -271,7 +271,7 @@ Namespace Roslyn.UnitTestFramework
                             sb.Append(":"c)
                         End If
                     ElseIf Not start AndAlso span.End = position Then
-                        If kvp.Key = String.Empty Then
+                        If String.IsNullOrEmpty(kvp.Key) Then
                             sb.Append(SpanEndString)
                         Else
                             sb.Append(NamedSpanEndString)

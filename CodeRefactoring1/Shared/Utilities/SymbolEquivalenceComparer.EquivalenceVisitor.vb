@@ -16,11 +16,7 @@ Partial Friend Class SymbolEquivalenceComparer
             Me._objectAndDynamicCompareEqually = objectAndDynamicCompareEqually
         End Sub
 
-        Private Shared Function HaveSameLocation(ByVal x As ISymbol, ByVal y As ISymbol) As Boolean
-            Return x.Locations.Length = 1 AndAlso y.Locations.Length = 1 AndAlso x.Locations.First().Equals(y.Locations.First())
-        End Function
-
-        Private Function AreCompatibleMethodKinds(ByVal kind1 As MethodKind, ByVal kind2 As MethodKind) As Boolean
+        Private Shared Function AreCompatibleMethodKinds(ByVal kind1 As MethodKind, ByVal kind2 As MethodKind) As Boolean
             If kind1 = kind2 Then
                 Return True
             End If
@@ -32,23 +28,47 @@ Partial Friend Class SymbolEquivalenceComparer
             Return False
         End Function
 
+        Private Shared Function DynamicTypesAreEquivalent(ByVal _1 As IDynamicTypeSymbol, ByVal _2 As IDynamicTypeSymbol) As Boolean
+            Return True
+        End Function
+
+        Private Shared Function HaveSameLocation(ByVal x As ISymbol, ByVal y As ISymbol) As Boolean
+            Return x.Locations.Length = 1 AndAlso y.Locations.Length = 1 AndAlso x.Locations.First().Equals(y.Locations.First())
+        End Function
+
+        Private Shared Function LabelsAreEquivalent(ByVal x As ILabelSymbol, ByVal y As ILabelSymbol) As Boolean
+            Return x.Name = y.Name AndAlso HaveSameLocation(x, y)
+        End Function
+
+        Private Shared Function LocalsAreEquivalent(ByVal x As ILocalSymbol, ByVal y As ILocalSymbol) As Boolean
+            Return HaveSameLocation(x, y)
+        End Function
+
+        Private Shared Function PreprocessingSymbolsAreEquivalent(ByVal x As IPreprocessingSymbol, ByVal y As IPreprocessingSymbol) As Boolean
+            Return x.Name = y.Name
+        End Function
+
+        Private Shared Function RangeVariablesAreEquivalent(ByVal x As IRangeVariableSymbol, ByVal y As IRangeVariableSymbol) As Boolean
+            Return HaveSameLocation(x, y)
+        End Function
+
         Private Function AreEquivalentWorker(ByVal x As ISymbol, ByVal y As ISymbol, ByVal k As SymbolKind, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Contract.Requires(x.Kind = y.Kind AndAlso x.Kind = k)
+            Requires(x.Kind = y.Kind AndAlso x.Kind = k)
             Select Case k
                 Case SymbolKind.ArrayType
                     Return Me.ArrayTypesAreEquivalent(DirectCast(x, IArrayTypeSymbol), DirectCast(y, IArrayTypeSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Assembly
                     Return Me.AssembliesAreEquivalent(DirectCast(x, IAssemblySymbol), DirectCast(y, IAssemblySymbol))
                 Case SymbolKind.DynamicType
-                    Return Me.DynamicTypesAreEquivalent(DirectCast(x, IDynamicTypeSymbol), DirectCast(y, IDynamicTypeSymbol))
+                    Return DynamicTypesAreEquivalent(DirectCast(x, IDynamicTypeSymbol), DirectCast(y, IDynamicTypeSymbol))
                 Case SymbolKind.Event
                     Return Me.EventsAreEquivalent(DirectCast(x, IEventSymbol), DirectCast(y, IEventSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Field
                     Return Me.FieldsAreEquivalent(DirectCast(x, IFieldSymbol), DirectCast(y, IFieldSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Label
-                    Return Me.LabelsAreEquivalent(DirectCast(x, ILabelSymbol), DirectCast(y, ILabelSymbol))
+                    Return LabelsAreEquivalent(DirectCast(x, ILabelSymbol), DirectCast(y, ILabelSymbol))
                 Case SymbolKind.Local
-                    Return Me.LocalsAreEquivalent(DirectCast(x, ILocalSymbol), DirectCast(y, ILocalSymbol))
+                    Return LocalsAreEquivalent(DirectCast(x, ILocalSymbol), DirectCast(y, ILocalSymbol))
                 Case SymbolKind.Method
                     Return Me.MethodsAreEquivalent(DirectCast(x, IMethodSymbol), DirectCast(y, IMethodSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.NetModule
@@ -64,11 +84,11 @@ Partial Friend Class SymbolEquivalenceComparer
                 Case SymbolKind.Property
                     Return Me.PropertiesAreEquivalent(DirectCast(x, IPropertySymbol), DirectCast(y, IPropertySymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.RangeVariable
-                    Return Me.RangeVariablesAreEquivalent(DirectCast(x, IRangeVariableSymbol), DirectCast(y, IRangeVariableSymbol))
+                    Return RangeVariablesAreEquivalent(DirectCast(x, IRangeVariableSymbol), DirectCast(y, IRangeVariableSymbol))
                 Case SymbolKind.TypeParameter
                     Return Me.TypeParametersAreEquivalent(DirectCast(x, ITypeParameterSymbol), DirectCast(y, ITypeParameterSymbol), equivalentTypesWithDifferingAssemblies)
                 Case SymbolKind.Preprocessing
-                    Return Me.PreprocessingSymbolsAreEquivalent(DirectCast(x, IPreprocessingSymbol), DirectCast(y, IPreprocessingSymbol))
+                    Return PreprocessingSymbolsAreEquivalent(DirectCast(x, IPreprocessingSymbol), DirectCast(y, IPreprocessingSymbol))
                 Case Else
                     Return False
             End Select
@@ -80,13 +100,6 @@ Partial Friend Class SymbolEquivalenceComparer
 
         Private Function AssembliesAreEquivalent(ByVal x As IAssemblySymbol, ByVal y As IAssemblySymbol) As Boolean
             Return If(Me._symbolEquivalenceComparer._assemblyComparerOpt?.Equals(x, y), True)
-        End Function
-
-#Disable Warning IDE0060 ' Remove unused parameter
-
-        Private Function DynamicTypesAreEquivalent(ByVal x As IDynamicTypeSymbol, ByVal y As IDynamicTypeSymbol) As Boolean
-#Enable Warning IDE0060 ' Remove unused parameter
-            Return True
         End Function
 
         Private Function EventsAreEquivalent(ByVal x As IEventSymbol, ByVal y As IEventSymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -184,16 +197,8 @@ Partial Friend Class SymbolEquivalenceComparer
             Return IsConstructedFromSelf(x) OrElse x.IsUnboundGenericType OrElse Me.TypeArgumentsAreEquivalent(x.TypeArguments, y.TypeArguments, equivalentTypesWithDifferingAssemblies)
         End Function
 
-        Private Function LabelsAreEquivalent(ByVal x As ILabelSymbol, ByVal y As ILabelSymbol) As Boolean
-            Return x.Name = y.Name AndAlso HaveSameLocation(x, y)
-        End Function
-
-        Private Function LocalsAreEquivalent(ByVal x As ILocalSymbol, ByVal y As ILocalSymbol) As Boolean
-            Return HaveSameLocation(x, y)
-        End Function
-
         Private Function MethodsAreEquivalent(ByVal x As IMethodSymbol, ByVal y As IMethodSymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            If Not Me.AreCompatibleMethodKinds(x.MethodKind, y.MethodKind) Then
+            If Not AreCompatibleMethodKinds(x.MethodKind, y.MethodKind) Then
                 Return False
             End If
 
@@ -318,10 +323,6 @@ Partial Friend Class SymbolEquivalenceComparer
             Return Me.AreEquivalent(x.CustomModifiers, y.CustomModifiers, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.PointedAtType, y.PointedAtType, equivalentTypesWithDifferingAssemblies)
         End Function
 
-        Private Function PreprocessingSymbolsAreEquivalent(ByVal x As IPreprocessingSymbol, ByVal y As IPreprocessingSymbol) As Boolean
-            Return x.Name = y.Name
-        End Function
-
         Private Function PropertiesAreEquivalent(ByVal x As IPropertySymbol, ByVal y As IPropertySymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
             If x.ContainingType.IsAnonymousType AndAlso y.ContainingType.IsAnonymousType Then
                 ' We can short circuit here and just use the symbols themselves to determine
@@ -334,10 +335,6 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             Return x.IsIndexer = y.IsIndexer AndAlso x.MetadataName = y.MetadataName AndAlso x.Parameters.Length = y.Parameters.Length AndAlso Me.ParametersAreEquivalent(x.Parameters, y.Parameters, equivalentTypesWithDifferingAssemblies) AndAlso Me.AreEquivalent(x.ContainingSymbol, y.ContainingSymbol, equivalentTypesWithDifferingAssemblies)
-        End Function
-
-        Private Function RangeVariablesAreEquivalent(ByVal x As IRangeVariableSymbol, ByVal y As IRangeVariableSymbol) As Boolean
-            Return HaveSameLocation(x, y)
         End Function
 
         Private Function TypeArgumentsAreEquivalent(ByVal xTypeArguments As ImmutableArray(Of ITypeSymbol), ByVal yTypeArguments As ImmutableArray(Of ITypeSymbol), ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
@@ -356,8 +353,8 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function TypeParametersAreEquivalent(ByVal x As ITypeParameterSymbol, ByVal y As ITypeParameterSymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Contract.Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
-            Contract.Requires((y.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(y.DeclaringMethod)) OrElse (y.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(y.ContainingType)) OrElse y.TypeParameterKind = TypeParameterKind.Cref)
+            Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
+            Requires((y.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(y.DeclaringMethod)) OrElse (y.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(y.ContainingType)) OrElse y.TypeParameterKind = TypeParameterKind.Cref)
 
             If x.Ordinal <> y.Ordinal OrElse x.TypeParameterKind <> y.TypeParameterKind Then
                 Return False

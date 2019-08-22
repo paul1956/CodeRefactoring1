@@ -1,27 +1,38 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.FindSymbols
 
 Namespace Usage
+
+    Public Structure DocumentIdAndRoot
+        Friend DocumentId As DocumentId
+        Friend Root As SyntaxNode
+
+        Public Shared Operator <>(left As DocumentIdAndRoot, right As DocumentIdAndRoot) As Boolean
+            Return Not left = right
+        End Operator
+
+        Public Shared Operator =(left As DocumentIdAndRoot, right As DocumentIdAndRoot) As Boolean
+            Return left.Equals(right)
+        End Operator
+
+        Public Overrides Function Equals(obj As Object) As Boolean
+            Throw New NotImplementedException()
+        End Function
+
+        Public Overrides Function GetHashCode() As Integer
+            Throw New NotImplementedException()
+        End Function
+
+    End Structure
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(UnusedParametersCodeFixProvider)), Composition.Shared>
     Public Class UnusedParametersCodeFixProvider
         Inherits CodeFixProvider
 
-        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
-            Dim Diagnostic As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create(
-                                    String.Format("Remove unused parameter: '{0}'", Diagnostic.Properties("identifier")),
-                                    Function(c) RemoveParameterAsync(context.Document, Diagnostic, c),
-                                    NameOf(UnusedParametersCodeFixProvider)),
-                                    Diagnostic)
-            Return Task.FromResult(0)
-        End Function
+        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(UnusedParametersDiagnosticId)
 
-        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(DiagnosticIds.UnusedParametersDiagnosticId)
-
-        Public Overrides Function GetFixAllProvider() As FixAllProvider
-            Return UnusedParametersCodeFixAllProvider.Instance
-        End Function
         Private Shared Async Function RemoveParameterAsync(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Solution)
             Dim solution As Solution = document.Project.Solution
             Dim newSolution As Solution = solution
@@ -94,17 +105,20 @@ Namespace Usage
             Return docs
         End Function
 
-        Public Structure DocumentIdAndRoot
-            Friend DocumentId As DocumentId
-            Friend Root As SyntaxNode
+        Public Overrides Function GetFixAllProvider() As FixAllProvider
+            Return UnusedParametersCodeFixAllProvider.Instance
+        End Function
 
-            Public Shared Operator =(left As DocumentIdAndRoot, right As DocumentIdAndRoot) As Boolean
-                Return left.Equals(right)
-            End Operator
+        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
+            Dim Diagnostic As Diagnostic = context.Diagnostics.First()
+            context.RegisterCodeFix(CodeAction.Create(
+                                    String.Format("Remove unused parameter: '{0}'", Diagnostic.Properties("identifier")),
+                                    Function(c) RemoveParameterAsync(context.Document, Diagnostic, c),
+                                    NameOf(UnusedParametersCodeFixProvider)),
+                                    Diagnostic)
+            Return Task.FromResult(0)
+        End Function
 
-            Public Shared Operator <>(left As DocumentIdAndRoot, right As DocumentIdAndRoot) As Boolean
-                Return Not left = right
-            End Operator
-        End Structure
     End Class
+
 End Namespace

@@ -2,36 +2,35 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
-Imports Microsoft.CodeAnalysis.Diagnostics
+
 Imports System.Collections.Immutable
 
+Imports Microsoft.CodeAnalysis.Diagnostics
+
 Namespace Performance
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class SealedAttributeAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Public Shared ReadOnly Id As String = DiagnosticIds.SealedAttributeDiagnosticId
-        Public Const Title As String = "Unsealed Attribute"
-        Public Const MessageFormat As String = "Mark '{0}' as NotInheritable."
-        Public Const Category As String = SupportedCategories.Performance
-        Public Const Description As String = "Framework methods that retrieve attributes by default search the entire inheritance hierarchy of the attribute class. Marking the type as NotInheritable eliminates this search and can improve performance."
-        Protected Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.SealedAttributeDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.SealedAttributeDiagnosticId))
+        Private Const Category As String = SupportedCategories.Performance
+        Private Const Description As String = "Framework methods that retrieve attributes by default search the entire inheritance hierarchy of the attribute class. Marking the type as NotInheritable eliminates this search and can improve performance."
+        Private Const MessageFormat As String = "Mark '{0}' as NotInheritable."
+        Private Const Title As String = "Unsealed Attribute"
 
+        Protected Shared Rule As New DiagnosticDescriptor(
+                                SealedAttributeDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                Category,
+                                DiagnosticSeverity.Warning,
+                                isEnabledByDefault:=True,
+                                Description,
+                                helpLinkUri:=ForDiagnostic(SealedAttributeDiagnosticId),
+                                Array.Empty(Of String))
+
+        Public Shared ReadOnly Id As String = SealedAttributeDiagnosticId
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSymbolAction(AddressOf Me.Analyze, SymbolKind.NamedType)
-        End Sub
 
         Private Sub Analyze(context As SymbolAnalysisContext)
             If (context.IsGenerated) Then Return
@@ -53,5 +52,12 @@ Namespace Performance
             Return False
         End Function
 
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSymbolAction(AddressOf Me.Analyze, SymbolKind.NamedType)
+        End Sub
+
     End Class
+
 End Namespace

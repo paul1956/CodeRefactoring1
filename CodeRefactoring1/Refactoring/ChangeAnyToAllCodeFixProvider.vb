@@ -1,29 +1,20 @@
-﻿Imports Microsoft.CodeAnalysis.CodeFixes
-Imports System.Collections.Immutable
+﻿Imports System.Collections.Immutable
+
+Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 
 Namespace Refactoring
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(ChangeAnyToAllCodeFixProvider)), [Shared]>
     Public Class ChangeAnyToAllCodeFixProvider
         Inherits CodeFixProvider
 
         Public Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String)
             Get
-                Return ImmutableArray.Create(DiagnosticIds.ChangeAnyToAllDiagnosticId,
-                                             DiagnosticIds.ChangeAllToAnyDiagnosticId)
+                Return ImmutableArray.Create(ChangeAnyToAllDiagnosticId,
+                                             ChangeAllToAnyDiagnosticId)
             End Get
         End Property
-
-        Public NotOverridable Overrides Function GetFixAllProvider() As FixAllProvider
-            Return WellKnownFixAllProviders.BatchFixer
-        End Function
-
-        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
-            Dim diag As Diagnostic = context.Diagnostics.First
-            Dim message As String = If(diag.Id = DiagnosticIds.ChangeAnyToAllDiagnosticId, "Change Any to All", "Change All to Any")
-            context.RegisterCodeFix(CodeAction.Create(message, Function(c As CancellationToken) ConvertAsync(context.Document, diag.Location, c), NameOf(ChangeAnyToAllCodeFixProvider)), diag)
-            Return Task.FromResult(0)
-        End Function
 
         Private Shared Async Function ConvertAsync(Document As Document, diagnosticLocation As Location, cancellationToken As CancellationToken) As Task(Of Document)
             Dim root As SyntaxNode = Await Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
@@ -35,24 +26,15 @@ Namespace Refactoring
             Return newDocument
         End Function
 
-        Private Shared Function ReplaceInvocation(invocation As InvocationExpressionSyntax, newInvocation As ExpressionSyntax, root As SyntaxNode) As SyntaxNode
-            If invocation.Parent.IsKind(SyntaxKind.NotExpression) Then
-                Return root.ReplaceNode(invocation.Parent, newInvocation)
-            End If
-            Dim negatedInvocation As UnaryExpressionSyntax = SyntaxFactory.NotExpression(newInvocation)
-            Dim newRoot As SyntaxNode = root.ReplaceNode(invocation, negatedInvocation)
-            Return newRoot
-        End Function
-
-        Friend Shared Function CreateNewInvocation(invocation As InvocationExpressionSyntax) As ExpressionSyntax
-            Dim methodName As String = DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.ToString
-            Dim nameToCheck As IdentifierNameSyntax = If(methodName = NameOf(Enumerable.Any), ChangeAnyToAllAnalyzer.AllName, ChangeAnyToAllAnalyzer.AnyName)
-            Dim newInvocation As InvocationExpressionSyntax = invocation.WithExpression(DirectCast(invocation.Expression, MemberAccessExpressionSyntax).WithName(nameToCheck))
-            Dim comparisonExpression As ExpressionSyntax = DirectCast(DirectCast(newInvocation.ArgumentList.Arguments.First().GetExpression(), SingleLineLambdaExpressionSyntax).Body, ExpressionSyntax)
-            Dim newComparisonExpression As ExpressionSyntax = CreateNewComparison(comparisonExpression)
-            newComparisonExpression = RemoveParenthesis(newComparisonExpression)
-            newInvocation = newInvocation.ReplaceNode(comparisonExpression, newComparisonExpression)
-            Return newInvocation
+        Private Shared Function CreateNewBinaryExpression(comparisonExpression As ExpressionSyntax, kind As SyntaxKind, operatorToken As SyntaxToken) As BinaryExpressionSyntax
+            Dim binaryComparison As BinaryExpressionSyntax = DirectCast(comparisonExpression, BinaryExpressionSyntax)
+            Dim left As ExpressionSyntax = binaryComparison.Left
+            Dim newComparison As BinaryExpressionSyntax = SyntaxFactory.BinaryExpression(
+                kind,
+                If(left.IsKind(SyntaxKind.BinaryConditionalExpression), SyntaxFactory.ParenthesizedExpression(left), left),
+                operatorToken,
+                binaryComparison.Right)
+            Return newComparison
         End Function
 
         Private Shared Function CreateNewComparison(comparisonExpression As ExpressionSyntax) As ExpressionSyntax
@@ -119,15 +101,37 @@ Namespace Refactoring
                 expression)
         End Function
 
-        Private Shared Function CreateNewBinaryExpression(comparisonExpression As ExpressionSyntax, kind As SyntaxKind, operatorToken As SyntaxToken) As BinaryExpressionSyntax
-            Dim binaryComparison As BinaryExpressionSyntax = DirectCast(comparisonExpression, BinaryExpressionSyntax)
-            Dim left As ExpressionSyntax = binaryComparison.Left
-            Dim newComparison As BinaryExpressionSyntax = SyntaxFactory.BinaryExpression(
-                kind,
-                If(left.IsKind(SyntaxKind.BinaryConditionalExpression), SyntaxFactory.ParenthesizedExpression(left), left),
-                operatorToken,
-                binaryComparison.Right)
-            Return newComparison
+        Private Shared Function ReplaceInvocation(invocation As InvocationExpressionSyntax, newInvocation As ExpressionSyntax, root As SyntaxNode) As SyntaxNode
+            If invocation.Parent.IsKind(SyntaxKind.NotExpression) Then
+                Return root.ReplaceNode(invocation.Parent, newInvocation)
+            End If
+            Dim negatedInvocation As UnaryExpressionSyntax = SyntaxFactory.NotExpression(newInvocation)
+            Dim newRoot As SyntaxNode = root.ReplaceNode(invocation, negatedInvocation)
+            Return newRoot
         End Function
+
+        Friend Shared Function CreateNewInvocation(invocation As InvocationExpressionSyntax) As ExpressionSyntax
+            Dim methodName As String = DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.ToString
+            Dim nameToCheck As IdentifierNameSyntax = If(methodName = NameOf(Enumerable.Any), ChangeAnyToAllAnalyzer.AllName, ChangeAnyToAllAnalyzer.AnyName)
+            Dim newInvocation As InvocationExpressionSyntax = invocation.WithExpression(DirectCast(invocation.Expression, MemberAccessExpressionSyntax).WithName(nameToCheck))
+            Dim comparisonExpression As ExpressionSyntax = DirectCast(DirectCast(newInvocation.ArgumentList.Arguments.First().GetExpression(), SingleLineLambdaExpressionSyntax).Body, ExpressionSyntax)
+            Dim newComparisonExpression As ExpressionSyntax = CreateNewComparison(comparisonExpression)
+            newComparisonExpression = RemoveParenthesis(newComparisonExpression)
+            newInvocation = newInvocation.ReplaceNode(comparisonExpression, newComparisonExpression)
+            Return newInvocation
+        End Function
+
+        Public NotOverridable Overrides Function GetFixAllProvider() As FixAllProvider
+            Return WellKnownFixAllProviders.BatchFixer
+        End Function
+
+        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
+            Dim diag As Diagnostic = context.Diagnostics.First
+            Dim message As String = If(diag.Id = ChangeAnyToAllDiagnosticId, "Change Any to All", "Change All to Any")
+            context.RegisterCodeFix(CodeAction.Create(message, Function(c As CancellationToken) ConvertAsync(context.Document, diag.Location, c), NameOf(ChangeAnyToAllCodeFixProvider)), diag)
+            Return Task.FromResult(0)
+        End Function
+
     End Class
+
 End Namespace

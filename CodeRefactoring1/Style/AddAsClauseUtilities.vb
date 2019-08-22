@@ -21,7 +21,7 @@ Namespace Style
             If expressionType.IsTupleType Then
                 Return ParseTypeName($" {ExpressionTypeString}")
             End If
-            If ExpressionTypeString = String.Empty Then
+            If ExpressionTypeString.IsEmptyNullOrWhitespace Then
                 ExpressionTypeString = expressionType.ToString
             End If
             Dim Index As Integer = ExpressionTypeString.IndexOf(" As ")

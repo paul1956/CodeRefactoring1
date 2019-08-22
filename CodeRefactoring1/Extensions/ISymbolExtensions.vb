@@ -15,6 +15,69 @@ Public Module ISymbolExtensions
         [Private]
     End Enum
 
+    ''' <summary>
+    ''' Checks if 'symbol' is accessible from within 'within', which must be a INamedTypeSymbol
+    ''' or an IAssemblySymbol.  If 'symbol' is accessed off of an expression then
+    ''' 'throughTypeOpt' is the type of that expression. This is needed to properly do protected
+    ''' access checks. Sets "failedThroughTypeCheck" to true if this protected check failed.
+    ''' </summary>
+    '// NOTE(cyrusn): I expect this function to be called a lot.  As such, I do not do any memory
+    '// allocations in the function itself (including not making any iterators).  This does mean
+    '// that certain helper functions that we'd like to call are inlined in this method to
+    '// prevent the overhead of returning collections or enumerators.
+    Private Function IsSymbolAccessibleCore(ByVal symbol As ISymbol, ByVal within As ISymbol, ByVal throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
+        '			Contract.ThrowIfNull(symbol);
+        '			Contract.ThrowIfNull(within);
+        '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
+
+        failedThroughTypeCheck = False
+        ' var withinAssembly = (within as IAssemblySymbol) ?? ((INamedTypeSymbol)within).ContainingAssembly;
+
+        Select Case symbol.Kind
+            Case SymbolKind.Alias
+                Return IsSymbolAccessibleCore(DirectCast(symbol, IAliasSymbol).Target, within, throughTypeOpt, failedThroughTypeCheck)
+
+            Case SymbolKind.ArrayType
+                Return IsSymbolAccessibleCore(DirectCast(symbol, IArrayTypeSymbol).ElementType, within, Nothing, failedThroughTypeCheck)
+
+            Case SymbolKind.PointerType
+                Return IsSymbolAccessibleCore(DirectCast(symbol, IPointerTypeSymbol).PointedAtType, within, Nothing, failedThroughTypeCheck)
+
+            Case SymbolKind.NamedType
+                Return IsNamedTypeAccessible(DirectCast(symbol, INamedTypeSymbol), within)
+
+            Case SymbolKind.ErrorType
+                Return True
+
+            Case SymbolKind.TypeParameter, SymbolKind.Parameter, SymbolKind.Local, SymbolKind.Label, SymbolKind.Namespace, SymbolKind.DynamicType, SymbolKind.Assembly, SymbolKind.NetModule, SymbolKind.RangeVariable
+                ' These types of symbols are always accessible (if visible).
+                Return True
+
+            Case SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event
+                If symbol.IsStatic Then
+                    ' static members aren't accessed "through" an "instance" of any type.  So we
+                    ' null out the "through" instance here.  This ensures that we'll understand
+                    ' accessing protected statics properly.
+                    throughTypeOpt = Nothing
+                End If
+
+                ' If this is a synthesized operator of dynamic, it's always accessible.
+                If symbol.IsKind(SymbolKind.Method) AndAlso DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso symbol.ContainingSymbol.IsKind(SymbolKind.DynamicType) Then
+                    Return True
+                End If
+
+                ' If it's a synthesized operator on a pointer, use the pointer's PointedAtType.
+                If symbol.IsKind(SymbolKind.Method) AndAlso DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso symbol.ContainingSymbol.IsKind(SymbolKind.PointerType) Then
+                    Return IsSymbolAccessibleCore(DirectCast(symbol.ContainingSymbol, IPointerTypeSymbol).PointedAtType, within, Nothing, failedThroughTypeCheck)
+                End If
+
+                Return IsMemberAccessible(symbol.ContainingType, symbol.DeclaredAccessibility, within, throughTypeOpt, failedThroughTypeCheck)
+
+            Case Else
+                Throw UnexpectedValue(symbol.Kind)
+        End Select
+    End Function
+
     <Extension>
     Public Function ActionType(ByVal compilation As Compilation) As INamedTypeSymbol
         Return compilation.GetTypeByMetadataName(GetType(Action).FullName)
@@ -163,69 +226,6 @@ Public Module ISymbolExtensions
     <Extension>
     Public Function MatchesKind(ByVal symbol As ISymbol, ByVal kind As SymbolKind) As Boolean
         Return CBool(symbol?.Kind = kind)
-    End Function
-
-    ''' <summary>
-    ''' Checks if 'symbol' is accessible from within 'within', which must be a INamedTypeSymbol
-    ''' or an IAssemblySymbol.  If 'symbol' is accessed off of an expression then
-    ''' 'throughTypeOpt' is the type of that expression. This is needed to properly do protected
-    ''' access checks. Sets "failedThroughTypeCheck" to true if this protected check failed.
-    ''' </summary>
-    '// NOTE(cyrusn): I expect this function to be called a lot.  As such, I do not do any memory
-    '// allocations in the function itself (including not making any iterators).  This does mean
-    '// that certain helper functions that we'd like to call are inlined in this method to
-    '// prevent the overhead of returning collections or enumerators.
-    Private Function IsSymbolAccessibleCore(ByVal symbol As ISymbol, ByVal within As ISymbol, ByVal throughTypeOpt As ITypeSymbol, ByRef failedThroughTypeCheck As Boolean) As Boolean ' must be assembly or named type symbol
-        '			Contract.ThrowIfNull(symbol);
-        '			Contract.ThrowIfNull(within);
-        '			Contract.Requires(within is INamedTypeSymbol || within is IAssemblySymbol);
-
-        failedThroughTypeCheck = False
-        ' var withinAssembly = (within as IAssemblySymbol) ?? ((INamedTypeSymbol)within).ContainingAssembly;
-
-        Select Case symbol.Kind
-            Case SymbolKind.Alias
-                Return IsSymbolAccessibleCore(DirectCast(symbol, IAliasSymbol).Target, within, throughTypeOpt, failedThroughTypeCheck)
-
-            Case SymbolKind.ArrayType
-                Return IsSymbolAccessibleCore(DirectCast(symbol, IArrayTypeSymbol).ElementType, within, Nothing, failedThroughTypeCheck)
-
-            Case SymbolKind.PointerType
-                Return IsSymbolAccessibleCore(DirectCast(symbol, IPointerTypeSymbol).PointedAtType, within, Nothing, failedThroughTypeCheck)
-
-            Case SymbolKind.NamedType
-                Return IsNamedTypeAccessible(DirectCast(symbol, INamedTypeSymbol), within)
-
-            Case SymbolKind.ErrorType
-                Return True
-
-            Case SymbolKind.TypeParameter, SymbolKind.Parameter, SymbolKind.Local, SymbolKind.Label, SymbolKind.Namespace, SymbolKind.DynamicType, SymbolKind.Assembly, SymbolKind.NetModule, SymbolKind.RangeVariable
-                ' These types of symbols are always accessible (if visible).
-                Return True
-
-            Case SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event
-                If symbol.IsStatic Then
-                    ' static members aren't accessed "through" an "instance" of any type.  So we
-                    ' null out the "through" instance here.  This ensures that we'll understand
-                    ' accessing protected statics properly.
-                    throughTypeOpt = Nothing
-                End If
-
-                ' If this is a synthesized operator of dynamic, it's always accessible.
-                If symbol.IsKind(SymbolKind.Method) AndAlso DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso symbol.ContainingSymbol.IsKind(SymbolKind.DynamicType) Then
-                    Return True
-                End If
-
-                ' If it's a synthesized operator on a pointer, use the pointer's PointedAtType.
-                If symbol.IsKind(SymbolKind.Method) AndAlso DirectCast(symbol, IMethodSymbol).MethodKind = MethodKind.BuiltinOperator AndAlso symbol.ContainingSymbol.IsKind(SymbolKind.PointerType) Then
-                    Return IsSymbolAccessibleCore(DirectCast(symbol.ContainingSymbol, IPointerTypeSymbol).PointedAtType, within, Nothing, failedThroughTypeCheck)
-                End If
-
-                Return IsMemberAccessible(symbol.ContainingType, symbol.DeclaredAccessibility, within, throughTypeOpt, failedThroughTypeCheck)
-
-            Case Else
-                Throw ExceptionUtilities.UnexpectedValue(symbol.Kind)
-        End Select
     End Function
 
 End Module

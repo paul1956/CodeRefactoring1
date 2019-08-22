@@ -176,5 +176,32 @@ Namespace My.Resources
                 Return ResourceManager.GetString("NameOfCodeFixProvider_Title", resourceCulture)
             End Get
         End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Remove ByVal from function declaration.
+        '''</summary>
+        Friend ReadOnly Property RemoveByValDescription() As String
+            Get
+                Return ResourceManager.GetString("RemoveByValDescription", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Remove ByVal from parameter {0}.
+        '''</summary>
+        Friend ReadOnly Property RemoveByValMessageFormat() As String
+            Get
+                Return ResourceManager.GetString("RemoveByValMessageFormat", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Remove ByVal.
+        '''</summary>
+        Friend ReadOnly Property RemoveByValTitle() As String
+            Get
+                Return ResourceManager.GetString("RemoveByValTitle", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace

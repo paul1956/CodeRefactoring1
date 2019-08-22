@@ -24,13 +24,13 @@ Namespace Roslyn.UnitTestFramework
 
         Protected Sub VerifyDocument(ByVal expected As String, ByVal compareTokens As Boolean, ByVal document As Document)
             If compareTokens Then
-                Me.VerifyTokens(expected, Me.Format(document).ToString())
+                Me.VerifyTokens(expected, Format(document).ToString())
             Else
-                Me.VerifyText(expected, document)
+                VerifyText(expected, document)
             End If
         End Sub
 
-        Private Function Format(ByVal document As Document) As SyntaxNode
+        Private Shared Function Format(ByVal document As Document) As SyntaxNode
             Dim updatedDocument As Document = document.WithSyntaxRoot(document.GetSyntaxRootAsync().Result)
             Return Formatter.FormatAsync(Simplifier.ReduceAsync(updatedDocument, Simplifier.Annotation).Result, Formatter.Annotation).Result.GetSyntaxRootAsync().Result
         End Function
@@ -56,8 +56,8 @@ Namespace Roslyn.UnitTestFramework
             Return True
         End Function
 
-        Private Function VerifyText(ByVal expected As String, ByVal document As Document) As Boolean
-            Dim actual As String = Me.Format(document).ToString()
+        Private Shared Function VerifyText(ByVal expected As String, ByVal document As Document) As Boolean
+            Dim actual As String = Format(document).ToString()
             Assert.Equal(expected, actual, ignoreWhiteSpaceDifferences:=True)
             Return True
         End Function

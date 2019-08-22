@@ -17,7 +17,7 @@ Partial Public Module ISymbolExtensions
             throughTypeOpt As ITypeSymbol,
             <Out> ByRef failedThroughTypeCheck As Boolean) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        Contract.ThrowIfNull(containingType)
+        ThrowIfNull(containingType)
 
         failedThroughTypeCheck = False
 
@@ -83,7 +83,7 @@ Partial Public Module ISymbolExtensions
             Case Accessibility.[Protected]
                 Return IsProtectedSymbolAccessible(withinNamedType, withinAssembly, throughTypeOpt, originalContainingType, failedThroughTypeCheck)
             Case Else
-                Throw ExceptionUtilities.UnexpectedValue(declaredAccessibility)
+                Throw UnexpectedValue(declaredAccessibility)
         End Select
     End Function
 
@@ -91,7 +91,7 @@ Partial Public Module ISymbolExtensions
     ' an assembly.
     Private Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        Contract.ThrowIfNull(type)
+        ThrowIfNull(type)
 
         If type.IsErrorType() Then
             ' Always assume that error types are accessible.
@@ -120,8 +120,8 @@ Partial Public Module ISymbolExtensions
     Private Function IsNestedWithinOriginalContainingType(
             withinType As INamedTypeSymbol,
             originalContainingType As INamedTypeSymbol) As Boolean
-        Contract.ThrowIfNull(withinType)
-        Contract.ThrowIfNull(originalContainingType)
+        ThrowIfNull(withinType)
+        ThrowIfNull(originalContainingType)
 
         ' Walk up my parent chain and see if I eventually hit the owner.  If so then I'm a
         ' nested type of that owner and I'm allowed access to everything inside of it.
@@ -146,7 +146,7 @@ Partial Public Module ISymbolExtensions
             declaredAccessibility As Accessibility,
             within As ISymbol) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        Contract.ThrowIfNull(assembly)
+        ThrowIfNull(assembly)
         Dim withinAssembly As IAssemblySymbol = If(TryCast(within, IAssemblySymbol), CType(within, INamedTypeSymbol).ContainingAssembly)
 
         Select Case declaredAccessibility
@@ -163,7 +163,7 @@ Partial Public Module ISymbolExtensions
                 ' friend access to the assembly it was defined in.
                 Return withinAssembly.IsSameAssemblyOrHasFriendAccessTo(assembly)
             Case Else
-                Throw ExceptionUtilities.UnexpectedValue(declaredAccessibility)
+                Throw UnexpectedValue(declaredAccessibility)
         End Select
     End Function
 

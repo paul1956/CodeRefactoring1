@@ -6,55 +6,6 @@ Namespace Refactoring
     Public Class ComputeConstantValueCodeRefactoringProvider
         Inherits CodeRefactoringProvider
 
-        Public Overrides Async Function ComputeRefactoringsAsync(ByVal context As CodeRefactoringContext) As Task
-            Dim document As Document = context.Document
-            If document.Project.Solution.Workspace.Kind = WorkspaceKind.MiscellaneousFiles Then
-                Return
-            End If
-            Dim span As TextSpan = context.Span
-            If Not span.IsEmpty Then
-                Return
-            End If
-            Dim cancellationToken As CancellationToken = context.CancellationToken
-            If cancellationToken.IsCancellationRequested Then
-                Return
-            End If
-            Dim model As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
-            If model.IsFromGeneratedCode(cancellationToken) Then
-                Return
-            End If
-            Dim root As SyntaxNode = Await model.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(False)
-
-            Dim expr As ExpressionSyntax = root.FindNode(span).FirstAncestorOrSelf(Of ExpressionSyntax)(Function(n As ExpressionSyntax) TypeOf n Is BinaryExpressionSyntax OrElse TypeOf n Is UnaryExpressionSyntax)
-            If expr Is Nothing Then
-                Return
-            End If
-            If TypeOf expr Is BinaryExpressionSyntax Then
-                If CType(expr, BinaryExpressionSyntax).OperatorToken.SpanStart <> span.Start AndAlso expr.SpanStart <> span.Start Then
-                    Return
-                End If
-            Else
-                If expr.SpanStart <> span.Start Then
-                    Return
-                End If
-            End If
-            Dim result As [Optional](Of Object) = model.GetConstantValue(expr, cancellationToken)
-            If Not result.HasValue Then
-                Return
-            End If
-            Dim syntaxNode As ExpressionSyntax = GetLiteralExpression(result.Value)
-            If syntaxNode Is Nothing Then
-                Return
-            End If
-            context.RegisterRefactoring(New DocumentChangeAction(root.FindNode(span).Span,
-                                                                 DiagnosticSeverity.Info,
-                                                                 GettextCatalog.GetString("Compute constant value"),
-                                                                 Function(t2 As CancellationToken)
-                                                                     Dim newRoot As SyntaxNode = root.ReplaceNode(expr, syntaxNode.WithAdditionalAnnotations(Formatter.Annotation))
-                                                                     Return Task.FromResult(document.WithSyntaxRoot(newRoot))
-                                                                 End Function))
-        End Function
-
         Friend Shared Function GetLiteralExpression(ByVal value As Object) As ExpressionSyntax
             If TypeOf value Is Boolean Then
                 Return If(DirectCast(value, Boolean), SyntaxFactory.TrueLiteralExpression(SyntaxFactory.Token(SyntaxKind.TrueKeyword)), SyntaxFactory.FalseLiteralExpression(SyntaxFactory.Token(SyntaxKind.FalseKeyword)))
@@ -108,6 +59,56 @@ Namespace Refactoring
 
             Return Nothing
         End Function
+
+        Public Overrides Async Function ComputeRefactoringsAsync(ByVal context As CodeRefactoringContext) As Task
+            Dim document As Document = context.Document
+            If document.Project.Solution.Workspace.Kind = WorkspaceKind.MiscellaneousFiles Then
+                Return
+            End If
+            Dim span As TextSpan = context.Span
+            If Not span.IsEmpty Then
+                Return
+            End If
+            Dim cancellationToken As CancellationToken = context.CancellationToken
+            If cancellationToken.IsCancellationRequested Then
+                Return
+            End If
+            Dim model As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
+            If model.IsFromGeneratedCode(cancellationToken) Then
+                Return
+            End If
+            Dim root As SyntaxNode = Await model.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(False)
+
+            Dim expr As ExpressionSyntax = root.FindNode(span).FirstAncestorOrSelf(Of ExpressionSyntax)(Function(n As ExpressionSyntax) TypeOf n Is BinaryExpressionSyntax OrElse TypeOf n Is UnaryExpressionSyntax)
+            If expr Is Nothing Then
+                Return
+            End If
+            If TypeOf expr Is BinaryExpressionSyntax Then
+                If CType(expr, BinaryExpressionSyntax).OperatorToken.SpanStart <> span.Start AndAlso expr.SpanStart <> span.Start Then
+                    Return
+                End If
+            Else
+                If expr.SpanStart <> span.Start Then
+                    Return
+                End If
+            End If
+            Dim result As [Optional](Of Object) = model.GetConstantValue(expr, cancellationToken)
+            If Not result.HasValue Then
+                Return
+            End If
+            Dim syntaxNode As ExpressionSyntax = GetLiteralExpression(result.Value)
+            If syntaxNode Is Nothing Then
+                Return
+            End If
+            context.RegisterRefactoring(New DocumentChangeAction(root.FindNode(span).Span,
+                                                                 DiagnosticSeverity.Info,
+                                                                 GetString("Compute constant value"),
+                                                                 Function(t2 As CancellationToken)
+                                                                     Dim newRoot As SyntaxNode = root.ReplaceNode(expr, syntaxNode.WithAdditionalAnnotations(Formatter.Annotation))
+                                                                     Return Task.FromResult(document.WithSyntaxRoot(newRoot))
+                                                                 End Function))
+        End Function
+
     End Class
 
 End Namespace

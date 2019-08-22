@@ -1,24 +1,30 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Usage
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class ArgumentExceptionAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "Invalid argument name"
-        Friend Const MessageFormat As String = "Type argument '{0}' is not in the argument list."
         Private Const Description As String = "The string passed as the 'paramName' argument of ArgumentException constructor must be the name of one of the method arguments.
 It can be either specified directly or using nameof() (VB 14 and above only)."
-        Friend Shared Rule As New DiagnosticDescriptor(
-        DiagnosticIds.ArgumentExceptionDiagnosticId,
-        Title,
-        MessageFormat,
-        SupportedCategories.Naming,
-        DiagnosticSeverity.Warning,
-        isEnabledByDefault:=True,
-        description:=Description,
-        helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.ArgumentExceptionDiagnosticId))
+
+        Private Const MessageFormat As String = "Type argument '{0}' is not in the argument list."
+        Private Const Title As String = "Invalid argument name"
+
+        Protected Shared Rule As New DiagnosticDescriptor(
+                        ArgumentExceptionDiagnosticId,
+                        Title,
+                        MessageFormat,
+                        SupportedCategories.Naming,
+                        DiagnosticSeverity.Warning,
+                        isEnabledByDefault:=True,
+                        Description,
+                        helpLinkUri:=ForDiagnostic(ArgumentExceptionDiagnosticId),
+                        Array.Empty(Of String)
+                        )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
@@ -26,11 +32,11 @@ It can be either specified directly or using nameof() (VB 14 and above only)."
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.ObjectCreationExpression)
-        End Sub
+        Private Shared Function IsParamNameCompatibleWithCreatingContext(node As SyntaxNode, paramName As String, ByRef parameters As IEnumerable(Of String)) As Boolean
+            parameters = GetParameterNamesFromCreationContext(node)
+            If parameters Is Nothing Then Return True
+            Return parameters.Contains(paramName)
+        End Function
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -51,26 +57,11 @@ It can be either specified directly or using nameof() (VB 14 and above only)."
             Dim paramName As String = paramNameOpt.Value.ToString()
 
             Dim parameters As IEnumerable(Of String) = Nothing
-            If Me.IsParamNameCompatibleWithCreatingContext(objectCreationExpression, paramName, parameters) Then Exit Sub
+            If IsParamNameCompatibleWithCreatingContext(objectCreationExpression, paramName, parameters) Then Exit Sub
             Dim props As ImmutableDictionary(Of String, String) = parameters.ToImmutableDictionary(Function(p) $"param{p}", Function(p) p)
             Dim diag As Diagnostic = Diagnostic.Create(Rule, paramNameLiteral.GetLocation, props.ToImmutableDictionary(), paramName)
             context.ReportDiagnostic(diag)
         End Sub
-
-        Private Function IsParamNameCompatibleWithCreatingContext(node As SyntaxNode, paramName As String, ByRef parameters As IEnumerable(Of String)) As Boolean
-            parameters = GetParameterNamesFromCreationContext(node)
-            If parameters Is Nothing Then Return True
-            Return parameters.Contains(paramName)
-        End Function
-
-        Friend Shared Function GetParameterNamesFromCreationContext(node As SyntaxNode) As IEnumerable(Of String)
-            Dim creationContext As SyntaxNode = node.FirstAncestorOrSelfOfType(GetType(MultiLineLambdaExpressionSyntax),
-                                                                 GetType(LambdaExpressionSyntax),
-                                                                 GetType(AccessorBlockSyntax),
-                                                                 GetType(MethodBlockSyntax),
-                                                                 GetType(ConstructorBlockSyntax))
-            Return GetParameterNames(creationContext)
-        End Function
 
         Friend Shared Function GetParameterNames(node As SyntaxNode) As IEnumerable(Of String)
             If node Is Nothing Then Return Nothing
@@ -100,5 +91,22 @@ It can be either specified directly or using nameof() (VB 14 and above only)."
             Return Nothing
 
         End Function
+
+        Friend Shared Function GetParameterNamesFromCreationContext(node As SyntaxNode) As IEnumerable(Of String)
+            Dim creationContext As SyntaxNode = node.FirstAncestorOrSelfOfType(GetType(MultiLineLambdaExpressionSyntax),
+                                                                 GetType(LambdaExpressionSyntax),
+                                                                 GetType(AccessorBlockSyntax),
+                                                                 GetType(MethodBlockSyntax),
+                                                                 GetType(ConstructorBlockSyntax))
+            Return GetParameterNames(creationContext)
+        End Function
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.ObjectCreationExpression)
+        End Sub
+
     End Class
+
 End Namespace

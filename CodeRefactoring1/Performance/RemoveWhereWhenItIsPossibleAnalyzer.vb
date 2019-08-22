@@ -2,38 +2,36 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
-Imports Microsoft.CodeAnalysis.Diagnostics
+
 Imports System.Collections.Immutable
 
+Imports Microsoft.CodeAnalysis.Diagnostics
+
 Namespace Performance
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class RemoveWhereWhenItIsPossibleAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Public Shared ReadOnly Id As String = DiagnosticIds.RemoveWhereWhenItIsPossibleDiagnosticId
-        Public Const Title As String = "You should remove the 'Where' invocation when it is possible."
-        Public Const MessageFormat As String = "You can remove 'Where' moving the predicate to '{0}'."
-        Public Const Category As String = SupportedCategories.Performance
-        Public Const Description As String = "When a LINQ operator supports a predicate parameter it should be used instead of using 'Where' followed by the operator"
-        Protected Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.RemoveWhereWhenItIsPossibleDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.RemoveWhereWhenItIsPossibleDiagnosticId))
-
-        Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
-
+        Private Const Category As String = SupportedCategories.Performance
+        Private Const Description As String = "When a LINQ operator supports a predicate parameter it should be used instead of using 'Where' followed by the operator"
+        Private Const MessageFormat As String = "You can remove 'Where' moving the predicate to '{0}'."
+        Private Const Title As String = "You should remove the 'Where' invocation when it is possible."
         Shared ReadOnly supportedMethods() As String = {"First", "FirstOrDefault", "Last", "LastOrDefault", "Any", "Single", "SingleOrDefault", "Count"}
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.InvocationExpression)
-        End Sub
+        Private Shared ReadOnly Rule As New DiagnosticDescriptor(
+                            RemoveWhereWhenItIsPossibleDiagnosticId,
+                            Title,
+                            MessageFormat,
+                            Category,
+                            DiagnosticSeverity.Warning,
+                            isEnabledByDefault:=True,
+                            Description,
+                            helpLinkUri:=ForDiagnostic(RemoveWhereWhenItIsPossibleDiagnosticId),
+                            Array.Empty(Of String))
+
+        Public Shared ReadOnly Id As String = RemoveWhereWhenItIsPossibleDiagnosticId
+        Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -52,19 +50,10 @@ Namespace Performance
             context.ReportDiagnostic(diag)
         End Sub
 
-        Friend Shared Function GetNameOfTheInvokeMethod(invoke As InvocationExpressionSyntax) As String
-            If (invoke Is Nothing) Then Return Nothing
-            Dim memberAccess As VisualBasic.Syntax.MemberAccessExpressionSyntax = invoke.ChildNodes.
-            OfType(Of MemberAccessExpressionSyntax).
-            FirstOrDefault()
-
-            Return GetNameExpressionOfTheInvokedMethod(invoke)?.ToString()
-        End Function
-
         Friend Shared Function GetNameExpressionOfTheInvokedMethod(invoke As InvocationExpressionSyntax) As SimpleNameSyntax
             If invoke Is Nothing Then Return Nothing
 
-            Dim memberAccess As VisualBasic.Syntax.MemberAccessExpressionSyntax = invoke.ChildNodes.
+            Dim memberAccess As MemberAccessExpressionSyntax = invoke.ChildNodes.
             OfType(Of MemberAccessExpressionSyntax)().
             FirstOrDefault()
 
@@ -72,5 +61,21 @@ Namespace Performance
 
         End Function
 
+        Friend Shared Function GetNameOfTheInvokeMethod(invoke As InvocationExpressionSyntax) As String
+            If (invoke Is Nothing) Then Return Nothing
+            Dim memberAccess As MemberAccessExpressionSyntax = invoke.ChildNodes.
+            OfType(Of MemberAccessExpressionSyntax).
+            FirstOrDefault()
+
+            Return GetNameExpressionOfTheInvokedMethod(invoke)?.ToString()
+        End Function
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.InvocationExpression)
+        End Sub
+
     End Class
+
 End Namespace

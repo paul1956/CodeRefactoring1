@@ -9,7 +9,6 @@ Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
 Imports Microsoft.CodeAnalysis.Formatting
-Imports Microsoft.CodeAnalysis.VisualBasic
 
 Namespace TestHelper
 
@@ -44,7 +43,7 @@ Namespace TestHelper
         ''' <param name="codeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="allowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyBasicFix(oldSource As String, newSource As String, Optional codeFixIndex As Integer? = Nothing, Optional allowNewCompilerDiagnostics As Boolean = False)
-            Me.VerifyFix(LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), Me.GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), Me.GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
         End Sub
 
         ''' <summary>
@@ -55,10 +54,10 @@ Namespace TestHelper
         ''' <param name="CodeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="AllowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyCSharpFix(OldSource As String, NewSource As String, Optional CodeFixIndex As Integer? = Nothing, Optional AllowNewCompilerDiagnostics As Boolean = False)
-            Me.VerifyFix(LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), Me.GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), Me.GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
         End Sub
 
-        Private Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (Integer, String)
+        Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (Integer, String)
             Dim MinLength As Integer = Math.Min(DesiredLine.Length, ActualLine.Length) - 1
             For I As Integer = 0 To MinLength
                 If Not DesiredLine.Substring(I, 1).Equals(ActualLine.Substring(I, 1), StringComparison.CurrentCulture) Then
@@ -72,14 +71,14 @@ Namespace TestHelper
             End If
         End Function
 
-        Private Function FindFirstDifferenceLine(DesiredText As String, ActualText As String) As String
+        Private Shared Function FindFirstDifferenceLine(DesiredText As String, ActualText As String) As String
             Dim Desiredlines() As String = DesiredText.Replace(vbCr, "").Split(CType(vbLf, Char()))
             Dim ActuaLines() As String = ActualText.Replace(vbCr, "").Split(CType(vbLf, Char()))
             For I As Integer = 0 To Math.Min(Desiredlines.GetUpperBound(0), ActuaLines.GetUpperBound(0))
                 Dim DesiredLine As String = Desiredlines(I)
                 Dim ActualLine As String = ActuaLines(I)
                 If Not DesiredLine.Equals(ActualLine, StringComparison.CurrentCulture) Then
-                    Dim p As (Integer, String) = Me.FindFirstDifferenceColumn(DesiredLine, ActualLine)
+                    Dim p As (Integer, String) = FindFirstDifferenceColumn(DesiredLine, ActualLine)
                     Return $"{vbCrLf}Difference on Line {I + 1} {DesiredLine}{vbCrLf}Difference on Line {I + 1} {ActualLine}{vbCrLf}Column {p.Item1} {p.Item2}"
                 End If
             Next
@@ -99,7 +98,7 @@ Namespace TestHelper
         ''' <param name="NewSource">A class in the form of a string after the CodeFix was applied to it</param>
         ''' <param name="CodeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="AllowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
-        Private Sub VerifyFix(Language As String, Analyzer As DiagnosticAnalyzer, FixProvider As CodeFixProvider, OldSource As String, NewSource As String, CodeFixIndex As Integer?, AllowNewCompilerDiagnostics As Boolean)
+        Private Shared Sub VerifyFix(Language As String, Analyzer As DiagnosticAnalyzer, FixProvider As CodeFixProvider, OldSource As String, NewSource As String, CodeFixIndex As Integer?, AllowNewCompilerDiagnostics As Boolean)
 
             Dim OldDocument As Document = CreateDocument(OldSource, Language)
             Dim NewDocument As Document = Nothing
@@ -147,7 +146,7 @@ Namespace TestHelper
             'after applying all of the code fixes, compare the resulting string to the inputted one
             Dim Actual As String = GetStringFromDocument(NewDocument)
 
-            Assert.AreEqual(NewSource.Trim, Actual.Trim, Me.FindFirstDifferenceLine(NewSource.Trim, Actual.Trim))
+            Assert.AreEqual(NewSource.Trim, Actual.Trim, FindFirstDifferenceLine(NewSource.Trim, Actual.Trim))
         End Sub
     End Class
 End Namespace

@@ -1,31 +1,33 @@
-﻿Imports Microsoft.CodeAnalysis.Diagnostics
-Imports System.Collections.Immutable
+﻿Imports System.Collections.Immutable
+
+Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Design
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class CatchEmptyAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Public Shared ReadOnly Id As String = DiagnosticIds.CatchEmptyDiagnosticId
-        Public Const Title As String = "Your catch should include an Exception"
-        Public Const MessageFormat As String = "{0}"
-        Public Const Category As String = SupportedCategories.Design
-        Protected Shared Rule As DiagnosticDescriptor = New DiagnosticDescriptor(
-            DiagnosticIds.CatchEmptyDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.CatchEmptyDiagnosticId))
+        Private Const Category As String = SupportedCategories.Design
 
+        Private Const MessageFormat As String = "{0}"
+
+        Private Const Title As String = "Your catch should include an Exception"
+
+        Protected Shared Rule As New DiagnosticDescriptor(
+                            Id,
+                            Title,
+                            MessageFormat,
+                            Category,
+                            DiagnosticSeverity.Warning,
+                            isEnabledByDefault:=True,
+                            description:="",
+                            helpLinkUri:=ForDiagnostic(Id),
+                            Array.Empty(Of String)
+                            )
+
+        Public Const Id As String = CatchEmptyDiagnosticId
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.CatchStatement)
-        End Sub
 
         Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -38,5 +40,12 @@ Namespace Design
             End If
         End Sub
 
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.CatchStatement)
+        End Sub
+
     End Class
+
 End Namespace

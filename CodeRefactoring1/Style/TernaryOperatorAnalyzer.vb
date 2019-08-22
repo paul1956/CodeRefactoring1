@@ -1,4 +1,5 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Style
@@ -7,46 +8,50 @@ Namespace Style
     Public Class TernaryOperatorAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const MessageFormat As String = "You can use a ternary operator."
-        Friend Const Title As String = "Use Ternary operator."
-        Friend Shared RuleForIfWithAssignment As New DiagnosticDescriptor(
-            DiagnosticIds.TernaryOperator_AssignmentDiagnosticId,
-            Title,
-            MessageFormat,
-            SupportedCategories.Style,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.TernaryOperator_AssignmentDiagnosticId))
+        Private Const MessageFormat As String = "You can use a ternary operator."
+        Private Const Title As String = "Use Ternary operator."
+
+        Private Shared ReadOnly RuleForIfWithAssignment As New DiagnosticDescriptor(
+                                TernaryOperator_AssignmentDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                SupportedCategories.Style,
+                                DiagnosticSeverity.Warning,
+                                isEnabledByDefault:=True,
+                                description:=MessageFormat,
+                                helpLinkUri:=ForDiagnostic(TernaryOperator_AssignmentDiagnosticId),
+                                Array.Empty(Of String)
+                                )
 
         Friend Shared RuleForIfWithReturn As New DiagnosticDescriptor(
-                    DiagnosticIds.TernaryOperator_ReturnDiagnosticId,
-            Title,
-            MessageFormat,
-            SupportedCategories.Style,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.TernaryOperator_ReturnDiagnosticId))
+                                TernaryOperator_ReturnDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                SupportedCategories.Style,
+                                DiagnosticSeverity.Warning,
+                                isEnabledByDefault:=True,
+                                description:=MessageFormat,
+                                helpLinkUri:=ForDiagnostic(TernaryOperator_ReturnDiagnosticId),
+                                Array.Empty(Of String)
+                                )
+
         Friend Shared RuleForIif As New DiagnosticDescriptor(
-            DiagnosticIds.TernaryOperator_IifDiagnosticId,
-            Title,
-            MessageFormat,
-            SupportedCategories.Style,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault:=True,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.TernaryOperator_IifDiagnosticId))
+                                TernaryOperator_IifDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                SupportedCategories.Style,
+                                DiagnosticSeverity.Warning,
+                                isEnabledByDefault:=True,
+                                description:=MessageFormat,
+                                helpLinkUri:=ForDiagnostic(TernaryOperator_IifDiagnosticId),
+                                Array.Empty(Of String)
+                                )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
                 Return ImmutableArray.Create(RuleForIfWithAssignment, RuleForIfWithReturn, RuleForIif)
             End Get
         End Property
-
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.IfAnalyzer, SyntaxKind.IfStatement)
-            context.RegisterSyntaxNodeAction(AddressOf Me.IIfAnalyzer, SyntaxKind.InvocationExpression)
-        End Sub
 
         Private Sub IfAnalyzer(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
@@ -100,6 +105,13 @@ Namespace Style
                     context.ReportDiagnostic(diag)
                 End If
             End If
+        End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf Me.IfAnalyzer, SyntaxKind.IfStatement)
+            context.RegisterSyntaxNodeAction(AddressOf Me.IIfAnalyzer, SyntaxKind.InvocationExpression)
         End Sub
 
     End Class

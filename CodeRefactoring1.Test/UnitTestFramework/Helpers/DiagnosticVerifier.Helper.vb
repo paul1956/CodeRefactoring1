@@ -62,10 +62,8 @@ Namespace TestHelper
                 For Each diag As Diagnostic In diags
 
                     If diag.Location = Location.None OrElse diag.Location.IsInMetadata Then
-
                         diagnostics.Add(diag)
                     Else
-
                         For i As Integer = 0 To documents.Length - 1
 
                             Dim SingleDocument As Document = documents(i)

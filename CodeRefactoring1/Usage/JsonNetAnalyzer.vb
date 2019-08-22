@@ -1,25 +1,32 @@
 ﻿Imports System.Collections.Immutable
 Imports System.Reflection
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Usage
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class JsonNetAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "Your JSON syntax is wrong."
-        Friend Const MessageFormat As String = "{0}"
         Private Const Description As String = "This diagnostic checks the Json string and triggers if the parsing fails by throwing an exception"
+        Private Const MessageFormat As String = "Your JSON syntax {0} is wrong"
+        Private Const Title As String = "Your JSON syntax is wrong."
+        Private Shared ReadOnly jObjectType As New Lazy(Of Type)(Function() Type.GetType("Newtonsoft.Json.Linq.JObject, Newtonsoft.Json"))
+
+        Private Shared ReadOnly parseMethodInfo As New Lazy(Of MethodInfo)(Function() jObjectType.Value.GetRuntimeMethod("Parse", {GetType(String)}))
 
         Friend Shared Rule As New DiagnosticDescriptor(
-            DiagnosticIds.JsonNetDiagnosticId,
-            Title,
-            MessageFormat,
-            SupportedCategories.Usage,
-            DiagnosticSeverity.Error,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.JsonNetDiagnosticId))
+                                            JsonNetDiagnosticId,
+                            Title,
+                            MessageFormat,
+                            SupportedCategories.Usage,
+                            DiagnosticSeverity.Error,
+                            isEnabledByDefault:=True,
+                            Description,
+                            helpLinkUri:=ForDiagnostic(JsonNetDiagnosticId),
+                            Array.Empty(Of String)
+                            )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get
@@ -27,11 +34,13 @@ Namespace Usage
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "DeserializeObject", "Public Shared Overloads Function DeserializeObject(Of T)(value As String) As T"), SyntaxKind.InvocationExpression)
-            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "Parse", "Public Shared Overloads Function Parse(json As String) As Newtonsoft.Json.Linq.JObject"), SyntaxKind.InvocationExpression)
+        Private Shared Sub CheckJsonValue(context As SyntaxNodeAnalysisContext, literalParameter As LiteralExpressionSyntax, json As String)
+            Try
+                parseMethodInfo.Value.Invoke(Nothing, {json})
+            Catch ex As Exception
+                Dim diag As Diagnostic = Diagnostic.Create(Rule, literalParameter.GetLocation(), ex.InnerException.Message)
+                context.ReportDiagnostic(diag)
+            End Try
         End Sub
 
         Private Sub Analyze(context As SyntaxNodeAnalysisContext, methodName As String, methodFullDefinition As String)
@@ -55,16 +64,13 @@ Namespace Usage
             CheckJsonValue(context, literalParameter, json)
         End Sub
 
-        Private Shared Sub CheckJsonValue(context As SyntaxNodeAnalysisContext, literalParameter As LiteralExpressionSyntax, json As String)
-            Try
-                parseMethodInfo.Value.Invoke(Nothing, {json})
-            Catch ex As Exception
-                Dim diag As Diagnostic = Diagnostic.Create(Rule, literalParameter.GetLocation(), ex.InnerException.Message)
-                context.ReportDiagnostic(diag)
-            End Try
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "DeserializeObject", "Public Shared Overloads Function DeserializeObject(Of T)(value As String) As T"), SyntaxKind.InvocationExpression)
+            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "Parse", "Public Shared Overloads Function Parse(json As String) As Newtonsoft.Json.Linq.JObject"), SyntaxKind.InvocationExpression)
         End Sub
 
-        Private Shared ReadOnly jObjectType As New Lazy(Of Type)(Function() System.Type.GetType("Newtonsoft.Json.Linq.JObject, Newtonsoft.Json"))
-        Private Shared ReadOnly parseMethodInfo As New Lazy(Of MethodInfo)(Function() jObjectType.Value.GetRuntimeMethod("Parse", {GetType(String)}))
     End Class
+
 End Namespace

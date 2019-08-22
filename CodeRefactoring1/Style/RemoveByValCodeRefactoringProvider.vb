@@ -1,7 +1,22 @@
 Namespace Style
+
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:="RemoveByValVB"), [Shared]>
     Class RemoveByValCodeRefactoringProvider
         Inherits CodeRefactoringProvider
+
+        Private Async Function RemoveAllOccurancesAsync(document As Document, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim oldRoot As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
+            Dim rewriter As Rewriter = New Rewriter(Function(current As SyntaxToken) True)
+            Dim newRoot As SyntaxNode = rewriter.Visit(oldRoot)
+            Return document.WithSyntaxRoot(newRoot)
+        End Function
+
+        Private Async Function RemoveOccuranceAsync(document As Document, token As SyntaxToken, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim oldRoot As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
+            Dim rewriter As Rewriter = New Rewriter(Function(t As SyntaxToken) t = token)
+            Dim newRoot As SyntaxNode = rewriter.Visit(oldRoot)
+            Return document.WithSyntaxRoot(newRoot)
+        End Function
 
         Public NotOverridable Overrides Async Function ComputeRefactoringsAsync(context As CodeRefactoringContext) As Task
             Dim document As Document = context.Document
@@ -19,43 +34,11 @@ Namespace Style
             End If
         End Function
 
-        Private Async Function RemoveOccuranceAsync(document As Document, token As SyntaxToken, cancellationToken As CancellationToken) As Task(Of Document)
-            Dim oldRoot As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
-            Dim rewriter As Rewriter = New Rewriter(Function(t As SyntaxToken) t = token)
-            Dim newRoot As SyntaxNode = rewriter.Visit(oldRoot)
-            Return document.WithSyntaxRoot(newRoot)
-        End Function
-
-        Private Async Function RemoveAllOccurancesAsync(document As Document, cancellationToken As CancellationToken) As Task(Of Document)
-            Dim oldRoot As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
-            Dim rewriter As Rewriter = New Rewriter(Function(current As SyntaxToken) True)
-            Dim newRoot As SyntaxNode = rewriter.Visit(oldRoot)
-            Return document.WithSyntaxRoot(newRoot)
-        End Function
-
-        Class Rewriter
-            Inherits VisualBasicSyntaxRewriter
-
-            Private ReadOnly _predicate As Func(Of SyntaxToken, Boolean)
-
-            Public Sub New(predicate As Func(Of SyntaxToken, Boolean))
-                Me._predicate = predicate
-            End Sub
-
-            Public Overrides Function VisitToken(token As SyntaxToken) As SyntaxToken
-                If token.Kind = SyntaxKind.ByValKeyword AndAlso Me._predicate(token) Then
-                    Return SyntaxFactory.Token(token.LeadingTrivia, SyntaxKind.ByValKeyword, Nothing, String.Empty)
-                End If
-
-                Return token
-            End Function
-        End Class
-
         Class RemoveByValCodeAction
             Inherits CodeAction
 
-            Private ReadOnly createChangedDocument As Func(Of Object, Task(Of Document))
             Private ReadOnly _title As String
+            Private ReadOnly createChangedDocument As Func(Of Object, Task(Of Document))
 
             Public Sub New(title As String, createChangedDocument As Func(Of Object, Task(Of Document)))
                 Me._title = title
@@ -71,6 +54,49 @@ Namespace Style
             Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
                 Return Me.createChangedDocument(cancellationToken)
             End Function
+
         End Class
+
+        Class Rewriter
+            Inherits VisualBasicSyntaxRewriter
+
+            Private ReadOnly _predicate As Func(Of SyntaxToken, Boolean)
+
+            Public Sub New(predicate As Func(Of SyntaxToken, Boolean))
+                Me._predicate = predicate
+            End Sub
+
+            Public Overrides Function VisitToken(token As SyntaxToken) As SyntaxToken
+                If token.Kind = SyntaxKind.ByValKeyword AndAlso Me._predicate(token) Then
+                    Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
+                    Dim TrailingTrivia As SyntaxTriviaList = token.TrailingTrivia
+                    Dim TriviaUBound As Integer = TrailingTrivia.Count - 1
+                    Dim FirstContinuation As Boolean = True
+                    If TriviaUBound > 1 Then
+                        For i As Integer = 0 To TriviaUBound
+                            Dim Trivia As SyntaxTrivia = TrailingTrivia(i)
+                            Dim NextTrivia As SyntaxTrivia = If(i < TriviaUBound, TrailingTrivia(i + 1), Nothing)
+                            If Trivia.IsKind(SyntaxKind.WhitespaceTrivia) AndAlso NextTrivia.IsKind(SyntaxKind.LineContinuationTrivia) Then
+                                If FirstContinuation Then
+                                    i += 2
+                                    FirstContinuation = False
+                                    Continue For
+                                End If
+                                If Trivia.IsKind(SyntaxKind.EndOfLineTrivia) Then
+                                    FirstContinuation = False
+                                End If
+                            End If
+                            NewTrailingTrivia.Add(Trivia)
+                        Next
+                    End If
+                    Return SyntaxFactory.Token(token.LeadingTrivia, SyntaxKind.EmptyToken, NewTrailingTrivia.ToSyntaxTriviaList)
+                End If
+
+                Return token
+            End Function
+
+        End Class
+
     End Class
+
 End Namespace

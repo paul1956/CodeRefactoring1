@@ -20,15 +20,16 @@ Namespace Style
         Private Const Description As String = "Option Strict On requires all variable declarations to have an 'As' clause."
 
         Friend Shared Rule As New DiagnosticDescriptor(
-            DiagnosticIds.AddAsClauseDiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Error,
-            isEnabledByDefault:=True,
-            description:=Description,
-            helpLinkUri:=ForDiagnostic(DiagnosticIds.AddAsClauseDiagnosticId)
-        )
+                        AddAsClauseDiagnosticId,
+                        Title,
+                        MessageFormat,
+                        Category,
+                        DiagnosticSeverity.Error,
+                        isEnabledByDefault:=True,
+                        Description,
+                        helpLinkUri:=ForDiagnostic(AddAsClauseDiagnosticId),
+                        Array.Empty(Of String)
+                        )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get

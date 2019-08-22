@@ -18,18 +18,18 @@ Namespace Style
         Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String)
             Get
                 Return ImmutableArray.Create(
-                                            DiagnosticIds.AddAsClauseDiagnosticId,
-                                            DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
-                                            DiagnosticIds.ChangeAsObjectToMoreSpecificDiagnosticId,
-                                            DiagnosticIds.ERR_ClassNotExpression1DiagnosticId,
-                                            DiagnosticIds.ERR_EnumNotExpression1DiagnosticId,
-                                            DiagnosticIds.ERR_InterfaceNotExpression1DiagnosticId,
-                                            DiagnosticIds.ERR_NameNotDeclared1DiagnosticId,
-                                            DiagnosticIds.ERR_NamespaceNotExpression1DiagnosticId,
-                                            DiagnosticIds.ERR_StrictDisallowImplicitObjectDiagnosticId,
-                                            DiagnosticIds.ERR_StrictDisallowsImplicitProcDiagnosticId,
-                                            DiagnosticIds.ERR_StructureNotExpression1DiagnosticId,
-                                            DiagnosticIds.ERR_TypeNotExpression1DiagnosticId
+                                            AddAsClauseDiagnosticId,
+                                            AddAsClauseForLambdaDiagnosticId,
+                                            ChangeAsObjectToMoreSpecificDiagnosticId,
+                                            ERR_ClassNotExpression1DiagnosticId,
+                                            ERR_EnumNotExpression1DiagnosticId,
+                                            ERR_InterfaceNotExpression1DiagnosticId,
+                                            ERR_NameNotDeclared1DiagnosticId,
+                                            ERR_NamespaceNotExpression1DiagnosticId,
+                                            ERR_StrictDisallowImplicitObjectDiagnosticId,
+                                            ERR_StrictDisallowsImplicitProcDiagnosticId,
+                                            ERR_StructureNotExpression1DiagnosticId,
+                                            ERR_TypeNotExpression1DiagnosticId
                                             )
             End Get
         End Property

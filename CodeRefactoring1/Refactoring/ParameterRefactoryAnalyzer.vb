@@ -1,23 +1,27 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Namespace Refactoring
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class ParameterRefactoryAnalyzer
         Inherits DiagnosticAnalyzer
 
-        Friend Const Title As String = "You should use a class."
-        Friend Const MessageFormat As String = "When the method has more than three parameters, use a class."
-        Friend Const Category As String = SupportedCategories.Refactoring
+        Private Const Category As String = SupportedCategories.Refactoring
+        Private Const MessageFormat As String = "When the method has more than three parameters, use a class."
+        Private Const Title As String = "You should use a class."
 
         Friend Shared Rule As New DiagnosticDescriptor(
-        DiagnosticIds.ParameterRefactoryDiagnosticId,
-        Title,
-        MessageFormat,
-        Category,
-        DiagnosticSeverity.Hidden,
-        isEnabledByDefault:=True,
-        helpLinkUri:=HelpLink.ForDiagnostic(DiagnosticIds.ParameterRefactoryDiagnosticId)
+                                ParameterRefactoryDiagnosticId,
+                                Title,
+                                MessageFormat,
+                                Category,
+                                DiagnosticSeverity.Hidden,
+                                isEnabledByDefault:=True,
+                                description:=MessageFormat,
+                                helpLinkUri:=ForDiagnostic(ParameterRefactoryDiagnosticId),
+                                Array.Empty(Of String)
     )
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
@@ -26,13 +30,7 @@ Namespace Refactoring
             End Get
         End Property
 
-        Public Overrides Sub Initialize(context As AnalysisContext)
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
-            context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.SubBlock, SyntaxKind.FunctionBlock)
-        End Sub
-
-        Public Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
+        Public Shared Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
             If (context.Node.IsGenerated()) Then Return
             Dim method As MethodBlockSyntax = DirectCast(context.Node, MethodBlockSyntax)
             If method.SubOrFunctionStatement.Modifiers.Any(SyntaxKind.FriendKeyword) Then Exit Sub
@@ -61,8 +59,13 @@ Namespace Refactoring
             Dim diag As Diagnostic = Diagnostic.Create(Rule, contentParameter.GetLocation())
             context.ReportDiagnostic(diag)
         End Sub
+
+        Public Overrides Sub Initialize(context As AnalysisContext)
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
+            context.EnableConcurrentExecution()
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.SubBlock, SyntaxKind.FunctionBlock)
+        End Sub
+
     End Class
+
 End Namespace
-
-
-

@@ -1,4 +1,5 @@
 ﻿Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 
 Namespace Usage
@@ -7,17 +8,7 @@ Namespace Usage
     Public Class MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider
         Inherits CodeFixProvider
 
-        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
-            Dim diag As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) Me.ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
-            Return Task.FromResult(0)
-        End Function
-
-        Public NotOverridable Overrides Function GetFixAllProvider() As FixAllProvider
-            Return WellKnownFixAllProviders.BatchFixer
-        End Function
-
-        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(DiagnosticIds.AbstractClassShouldNotHavePublicCtorsDiagnosticId)
+        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(AbstractClassShouldNotHavePublicCtorsDiagnosticId)
 
         Private Async Function ReplacePublicWithProtectedAsync(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Document)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
@@ -33,6 +24,16 @@ Namespace Usage
             Dim newRoot As SyntaxNode = root.ReplaceNode(constructor, newConstructor)
             Dim newDocumnent As Document = document.WithSyntaxRoot(newRoot)
             Return newDocumnent
+        End Function
+
+        Public NotOverridable Overrides Function GetFixAllProvider() As FixAllProvider
+            Return WellKnownFixAllProviders.BatchFixer
+        End Function
+
+        Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
+            Dim diag As Diagnostic = context.Diagnostics.First()
+            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) Me.ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
+            Return Task.FromResult(0)
         End Function
 
     End Class

@@ -1,10 +1,13 @@
 ﻿Option Infer On
+
 Imports System
 Imports System.Collections.Generic
-Imports System.Diagnostics
 Imports System.IO
+
 Imports ConfOxide
+
 Imports EnvDTE
+
 Imports Microsoft.VisualStudio.Settings
 Imports Microsoft.VisualStudio.Shell.Settings
 
@@ -17,6 +20,7 @@ Namespace EditorExtensions.Settings
                 Return File.Exists(GetSolutionFilePath())
             End Get
         End Property
+
         Public ReadOnly Property ProjectSettingsExist() As Boolean
             Get
                 Return File.Exists(GetProjectFilePath())
@@ -24,6 +28,7 @@ Namespace EditorExtensions.Settings
         End Property
 
         Public Property InTestMode() As Boolean
+
         '''<summary>Resets all settings and disables persistence for unit tests.</summary>
         ''' <param name="testSettings">Optional settings to apply for the tests.</param>
         ''' <remarks>It is completely safe to call this function multiple times.</remarks>
@@ -47,6 +52,7 @@ Namespace EditorExtensions.Settings
                 UpdateStatusBar("applied")
             End If
         End Sub
+
         Public Sub LoadProjectSettings()
             If InTestMode Then
                 Return
@@ -65,6 +71,7 @@ Namespace EditorExtensions.Settings
             Next
             VBSettings.Instance.General.CsvIgnoreList = "Microsoft,MS,System"
         End Sub
+
         Public Sub SaveProjectSettings()
             Dim ProjectList As IEnumerable(Of Project) = GetAllProjects()
             For Each lProject As Project In ProjectList
@@ -92,6 +99,7 @@ Namespace EditorExtensions.Settings
         Public Sub SaveSolutionSettings()
             Save(GetFilePath(), Project:=Nothing)
         End Sub
+
         '''<summary>Saves the current settings to the specified settings file.</summary>
         Private Sub Save(ByVal filename As String, Project As Project, Optional create As Boolean = False)
             If create Then
@@ -116,7 +124,9 @@ Namespace EditorExtensions.Settings
             GetSolutionItemsProject().ProjectItems.AddFromFile(path)
             UpdateStatusBar("created")
         End Sub
+
 #Region "Modern Locater"
+
         Private Function GetFilePath() As String
             Dim path As String = GetSolutionFilePath()
 
@@ -126,6 +136,7 @@ Namespace EditorExtensions.Settings
 
             Return path
         End Function
+
         Private Function GetSolutionFilePath() As String
             Dim solution As Solution = Command1Package.DTE.Solution
 
@@ -135,6 +146,7 @@ Namespace EditorExtensions.Settings
 
             Return Path.Combine(Path.GetDirectoryName(solution.FullName), FileName)
         End Function
+
         Private Function GetProjectFilePath() As String
             Dim solution As Solution = Command1Package.DTE.Solution
 
@@ -144,10 +156,12 @@ Namespace EditorExtensions.Settings
 
             Return Path.Combine(Path.GetDirectoryName(solution.FullName), FileName)
         End Function
+
         Private Function GetUserFilePath() As String
             Dim ssm As New ShellSettingsManager(Command1Package.Instance)
             Return Path.Combine(ssm.GetApplicationDataFolder(ApplicationDataFolder.RoamingSettings), FileName)
         End Function
+
 #End Region
 
         Public Sub UpdateStatusBar(ByVal action As String)
@@ -157,5 +171,6 @@ Namespace EditorExtensions.Settings
                 Log("Error updating status bar")
             End Try
         End Sub
+
     End Module
 End Namespace
