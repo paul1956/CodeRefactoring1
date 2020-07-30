@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30323.103
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CodeRefactoring1", "CodeRefactoring1\CodeRefactoring1.vbproj", "{1872B163-064A-48BE-9140-3616B3F609C6}"
 EndProject
@@ -10,6 +10,11 @@ EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CodeRefactoring1.Test", "CodeRefactoring1.Test\CodeRefactoring1.Test.vbproj", "{E47A7C2D-FC5D-4B2F-8F4C-A3392C5E555A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLibrary", "HashLibrary\HashLibrary.csproj", "{DC27CDCE-519A-4CB9-8CFB-B4526C95763A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BE37402F-20B6-4040-B73C-4E27C0D40F7F}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\Source\Repos\VBRefactorings\ReadMe.MD = ..\..\..\..\Source\Repos\VBRefactorings\ReadMe.MD
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -176,9 +176,6 @@
     <PackageReference Include="EnvDTE80">
       <Version>8.0.3</Version>
     </PackageReference>
-    <PackageReference Include="ManagedEsent">
-      <Version>1.9.4</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Wpf">
       <Version>2.8.2</Version>
     </PackageReference>

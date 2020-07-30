@@ -11,7 +11,7 @@ Namespace Design
         Private Const Category As String = SupportedCategories.Design
 
         Private Const Description As String = "Static constructor are called before the first time a class is used but the caller doesn't control when exactly.
-Exception thrown in this context forces callers to use 'try' block around any useage of the class and should be avoided."
+Exception thrown in this context forces callers to use 'try' block around any usage of the class and should be avoided."
 
         Private Const MessageFormat As String = "Don't throw exceptions inside static constructors."
         Private Const Title As String = "Don't throw exception inside static constructors."

@@ -53,7 +53,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function AreEquivalentWorker(ByVal x As ISymbol, ByVal y As ISymbol, ByVal k As SymbolKind, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Requires(x.Kind = y.Kind AndAlso x.Kind = k)
+            Contracts.Contract.Requires(x.Kind = y.Kind AndAlso x.Kind = k)
             Select Case k
                 Case SymbolKind.ArrayType
                     Return Me.ArrayTypesAreEquivalent(DirectCast(x, IArrayTypeSymbol), DirectCast(y, IArrayTypeSymbol), equivalentTypesWithDifferingAssemblies)
@@ -353,8 +353,8 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Private Function TypeParametersAreEquivalent(ByVal x As ITypeParameterSymbol, ByVal y As ITypeParameterSymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-            Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
-            Requires((y.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(y.DeclaringMethod)) OrElse (y.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(y.ContainingType)) OrElse y.TypeParameterKind = TypeParameterKind.Cref)
+            Contracts.Contract.Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
+            Contracts.Contract.Requires((y.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(y.DeclaringMethod)) OrElse (y.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(y.ContainingType)) OrElse y.TypeParameterKind = TypeParameterKind.Cref)
 
             If x.Ordinal <> y.Ordinal OrElse x.TypeParameterKind <> y.TypeParameterKind Then
                 Return False

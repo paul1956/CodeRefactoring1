@@ -17,7 +17,7 @@ Partial Public Module ISymbolExtensions
             throughTypeOpt As ITypeSymbol,
             <Out> ByRef failedThroughTypeCheck As Boolean) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        ThrowIfNull(containingType)
+        Contracts.Contract.Requires(containingType IsNot Nothing)
 
         failedThroughTypeCheck = False
 
@@ -91,7 +91,7 @@ Partial Public Module ISymbolExtensions
     ' an assembly.
     Private Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        ThrowIfNull(type)
+        Contracts.Contract.Requires(type IsNot Nothing)
 
         If type.IsErrorType() Then
             ' Always assume that error types are accessible.
@@ -120,8 +120,8 @@ Partial Public Module ISymbolExtensions
     Private Function IsNestedWithinOriginalContainingType(
             withinType As INamedTypeSymbol,
             originalContainingType As INamedTypeSymbol) As Boolean
-        ThrowIfNull(withinType)
-        ThrowIfNull(originalContainingType)
+        Contracts.Contract.Requires(withinType IsNot Nothing)
+        Contracts.Contract.Requires(originalContainingType IsNot Nothing)
 
         ' Walk up my parent chain and see if I eventually hit the owner.  If so then I'm a
         ' nested type of that owner and I'm allowed access to everything inside of it.
@@ -146,7 +146,7 @@ Partial Public Module ISymbolExtensions
             declaredAccessibility As Accessibility,
             within As ISymbol) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
-        ThrowIfNull(assembly)
+        Contracts.Contract.Requires(assembly IsNot Nothing)
         Dim withinAssembly As IAssemblySymbol = If(TryCast(within, IAssemblySymbol), CType(within, INamedTypeSymbol).ContainingAssembly)
 
         Select Case declaredAccessibility
@@ -208,12 +208,12 @@ Partial Public Module ISymbolExtensions
 
         ' A protected symbol is accessible if we're (optionally nested) inside the type that it
         ' was defined in.
-        ' NOTE(ericli): It is helpful to consider 'protected' as *increasing* the
+        ' NOTE: It is helpful to consider 'protected' as *increasing* the
         ' accessibility domain of a private member, rather than *decreasing* that of a public
         ' member. Members are naturally private; the protected, internal and public access
         ' modifiers all increase the accessibility domain. Since private members are accessible
         ' to nested types, so are protected members.
-        ' NOTE(cyrusn): We do this check up front as it is very fast and easy to do.
+        ' NOTE: We do this check up front as it is very fast and easy to do.
         If IsNestedWithinOriginalContainingType(withinType, originalContainingType) Then
             Return True
         End If

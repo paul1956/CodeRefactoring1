@@ -57,8 +57,8 @@ Public Module StringExtensions
 
     <Extension>
     Public Function ConvertTabToSpace(textSnippet As String, tabSize As Integer, initialColumn As Integer, endPosition As Integer) As Integer
-        Requires(tabSize > 0)
-        Requires(endPosition >= 0 AndAlso endPosition <= textSnippet.Length)
+        Contracts.Contract.Requires(tabSize > 0)
+        Contracts.Contract.Requires(endPosition >= 0 AndAlso endPosition <= textSnippet.Length)
 
         Dim column As Integer = initialColumn
 
@@ -79,14 +79,6 @@ Public Module StringExtensions
     Public Sub DropLastElement(Of T)(ByRef a() As T)
         a.RemoveAt(a.GetUpperBound(0))
     End Sub
-
-    <Extension()>
-    Public Function IsEmptyNullOrWhitespace(ByVal StringToCheck As String) As Boolean
-        If StringToCheck Is Nothing Then
-            Return True
-        End If
-        Return StringToCheck.Trim.Length = 0
-    End Function
 
     <Extension>
     Public Function Join(source As IEnumerable(Of String), separator As String) As String
@@ -174,8 +166,8 @@ Public Module StringExtensions
     ''' <remarks>MaxStringLenght must be >=0 </remarks>
     <Extension()>
     Public Function Truncate(ByRef StrIn As String, ByVal MaxStringLenght As Integer) As String
-        Requires(MaxStringLenght >= 0, "MaxStringLenght can't be less than 0")
-        If StrIn.IsEmptyNullOrWhitespace Then
+        Contracts.Contract.Requires(MaxStringLenght >= 0, "MaxStringLenght can't be less than 0")
+        If String.IsNullOrWhiteSpace(StrIn) Then
             Return String.Empty
         End If
         If StrIn.Trim.Length <= MaxStringLenght Then

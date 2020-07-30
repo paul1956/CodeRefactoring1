@@ -28,21 +28,10 @@ Namespace EditorExtensions.Settings
         Inherits SettingsBase(Of GeneralSettings)
         Implements INameOfSettings
 
-#Disable Warning IDE0032 ' Use auto property
-        Private m_AllMessagesToOutputWindow As Boolean = True
-#Enable Warning IDE0032 ' Use auto property
-        Public Property AllMessagesToOutputWindow() As Boolean
-            Get
-                Return Me.m_AllMessagesToOutputWindow
-            End Get
-            Set
-                Me.m_AllMessagesToOutputWindow = Value
-            End Set
-        End Property
+        Public Property AllMessagesToOutputWindow As Boolean = True
 
-#Disable Warning IDE0032 ' Use auto property
+        <SuppressMessage("Style", "IDE0032:Use auto property", Justification:="<Pending>")>
         Private _csvIgnoreList As String = "Microsoft,System,MS"
-#Enable Warning IDE0032 ' Use auto property
         Public Property CsvIgnoreList As String Implements INameOfSettings.CsvIgnoreList
             Get
                 Return Me._csvIgnoreList

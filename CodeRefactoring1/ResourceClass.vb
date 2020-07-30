@@ -11,12 +11,12 @@ Public Class ResourceXClass
     Private Const GlobalizationFile As String = "Resources.resw"
 
     ''' <summary>
-    ''' Class to speed up managig Resource files with option to add new resource
+    ''' Class to speed up managing Resource files with option to add new resource
     ''' </summary>
     ''' <param name="CurrentProjectFolderWithProjectFile"></param>
     Sub New(CurrentProjectFolderWithProjectFile As String)
         Me.ResourceFilenameWithPath = GetGlobalizationFileDirectory(CurrentProjectFolderWithProjectFile)
-        If Me.ResourceFilenameWithPath.IsEmptyNullOrWhitespace Then
+        If String.IsNullOrWhiteSpace(Me.ResourceFilenameWithPath) Then
             Exit Sub
         End If
         Me.Initialized = InitializedValues.True

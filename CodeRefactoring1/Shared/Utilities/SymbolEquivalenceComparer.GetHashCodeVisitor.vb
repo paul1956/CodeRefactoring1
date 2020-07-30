@@ -187,7 +187,7 @@ Partial Friend Class SymbolEquivalenceComparer
         End Function
 
         Public Function CombineHashCodes(ByVal x As ITypeParameterSymbol, ByVal currentHash As Integer) As Integer
-            Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
+            Contracts.Contract.Requires((x.TypeParameterKind = TypeParameterKind.Method AndAlso IsConstructedFromSelf(x.DeclaringMethod)) OrElse (x.TypeParameterKind = TypeParameterKind.Type AndAlso IsConstructedFromSelf(x.ContainingType)) OrElse x.TypeParameterKind = TypeParameterKind.Cref)
 
             currentHash = CodeRefactoringHash.Combine(x.Ordinal, CodeRefactoringHash.Combine(CInt(Math.Truncate(x.TypeParameterKind)), currentHash))
 
@@ -196,7 +196,7 @@ Partial Friend Class SymbolEquivalenceComparer
             End If
 
             If x.TypeParameterKind = TypeParameterKind.Type AndAlso x.ContainingType.IsAnonymousType Then
-                ' Anonymous type type parameters compare by index as well to prevent
+                ' Anonymous type, type parameters compare by index as well to prevent
                 ' recursion.
                 Return currentHash
             End If
