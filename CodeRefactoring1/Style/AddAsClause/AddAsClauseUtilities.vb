@@ -1,14 +1,16 @@
-﻿Option Explicit On
-Option Infer Off
-Option Strict On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports System.Text
-
-Imports Microsoft.CodeAnalysis.Editing
+Imports System.Threading
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBRefactorings.Utilities
 
 Namespace Style
     Public Module AddAsClauseUtilities
@@ -39,8 +41,7 @@ Namespace Style
             Dim _ForEachStatementInfo As ForEachStatementInfo = Model.GetForEachStatementInfo(_forEachStatement)
             Dim ElementITypeSymbol As ITypeSymbol = _ForEachStatementInfo.ElementType
             If ElementITypeSymbol IsNot Nothing Then
-                Return SimpleAsClause(
-                                        FixExpressionType(ElementITypeSymbol).
+                Return SimpleAsClause(FixExpressionType(ElementITypeSymbol).
                                         WithAdditionalAnnotations(Simplifier.Annotation)
                                         ).NormalizeWhitespace()
             End If
@@ -165,7 +166,7 @@ Namespace Style
             Return Nothing
         End Function
 
-        Private Function GetAsClause(EnumSpecialHandling As Boolean, ExpressionValue As ExpressionSyntax, ByRef model As SemanticModel, ByRef variableITypeSymbol As ITypeSymbol, ByRef CancellationToken As CancellationToken) As AsClauseSyntax
+        Private Function GetAsClause(EnumSpecialHandling As Boolean, ExpressionValue As ExpressionSyntax, model As SemanticModel, variableITypeSymbol As ITypeSymbol) As AsClauseSyntax
             Dim FinalTypeSyntax As TypeSyntax = Nothing
             Try
                 Select Case ExpressionValue.Kind
@@ -201,8 +202,12 @@ Namespace Style
                         FinalTypeSyntax = DirectCast(ExpressionValue, TryCastExpressionSyntax).Type
                     Case SyntaxKind.ObjectCreationExpression
                         Dim ExpressionString As String = ExpressionValue.ToString
+
+                        Dim typ As TypeSyntax = TryCast(ExpressionValue, ObjectCreationExpressionSyntax).Type
+
                         Dim ClassName As String = ExpressionString.Trim.Replace("New ", "")
-                        If variableITypeSymbol.ToString.Trim.EndsWith(ClassName, StringComparison.InvariantCultureIgnoreCase) Then
+                        If variableITypeSymbol.ToString.Trim.EndsWith(ClassName, StringComparison.InvariantCultureIgnoreCase) OrElse
+                            typ.ToString.EndsWith(ClassName, StringComparison.InvariantCultureIgnoreCase) Then
                             Dim NewExpression As NewExpressionSyntax = CType(ParseExpression(ExpressionString), NewExpressionSyntax)
                             Return AsNewClause(Token(SyntaxKind.AsKeyword), NewExpression).WithTriviaFrom(ExpressionValue).WithAdditionalAnnotations(Simplifier.Annotation).NormalizeWhitespace()
                         End If
@@ -282,8 +287,8 @@ Namespace Style
                             End If
                         End If
                     Case SyntaxKind.AwaitExpression
-                        Dim _AwaitExpressionInfo As AwaitExpressionInfo = model.GetAwaitExpressionInfo(CType(ExpressionValue, AwaitExpressionSyntax), CancellationToken)
-                        FinalTypeSyntax = ParseTypeName($" { _AwaitExpressionInfo.GetResultMethod.ReturnType.ToString}")
+                        Dim _AwaitExpressionInfo As AwaitExpressionInfo = model.GetAwaitExpressionInfo(CType(ExpressionValue, AwaitExpressionSyntax), CancellationToken.None)
+                        FinalTypeSyntax = ParseTypeName($" { _AwaitExpressionInfo.GetResultMethod.ReturnType}")
                     Case SyntaxKind.CollectionInitializer
                         FinalTypeSyntax = FixExpressionType(variableITypeSymbol)
                     Case SyntaxKind.MeExpression
@@ -312,23 +317,23 @@ Namespace Style
             If FinalTypeSyntax Is Nothing Then
                 Return Nothing
             Else
-                Debug.Print($"Leaving GetAsClause for {ExpressionValue} = {FinalTypeSyntax.ToString}")
+                Debug.Print($"Leaving GetAsClause for {ExpressionValue} = {FinalTypeSyntax}")
                 Return SimpleAsClause(FinalTypeSyntax.WithLeadingTrivia(ExpressionValue.GetLeadingTrivia()).WithAdditionalAnnotations(Simplifier.Annotation)
                                           ).NormalizeWhitespace()
 
             End If
         End Function
 
-        Private Function GetNewInvocation(ByRef lVariableDeclarator As VariableDeclaratorSyntax, ByRef model As SemanticModel, ByRef variableITypeSymbol As ITypeSymbol, ByRef CancellationToken As CancellationToken) As VariableDeclaratorSyntax
+        Private Function GetNewInvocation(lVariableDeclarator As VariableDeclaratorSyntax, model As SemanticModel, ByRef variableITypeSymbol As ITypeSymbol) As VariableDeclaratorSyntax
             Try
-                Dim lGetAsClause As AsClauseSyntax = GetAsClause(False, lVariableDeclarator.Initializer.Value, model, variableITypeSymbol, CancellationToken)
+                Dim lGetAsClause As AsClauseSyntax = GetAsClause(False, lVariableDeclarator.Initializer.Value, model, variableITypeSymbol)
                 If lGetAsClause Is Nothing Then
                     Return lVariableDeclarator
                 End If
                 If lGetAsClause.ToString.Contains("As New ") Then
                     Return lVariableDeclarator.ReplaceNode(lVariableDeclarator, VariableDeclarator(lVariableDeclarator.Names, lGetAsClause, Nothing).WithAdditionalAnnotations(Simplifier.Annotation)).WithAdditionalAnnotations(Simplifier.Annotation)
                 End If
-                Return lVariableDeclarator.ReplaceNode(lVariableDeclarator, VariableDeclarator(lVariableDeclarator.Names, lGetAsClause, lVariableDeclarator.Initializer).WithAdditionalAnnotations(Simplifier.Annotation))
+                Return lVariableDeclarator.WithAsClause(lGetAsClause.WithTrailingTrivia(Whitespace(" "))).WithInitializer(lVariableDeclarator.Initializer)
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
                 Stop
                 Throw
@@ -412,13 +417,11 @@ Namespace Style
         Private Function GetTypesExtracted(TypeListString As String) As List(Of String)
             Dim TypeListSplit As New List(Of String)
             Dim ModifiedTypeListStringBuilder As New StringBuilder
-            ' Debug.WriteLine($"TypeListString = {TypeListString}")
             For j As Integer = 0 To TypeListString.Count - 1
                 Select Case TypeListString.Substring(j, 1)
                     Case ","
                         If ModifiedTypeListStringBuilder.Length > 0 Then
                             TypeListSplit.Add(ModifiedTypeListStringBuilder.ToString)
-                            ' Debug.WriteLine($"For TypeListSplit({TypeListSplit.Count}) at , = {ModifiedTypeListStringBuilder.ToString}")
                             ModifiedTypeListStringBuilder.Clear()
                         End If
                     Case "("
@@ -428,7 +431,6 @@ Namespace Style
                             ModifiedTypeListStringBuilder.Append(TypeListString.Substring(j, IndexOfCloseParen + 1))
                             If IndexOfNextOpenParen < IndexOfCloseParen Then
                                 j += IndexOfCloseParen
-                                ModifiedTypeListStringBuilder.Append(")")
                                 Continue For
                             End If
                         End If
@@ -438,7 +440,6 @@ Namespace Style
                                 ModifiedTypeListStringBuilder.Append(".")
                             Else
                                 TypeListSplit.Add(ModifiedTypeListStringBuilder.ToString)
-                                ' Debug.WriteLine($"For TypeListSplit({TypeListSplit.Count}) at , = {ModifiedTypeListStringBuilder.ToString}")
                                 ModifiedTypeListStringBuilder.Clear()
                             End If
                         End If
@@ -448,7 +449,6 @@ Namespace Style
             Next
             If ModifiedTypeListStringBuilder.Length > 0 Then
                 TypeListSplit.Add(ModifiedTypeListStringBuilder.ToString.Trim)
-                ' Debug.WriteLine($"For TypeListSplit({TypeListSplit.Count}) at , = {ModifiedTypeListStringBuilder.ToString}")
                 ModifiedTypeListStringBuilder.Clear()
             End If
             Return TypeListSplit
@@ -479,91 +479,92 @@ Namespace Style
             Return Nothing
         End Function
 
-        Public Async Function AddAsClauseAsync(CurrentDocument As Document, lVariableDeclarator As VariableDeclaratorSyntax, CancellationToken As CancellationToken) As Task(Of Document)
+        Public Function AddAsClauseAsync(root As SyntaxNode, Model As SemanticModel, CurrentDocument As Document, OldVariableDeclarator As VariableDeclaratorSyntax) As SyntaxNode
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             If Not IsEnoughMemoryReport(MemoryLimit) Then
-                Return CurrentDocument
+                Return OldVariableDeclarator
             End If
-            Dim newRoot As SyntaxNode = Nothing
+            Dim NewVariableDeclarator As VariableDeclaratorSyntax
             Try
-                Dim root As SyntaxNode = Await CurrentDocument.GetSyntaxRootAsync(CancellationToken).ConfigureAwait(False)
-                Dim variableDeclaratorSyntax1 As VariableDeclaratorSyntax = Await NewVariableDeclaratorSyntaxWithAsClauseAsync(CurrentDocument, lVariableDeclarator, CancellationToken).ConfigureAwait(False)
-                If variableDeclaratorSyntax1 Is Nothing OrElse variableDeclaratorSyntax1.Equals(lVariableDeclarator) Then
-                    Return CurrentDocument
+                Dim oldNode As SyntaxNode = root.FindNode(OldVariableDeclarator.GetLocation.SourceSpan)
+                NewVariableDeclarator = NewVariableDeclaratorSyntaxWithAsClauseAsync(Model, CurrentDocument, OldVariableDeclarator)
+                If NewVariableDeclarator Is Nothing OrElse NewVariableDeclarator.Equals(OldVariableDeclarator) Then
+                    Return OldVariableDeclarator
                 End If
-                newRoot = root.ReplaceNode(lVariableDeclarator, variableDeclaratorSyntax1.WithTriviaFrom(lVariableDeclarator).WithAdditionalAnnotations(Simplifier.Annotation, Formatter.Annotation))
+                Return NewVariableDeclarator
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
+                Return OldVariableDeclarator
+            Catch ex As Exception
+                Throw
             End Try
-            Return CurrentDocument.WithSyntaxRoot(newRoot)
         End Function
 
-        Public Async Function AddAsClauseAsync(CurrentDocument As Document, LambdaHeader As LambdaHeaderSyntax, CancelToken As CancellationToken) As Task(Of Document)
+        Public Function AddAsClauseAsync(Model As SemanticModel, CurrentDocument As Document, LambdaHeader As LambdaHeaderSyntax) As SyntaxNode
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             Contracts.Contract.Assume(LambdaHeader IsNot Nothing)
             If Not IsEnoughMemoryReport(MemoryLimit) Then
-                Return CurrentDocument
+                Return LambdaHeader
             End If
             Try
                 Dim lLabdaExpression As LambdaExpressionSyntax = LambdaHeader.FirstAncestorOfType(Of LambdaExpressionSyntax)
                 If lLabdaExpression Is Nothing Then
-                    Exit Try
+                    Return LambdaHeader
                 End If
-                Dim NewParameters As SeparatedSyntaxList(Of ParameterSyntax) = Await NewLambdaParameterListWithAsClause(CurrentDocument, lLabdaExpression, CancelToken).ConfigureAwait(False)
+                Dim NewParameters As SeparatedSyntaxList(Of ParameterSyntax) = NewLambdaParameterListWithAsClause(Model, CurrentDocument, lLabdaExpression)
                 If NewParameters.Count <> LambdaHeader.ParameterList.Parameters.Count Then
-                    Return CurrentDocument
+                    Return LambdaHeader
                 End If
-                Dim _DocumentEditor As DocumentEditor = Await DocumentEditor.CreateAsync(CurrentDocument, CancelToken).ConfigureAwait(False)
-                _DocumentEditor.ReplaceNode(LambdaHeader.ParameterList, ParameterList(NewParameters).WithTriviaFrom(LambdaHeader.ParameterList).WithAdditionalAnnotations(Simplifier.Annotation))
-                Return _DocumentEditor.GetChangedDocument()
+                Return LambdaHeader.WithParameterList(ParameterList(NewParameters).WithTriviaFrom(LambdaHeader.ParameterList))
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
+                Return LambdaHeader
+            Catch ex As Exception
+                Throw
             End Try
-            Return CurrentDocument
         End Function
 
-        Public Async Function AddAsClauseAsync(CurrentDocument As Document, ForStatement As ForStatementSyntax, CancelToken As CancellationToken) As Task(Of Document)
+        Public Async Function AddAsClauseAsync(CurrentDocument As Document, ForStatement As ForStatementSyntax, CancelToken As CancellationToken) As Task(Of SyntaxNode)
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             Contracts.Contract.Assume(ForStatement IsNot Nothing)
             If Not IsEnoughMemoryReport(MemoryLimit) Then
-                Return CurrentDocument
+                Return ForStatement
             End If
-            Dim newRoot As SyntaxNode = Nothing
             Try
+                Dim root As SyntaxNode = Await CurrentDocument.GetSyntaxRootAsync(CancelToken).ConfigureAwait(False)
                 Dim newControlVariable As VariableDeclaratorSyntax = Await NewForControlVariableWithAsClause(CurrentDocument, ForStatement, CancelToken).ConfigureAwait(False)
                 If newControlVariable Is Nothing Then
-                    Return CurrentDocument
+                    Return ForStatement
                 End If
-                Dim root As SyntaxNode = Await CurrentDocument.GetSyntaxRootAsync(CancelToken).ConfigureAwait(False)
-                newRoot = root.ReplaceNode(ForStatement.ControlVariable, newControlVariable.WithTriviaFrom(ForStatement.ControlVariable))
+                Dim oldNode As SyntaxNode = root.FindNode(ForStatement.ControlVariable.GetLocation.SourceSpan)
+                Return ForStatement.WithControlVariable(newControlVariable)
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
+                Return ForStatement
+            Catch ex As Exception
+                Throw
             End Try
-            Return CurrentDocument.WithSyntaxRoot(newRoot)
         End Function
 
-        Public Async Function AddAsClauseAsync(CurrentDocument As Document, ForEachStatement As ForEachStatementSyntax, CancelToken As CancellationToken) As Task(Of Document)
+        Public Async Function AddAsClauseAsync(CurrentDocument As Document, ForEachStatement As ForEachStatementSyntax, CancelToken As CancellationToken) As Task(Of SyntaxNode)
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             Contracts.Contract.Assume(ForEachStatement IsNot Nothing)
             If Not IsEnoughMemoryReport(MemoryLimit) Then
-                Return CurrentDocument
+                Return ForEachStatement
             End If
-            Dim newRoot As SyntaxNode = Nothing
             Try
                 Dim root As SyntaxNode = Await CurrentDocument.GetSyntaxRootAsync(CancelToken).ConfigureAwait(False)
                 Dim oldControlVariable As VisualBasicSyntaxNode = ForEachStatement.ControlVariable
                 If oldControlVariable Is Nothing Then
-                    Return CurrentDocument
+                    Return ForEachStatement
                 End If
                 Dim newControlVariable As VariableDeclaratorSyntax = Await NewForEachControlVariableWithAsClause(CurrentDocument, ForEachStatement, CancelToken).ConfigureAwait(False)
                 If newControlVariable Is Nothing Then
-                    Return CurrentDocument
+                    Return ForEachStatement
                 End If
-                newRoot = root.ReplaceNode(oldControlVariable, newControlVariable.WithTriviaFrom(oldControlVariable))
+                Return ForEachStatement.WithControlVariable(newControlVariable)
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
-                Stop
+                Return ForEachStatement
+            Catch ex As Exception
+                Throw
             End Try
-            Return CurrentDocument.WithSyntaxRoot(newRoot)
         End Function
 
         Public Async Function NewForControlVariableWithAsClause(CurrentDocument As Document, ForStatement As ForStatementSyntax, CancelToken As CancellationToken) As Task(Of VariableDeclaratorSyntax)
@@ -579,7 +580,7 @@ Namespace Style
                     Return Nothing
                 End If
 
-                Dim AsClause As AsClauseSyntax = GetAsClause(True, fromValue, Model, variableITypeSymbol.pITypeSymbol, CancelToken)
+                Dim AsClause As AsClauseSyntax = GetAsClause(True, fromValue, Model, variableITypeSymbol.pITypeSymbol)
                 If AsClause Is Nothing Then
                     Return Nothing
                 End If
@@ -588,12 +589,7 @@ Namespace Style
                     Return Nothing
                 End If
                 If TypeOf oldControlVariable Is IdentifierNameSyntax Then
-                    newControlVariable = VariableDeclarator(SingletonSeparatedList(
-                                                                ModifiedIdentifier(DirectCast(oldControlVariable, IdentifierNameSyntax).Identifier)),
-                                                                AsClause,
-                                                                initializer:=Nothing
-                                                                ).
-                                                                WithTriviaFrom(oldControlVariable).WithAdditionalAnnotations(Simplifier.Annotation, Formatter.Annotation)
+                    Return VariableDeclarator(ModifiedIdentifier(DirectCast(oldControlVariable, IdentifierNameSyntax).Identifier)).WithAsClause(AsClause).WithTriviaFrom(oldControlVariable)
                 ElseIf TypeOf oldControlVariable Is VariableDeclaratorSyntax Then
                     Dim oldControlVariable1 As VariableDeclaratorSyntax = DirectCast(oldControlVariable, VariableDeclaratorSyntax)
                     If oldControlVariable1.Names.Count <> 1 Then
@@ -629,12 +625,8 @@ Namespace Style
                     Return NewControlVariable
                 End If
                 If TypeOf oldControlVariable Is IdentifierNameSyntax Then
-                    NewControlVariable = VariableDeclarator(SingletonSeparatedList(
-                                                                ModifiedIdentifier(DirectCast(oldControlVariable, IdentifierNameSyntax).Identifier)),
-                                                                AsClause,
-                                                                initializer:=Nothing
-                                                                ).
-                                                                WithTriviaFrom(oldControlVariable).WithAdditionalAnnotations(Simplifier.Annotation, Formatter.Annotation)
+                    Return VariableDeclarator(ModifiedIdentifier(DirectCast(oldControlVariable, IdentifierNameSyntax).Identifier)).WithAsClause(AsClause).
+                        WithTriviaFrom(oldControlVariable)
                 ElseIf TypeOf oldControlVariable Is VariableDeclaratorSyntax Then
                     Dim oldControlVariable1 As VariableDeclaratorSyntax = DirectCast(oldControlVariable, VariableDeclaratorSyntax)
                     If oldControlVariable1.Names.Count <> 1 Then
@@ -655,13 +647,12 @@ Namespace Style
             Return NewControlVariable
         End Function
 
-        Public Async Function NewLambdaParameterListWithAsClause(CurrentDocument As Document, LambdaExpression As LambdaExpressionSyntax, CancelToken As CancellationToken) As Task(Of SeparatedSyntaxList(Of ParameterSyntax))
+        Public Function NewLambdaParameterListWithAsClause(model As SemanticModel, CurrentDocument As Document, LambdaExpression As LambdaExpressionSyntax) As SeparatedSyntaxList(Of ParameterSyntax)
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             Contracts.Contract.Assume(LambdaExpression IsNot Nothing)
             Dim NewParameters As SeparatedSyntaxList(Of ParameterSyntax)
             Try
-                Dim Model As SemanticModel = Await CurrentDocument.GetSemanticModelAsync(CancelToken).ConfigureAwait(False)
-                Dim sometype As ITypeSymbol = LambdaExpression.DetermineType(Model, CancelToken)._ITypeSymbol
+                Dim sometype As ITypeSymbol = LambdaExpression.DetermineType(model, CancellationToken.None)._ITypeSymbol
                 Dim Types As List(Of TypeSyntax) = GetTypes(sometype)
                 If Types.Count = 0 Then
                     Return NewParameters
@@ -687,23 +678,22 @@ Namespace Style
             Return NewParameters
         End Function
 
-        Public Async Function NewVariableDeclaratorSyntaxWithAsClauseAsync(CurrentDocument As Document, VariableDeclarator As VariableDeclaratorSyntax, CancelToken As CancellationToken) As Task(Of VariableDeclaratorSyntax)
+        Public Function NewVariableDeclaratorSyntaxWithAsClauseAsync(model As SemanticModel, currentDocument As Document, variableDeclarator As VariableDeclaratorSyntax) As VariableDeclaratorSyntax
             Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
             If VariableDeclarator Is Nothing Then
                 Throw New ArgumentException($"Argument {NameOf(VariableDeclarator)} can't be nothing")
             End If
             Dim variableDeclaratorSyntax1 As VariableDeclaratorSyntax = Nothing
             Try
-                Dim Model As SemanticModel = Await CurrentDocument.GetSemanticModelAsync(CancelToken).ConfigureAwait(False)
                 Dim Expression As ExpressionSyntax = VariableDeclarator.Initializer.Value
-                Dim variableITypeSymbol As (pITypeSymbol As ITypeSymbol, _Error As Boolean) = Expression.DetermineType(Model, CancelToken)
+                Dim variableITypeSymbol As (pITypeSymbol As ITypeSymbol, _Error As Boolean) = Expression.DetermineType(model, CancellationToken.None)
                 If variableITypeSymbol._Error Then
                     Return Nothing
                 End If
                 If variableITypeSymbol.ToString.Contains(" ?)") Then
                     Return Nothing
                 End If
-                variableDeclaratorSyntax1 = GetNewInvocation(VariableDeclarator, Model, variableITypeSymbol.pITypeSymbol, CancelToken).WithTriviaFrom(VariableDeclarator)
+                variableDeclaratorSyntax1 = GetNewInvocation(variableDeclarator, model, variableITypeSymbol.pITypeSymbol).WithTriviaFrom(variableDeclarator)
             Catch ex As Exception
                 Stop
             End Try

@@ -1,13 +1,17 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
 
 Imports System.Collections.Immutable
-
-Imports CodeRefactoring1
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
 
@@ -28,7 +32,7 @@ Namespace Style
                     DiagnosticSeverity.Error,
                     isEnabledByDefault:=True,
                     Description,
-                    helpLinkUri:=ForDiagnostic(ChangeAsObjectToMoreSpecificDiagnosticId),
+                    helpLinkUri:=Nothing,
                     Array.Empty(Of String)
                     )
 

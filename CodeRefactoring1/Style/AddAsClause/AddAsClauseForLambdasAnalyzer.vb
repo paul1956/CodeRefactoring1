@@ -1,11 +1,17 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
 
@@ -23,10 +29,10 @@ Namespace Style
                             Title,
                             MessageFormat,
                             Category,
-                            DiagnosticSeverity.Error,
+                            DiagnosticSeverity.Warning,
                             isEnabledByDefault:=True,
                             Description,
-                            helpLinkUri:=ForDiagnostic(AddAsClauseDiagnosticId),
+                            helpLinkUri:=Nothing,
                             Array.Empty(Of String)
                             )
 
@@ -52,6 +58,11 @@ Namespace Style
                         End If
                         For Each param As ParameterSyntax In _LambdaHeaderSyntax.ParameterList.Parameters
                             If param.AsClause Is Nothing Then
+                                If _LambdaHeaderSyntax.FirstAncestorOfType(Of LambdaExpressionSyntax)() _
+                                        .DetermineType(model, context.CancellationToken)._ITypeSymbol.ToString _
+                                        .Contains("anonymous type:") Then
+                                    Exit Sub
+                                End If
                                 diag = Diagnostic.Create(Rule, param.GetLocation(), param.GetType.ToString)
                                 context.ReportDiagnostic(diag)
                             End If
@@ -60,7 +71,6 @@ Namespace Style
                     Case Else
                         Stop
                 End Select
-                context.ReportDiagnostic(diag)
             Catch ex As Exception When ex.HResult <> (New OperationCanceledException).HResult
                 Stop
                 Throw

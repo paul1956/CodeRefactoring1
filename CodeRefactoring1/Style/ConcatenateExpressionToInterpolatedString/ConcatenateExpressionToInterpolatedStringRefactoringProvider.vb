@@ -1,19 +1,23 @@
-﻿Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
-Imports System.Collections.Immutable
+Imports System.Composition
+Imports System.Threading
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeRefactorings
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
 
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(ConcatenateExpressionToInterpolatedStringRefactoringProvider)), [Shared]>
-    Friend Class ConcatenateExpressionToInterpolatedStringRefactoringProvider
+    Partial Friend Class ConcatenateExpressionToInterpolatedStringRefactoringProvider
         Inherits CodeRefactoringProvider
         Private Shared ReadOnly CloseBrace As SyntaxToken = SyntaxFactory.Token(SyntaxKind.CloseBraceToken)
         Private Shared ReadOnly OpenBrace As SyntaxToken = SyntaxFactory.Token(SyntaxKind.OpenBraceToken)
         Private Shared Function ExtractLeftTextFromExpression(invocation As BinaryExpressionSyntax) As SyntaxList(Of InterpolatedStringContentSyntax)
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation.Left)} = {invocation.Left.ToString})")
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation.Left)} = {invocation.Left})")
             Dim ContextArray As New SyntaxList(Of InterpolatedStringContentSyntax)()
             Try
                 Select Case invocation.Left.Kind
@@ -40,7 +44,7 @@ Namespace Style
         End Function
 
         Private Shared Function ExtractRightTextExpression(invocation As ExpressionSyntax) As InterpolatedStringContentSyntax
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} As {invocation.GetType.ToString} = {invocation.ToString})")
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} As {invocation.GetType} = {invocation})")
             Try
                 Select Case invocation.Kind
                     Case SyntaxKind.IdentifierName, SyntaxKind.InterpolatedStringExpression, SyntaxKind.InvocationExpression,
@@ -63,7 +67,7 @@ Namespace Style
         End Function
 
         Private Shared Function ExtractRightTextExpression(invocation As BinaryExpressionSyntax) As InterpolatedStringContentSyntax
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation.Right)} As {invocation.GetType.ToString} = {invocation.Right.ToString})")
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation.Right)} As {invocation.GetType} = {invocation.Right})")
             Try
                 Return ExtractRightTextExpression(invocation.Right)
             Catch ex As Exception
@@ -73,7 +77,7 @@ Namespace Style
         End Function
 
         Private Shared Function MergerExpression(invocation As BinaryExpressionSyntax) As SyntaxList(Of InterpolatedStringContentSyntax)
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation.ToString})")
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation})")
             Try
                 Dim ContentsArray As SyntaxList(Of InterpolatedStringContentSyntax) = ExtractLeftTextFromExpression(invocation)
                 Return ContentsArray.Add(ExtractRightTextExpression(invocation))
@@ -84,7 +88,7 @@ Namespace Style
         End Function
 
         Private Shared Function MergerExpression(ByVal invocation As BinaryExpressionSyntax, ByRef ContentsArray As SyntaxList(Of InterpolatedStringContentSyntax)) As SyntaxList(Of InterpolatedStringContentSyntax)
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation.ToString})")
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation})")
             Try
                 ContentsArray = ExtractLeftTextFromExpression(invocation)
                 Return ContentsArray.Add(ExtractRightTextExpression(invocation))
@@ -94,11 +98,11 @@ Namespace Style
             End Try
         End Function
 
-        Private Async Function CreateInterpolatedStringFromExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal cancellationToken As CancellationToken) As Task(Of Document)
-            Debug.Print($"Entering CreateInterpolatedStringFromExpressionAsync {NameOf(invocation)} = {invocation.ToString})")
+        Private Async Function CreateInterpolatedStringFromExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal CancelToken As CancellationToken) As Task(Of Document)
+            Debug.Print($"Entering CreateInterpolatedStringFromExpressionAsync {NameOf(invocation)} = {invocation})")
             Try
-                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken)
-                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
+                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(CancelToken)
+                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(CancelToken)
                 Dim ContextsArray As SyntaxList(Of InterpolatedStringContentSyntax) = New SyntaxList(Of InterpolatedStringContentSyntax)().AddRange(MergerExpression(invocation))
                 Dim newInvocation As InterpolatedStringExpressionSyntax = SyntaxFactory.InterpolatedStringExpression(ContextsArray)
                 Dim newRoot As SyntaxNode = root.ReplaceNode(invocation, newInvocation.WithLeadingTrivia(invocation.GetLeadingTrivia()).WithTrailingTrivia(invocation.GetTrailingTrivia()))
@@ -110,12 +114,12 @@ Namespace Style
             Return Nothing
         End Function
 
-        Private Async Function CreateInterpolatedStringFromInterpolatedStringExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal cancellationToken As CancellationToken) As Task(Of Document)
-            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation.ToString})")
+        Private Async Function CreateInterpolatedStringFromInterpolatedStringExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal CancelToken As CancellationToken) As Task(Of Document)
+            Debug.Print($"Entering {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(invocation)} = {invocation})")
             Try
-                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
+                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(CancelToken)
                 Dim InterpolatedStringText As InterpolatedStringExpressionSyntax = CType(SyntaxFactory.ParseExpression($"$""{MergerExpression(invocation)}"""), InterpolatedStringExpressionSyntax)
-                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken)
+                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(CancelToken)
                 Dim newRoot As SyntaxNode = root.ReplaceNode(invocation, InterpolatedStringText.WithLeadingTrivia(invocation.GetLeadingTrivia()).WithTrailingTrivia(invocation.GetTrailingTrivia()))
                 Debug.Print($"Leaving {Reflection.MethodBase.GetCurrentMethod().Name} {NameOf(InterpolatedStringText)} = {InterpolatedStringText})")
                 Return document.WithSyntaxRoot(newRoot)
@@ -126,11 +130,11 @@ Namespace Style
             Return Nothing
         End Function
 
-        Private Async Function CreateInterpolatedStringFromStringLiteralExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal cancellationToken As CancellationToken) As Task(Of Document)
-            Debug.Print($"Entering CreateInterpolatedStringFromStringLiteralExpressionAsync {NameOf(invocation)} = {invocation.ToString})")
+        Private Async Function CreateInterpolatedStringFromStringLiteralExpressionAsync(ByVal invocation As BinaryExpressionSyntax, ByVal document As Document, ByVal CancelToken As CancellationToken) As Task(Of Document)
+            Debug.Print($"Entering CreateInterpolatedStringFromStringLiteralExpressionAsync {NameOf(invocation)} = {invocation})")
             Try
-                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken)
-                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
+                Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(CancelToken)
+                Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(CancelToken)
                 Dim ContextsArray As SyntaxList(Of InterpolatedStringContentSyntax) = New SyntaxList(Of InterpolatedStringContentSyntax)().AddRange(MergerExpression(invocation))
                 Dim newInvocation As InterpolatedStringExpressionSyntax = SyntaxFactory.InterpolatedStringExpression(ContextsArray)
                 Dim newRoot As SyntaxNode = root.ReplaceNode(invocation, newInvocation.WithLeadingTrivia(invocation.GetLeadingTrivia()).WithTrailingTrivia(invocation.GetTrailingTrivia()))
@@ -155,74 +159,30 @@ Namespace Style
             Select Case invocation.Left.Kind
                 Case SyntaxKind.InterpolatedStringExpression
                     context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Merge interpolated string",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromInterpolatedStringExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromInterpolatedStringExpressionAsync(invocation, context.Document, c)))
                 Case SyntaxKind.StringLiteralExpression
                     If invocation.Right.Kind = SyntaxKind.StringLiteralExpression Then
                         context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Concatenate 2 strings",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromStringLiteralExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromStringLiteralExpressionAsync(invocation, context.Document, c)))
                     Else
                         context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Convert string literal to interpolated string",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromStringLiteralExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromStringLiteralExpressionAsync(invocation, context.Document, c)))
                     End If
                 Case SyntaxKind.IdentifierName, SyntaxKind.InvocationExpression, SyntaxKind.NameOfExpression, SyntaxKind.SimpleMemberAccessExpression, SyntaxKind.TernaryConditionalExpression
                     context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Convert Identifier or Expression to interpolated string",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
                 Case SyntaxKind.ObjectCreationExpression
                     context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Convert Identifier or Expression to interpolated string",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
 
                 Case SyntaxKind.ConcatenateExpression
                     context.RegisterRefactoring(New ConcatenateExpressionToInterpolatedStringCodeAction("Concatenate multiple strings",
-                                                Function(c As CancellationToken) Me.CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
+                                                Function(c As CancellationToken) CreateInterpolatedStringFromExpressionAsync(invocation, context.Document, c)))
                 Case Else
                     Stop
             End Select
         End Function
-        Private Class ConcatenateExpressionToInterpolatedStringCodeAction
-            Inherits CodeAction
 
-            Private ReadOnly _title As String
-            Private ReadOnly generateDocument As Func(Of CancellationToken, Task(Of Document))
-            Public Sub New(title As String, generateDocument As Func(Of CancellationToken, Task(Of Document)))
-                Me._title = title
-                Me.generateDocument = generateDocument
-            End Sub
-
-            Public Overrides ReadOnly Property Title As String
-                Get
-                    Return Me._title
-                End Get
-            End Property
-            Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
-                Return Me.generateDocument(cancellationToken)
-            End Function
-
-        End Class
-
-        Private Class InterpolatedStringRewriter
-            Inherits VisualBasicSyntaxRewriter
-            Private ReadOnly expandedArguments As ImmutableArray(Of ExpressionSyntax)
-
-            Private Sub New(expandedArguments As ImmutableArray(Of ExpressionSyntax))
-                Me.expandedArguments = expandedArguments
-            End Sub
-
-            Public Overloads Shared Function Visit(interpolatedString As InterpolatedStringExpressionSyntax, expandedArguments As ImmutableArray(Of ExpressionSyntax)) As InterpolatedStringExpressionSyntax
-                Return DirectCast(New InterpolatedStringRewriter(expandedArguments).Visit(interpolatedString), InterpolatedStringExpressionSyntax)
-            End Function
-
-            Public Overrides Function VisitInterpolation(node As InterpolationSyntax) As SyntaxNode
-                Dim literalExpression As LiteralExpressionSyntax = TryCast(node.Expression, LiteralExpressionSyntax)
-                If literalExpression IsNot Nothing AndAlso literalExpression.IsKind(SyntaxKind.NumericLiteralExpression) Then
-                    Dim index As Integer = CInt(literalExpression.Token.Value)
-                    If index >= 0 AndAlso index < Me.expandedArguments.Length Then
-                        Return node.WithExpression(Me.expandedArguments(index))
-                    End If
-                End If
-
-                Return MyBase.VisitInterpolation(node)
-            End Function
-        End Class
     End Class
 
 End Namespace
