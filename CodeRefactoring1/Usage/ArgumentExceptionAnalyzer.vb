@@ -13,7 +13,7 @@ Namespace Usage
         Inherits DiagnosticAnalyzer
 
         Private Const Description As String = "The string passed as the 'paramName' argument of ArgumentException constructor must be the name of one of the method arguments.
-It can be either specified directly or using nameof() (VB 14 and above only)."
+It can be either specified directly or using nameof()."
 
         Private Const MessageFormat As String = "Type argument '{0}' is not in the argument list."
         Private Const Title As String = "Invalid argument name"
