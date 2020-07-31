@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -34,37 +38,37 @@ Public NotInheritable Class InsertionResult
 
     Public Property Context() As CodeRefactoringContext
         Get
-            Return Me.privateContext
+            Return privateContext
         End Get
         Private Set(ByVal value As CodeRefactoringContext)
-            Me.privateContext = value
+            privateContext = value
         End Set
     End Property
 
     Public Property Location() As Location
         Get
-            Return Me.privateLocation
+            Return privateLocation
         End Get
         Private Set(ByVal value As Location)
-            Me.privateLocation = value
+            privateLocation = value
         End Set
     End Property
 
     Public Property Node() As SyntaxNode
         Get
-            Return Me.privateNode
+            Return privateNode
         End Get
         Private Set(ByVal value As SyntaxNode)
-            Me.privateNode = value
+            privateNode = value
         End Set
     End Property
 
     Public Property Type() As INamedTypeSymbol
         Get
-            Return Me.privateType
+            Return privateType
         End Get
         Private Set(ByVal value As INamedTypeSymbol)
-            Me.privateType = value
+            privateType = value
         End Set
     End Property
 

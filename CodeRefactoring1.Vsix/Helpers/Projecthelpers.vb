@@ -1,16 +1,23 @@
-﻿
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System
 Imports System.Collections.Generic
 Imports System.IO
 Imports System.Linq
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
+
 Imports EnvDTE
+
 Imports EnvDTE80
+
 Imports Microsoft.VisualStudio
 Imports Microsoft.VisualStudio.ComponentModelHost
 Imports Microsoft.VisualStudio.Editor
@@ -142,11 +149,11 @@ Namespace EditorExtensions
                     Return
                 End If
 
-
                 item.Properties.Item(NameOf(itemType)).Value = itemType
             Finally
             End Try
         End Sub
+
         <Extension>
         Public Sub AddFileToProject(project As Project, fileName As String, Optional itemType As String = Nothing)
             If project Is Nothing Then
@@ -165,7 +172,6 @@ Namespace EditorExtensions
                 If itemType Is Nothing OrElse item Is Nothing OrElse project.FullName.Contains("://") Then
                     Return
                 End If
-
 
                 item.Properties.Item(NameOf(itemType)).Value = itemType
             Finally
@@ -188,6 +194,7 @@ Namespace EditorExtensions
         End Function
 
 #Region "ToAbsoluteFilePath()"
+
         '''<summary>Converts a relative URL to an absolute path on disk, as resolved from the specified file.</summary>
         Public Function ToAbsoluteFilePath(relativeUrl As String, relativeToFile As String) As String
             Dim file As ProjectItem = GetProjectItem(relativeToFile)
@@ -251,6 +258,7 @@ Namespace EditorExtensions
                 Return String.Empty
             End Try
         End Function
+
 #End Region
 
         '''<summary>Gets the primary TextBuffer for the active document.</summary>
@@ -286,7 +294,6 @@ Namespace EditorExtensions
         Public Function GetSelectedFilePaths() As IEnumerable(Of String)
             Return GetSelectedItemPaths().SelectMany(Function(p As String) If(Directory.Exists(p), Directory.EnumerateFiles(p, "*", SearchOption.AllDirectories), New String() {p}))
         End Function
-
 
         '''<summary>Gets the full paths to the currently selected item(s) in the Solution Explorer.</summary>
         Public Iterator Function GetSelectedItemPaths(Optional dte As DTE2 = Nothing) As IEnumerable(Of String)
@@ -534,5 +541,6 @@ Namespace EditorExtensions
                 Yield If(Path.IsPathRooted(file), ToAbsoluteFilePath(file, root, folder), ToAbsoluteFilePath(file, root, Path.GetDirectoryName(bundleFileName)))
             Next
         End Function
+
     End Module
 End Namespace

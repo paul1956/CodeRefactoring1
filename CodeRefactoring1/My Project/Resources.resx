@@ -144,18 +144,6 @@
   <data name="EmptyCatchBlockCodeFixProvider_RemoveTry" xml:space="preserve">
     <value>Remove wrapping Try Block</value>
   </data>
-  <data name="NameOfAnalyzer_Description" xml:space="preserve">
-    <value>In C#6 the nameof() operator should be used to specify the name of a program element instead of a string literal as it produce code that is easier to refactor.</value>
-  </data>
-  <data name="NameOfAnalyzer_MessageFormat" xml:space="preserve">
-    <value>Use 'nameof({0})' instead of specifying the program element name.</value>
-  </data>
-  <data name="NameOfAnalyzer_Title" xml:space="preserve">
-    <value>Use nameof</value>
-  </data>
-  <data name="NameOfCodeFixProvider_Title" xml:space="preserve">
-    <value>Use nameof()</value>
-  </data>
   <data name="RemoveByValDescription" xml:space="preserve">
     <value>Remove ByVal from function declaration</value>
   </data>

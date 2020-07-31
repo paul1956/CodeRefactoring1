@@ -1,10 +1,13 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Option Explicit On
 Option Infer Off
 Option Strict On
 
 Imports System.Runtime.InteropServices
+Imports CodeRefactoring1.Utilities
 
 Partial Public Module ISymbolExtensions
 
@@ -89,7 +92,7 @@ Partial Public Module ISymbolExtensions
 
     ' Is the named type "type" accessible from within "within", which must be a named type or
     ' an assembly.
-    Private Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
+    Friend Function IsNamedTypeAccessible(type As INamedTypeSymbol, within As ISymbol) As Boolean
         Debug.Assert(TypeOf within Is INamedTypeSymbol OrElse TypeOf within Is IAssemblySymbol)
         Contracts.Contract.Requires(type IsNot Nothing)
 
@@ -104,7 +107,7 @@ Partial Public Module ISymbolExtensions
                 ' type parameters are always accessible, so don't check those (so common it's
                 ' worth optimizing this).
                 If typeArg.Kind <> SymbolKind.TypeParameter AndAlso
-                    typeArg.TypeKind <> Microsoft.CodeAnalysis.TypeKind.[Error] AndAlso
+                    typeArg.TypeKind <> Global.Microsoft.CodeAnalysis.TypeKind.[Error] AndAlso
                     Not IsSymbolAccessibleCore(typeArg, within, Nothing, unused) Then
                     Return False
                 End If
@@ -128,7 +131,7 @@ Partial Public Module ISymbolExtensions
         Dim current As INamedTypeSymbol = withinType.OriginalDefinition
         While current IsNot Nothing
             Debug.Assert(current.IsDefinition)
-            If current.Equals(originalContainingType) Then
+            If SymbolEqualityComparer.Default.Equals(current, originalContainingType) Then
                 Return True
             End If
 

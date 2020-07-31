@@ -13,6 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLibrary", "HashLibrary\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BE37402F-20B6-4040-B73C-4E27C0D40F7F}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		..\..\..\..\Source\Repos\VBRefactorings\ReadMe.MD = ..\..\..\..\Source\Repos\VBRefactorings\ReadMe.MD
 	EndProjectSection
 EndProject

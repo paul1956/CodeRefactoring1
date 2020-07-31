@@ -1,9 +1,13 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Explicit On
 Option Strict On
 Option Infer Off
 
 Imports System.Runtime.CompilerServices
-
+Imports CodeRefactoring1.Utilities
 Imports Microsoft
 
 Public Module ExpressionSyntaxExtensions
@@ -37,12 +41,12 @@ Public Module ExpressionSyntaxExtensions
     <Extension>
     Public Function DetermineType(expression As ExpressionSyntax,
                                       Model As SemanticModel,
-                                      cancellationToken As CancellationToken) As (_ITypeSymbol As ITypeSymbol, _Error As Boolean)
+                                      CancelToken As CancellationToken) As (_ITypeSymbol As ITypeSymbol, _Error As Boolean)
         ' If a parameter appears to have a void return type, then just use 'object' instead.
         Try
             If expression IsNot Nothing Then
-                Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression, cancellationToken)
-                Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression, cancellationToken)
+                Dim typeInfo As TypeInfo = Model.GetTypeInfo(expression, CancelToken)
+                Dim symbolInfo As SymbolInfo = Model.GetSymbolInfo(expression, CancelToken)
                 If typeInfo.Type IsNot Nothing Then
                     If typeInfo.Type IsNot Nothing AndAlso typeInfo.Type.SpecialType = SpecialType.System_Void Then
                         Return (Model.Compilation.ObjectType, False)
@@ -50,7 +54,7 @@ Public Module ExpressionSyntaxExtensions
 
                     If (typeInfo.Type.IsErrorType) Then
                         Return (Model.Compilation.ObjectType, True)
-                    ElseIf Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
+                    ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (Model.Compilation.ObjectType, False)
                     End If
                 End If
@@ -61,7 +65,7 @@ Public Module ExpressionSyntaxExtensions
 
                 If TypeOf expression Is CollectionInitializerSyntax Then
                     Dim collectionInitializer As CollectionInitializerSyntax = DirectCast(expression, CollectionInitializerSyntax)
-                    Return DetermineType(collectionInitializer, Model, cancellationToken)
+                    Return DetermineType(collectionInitializer, Model, CancelToken)
                 End If
             End If
         Catch ex As Exception
@@ -73,7 +77,7 @@ Public Module ExpressionSyntaxExtensions
     <Extension()>
     Private Function DetermineType(collectionInitializer As CollectionInitializerSyntax,
                                       semanticModel As SemanticModel,
-                                      cancellationToken As CancellationToken) As (ITypeSymbol, Boolean)
+                                      CancelToken As CancellationToken) As (ITypeSymbol, Boolean)
         Dim rank As Integer = 1
         While collectionInitializer.Initializers.Count > 0 AndAlso
                   collectionInitializer.Initializers(0).Kind = SyntaxKind.CollectionInitializer
@@ -81,7 +85,7 @@ Public Module ExpressionSyntaxExtensions
             collectionInitializer = DirectCast(collectionInitializer.Initializers(0), CollectionInitializerSyntax)
         End While
 
-        Dim type As (ITypeSymbol, Boolean) = collectionInitializer.Initializers.FirstOrDefault().DetermineType(semanticModel, cancellationToken)
+        Dim type As (ITypeSymbol, Boolean) = collectionInitializer.Initializers.FirstOrDefault().DetermineType(semanticModel, CancelToken)
         Return (semanticModel.Compilation.CreateArrayTypeSymbol(type.Item1, rank), type.Item2)
     End Function
 

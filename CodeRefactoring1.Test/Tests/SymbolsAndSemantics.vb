@@ -2,7 +2,6 @@
 
 Imports System.Text
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.Text
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Xunit
@@ -22,7 +21,7 @@ Public Class SymbolsAndSemantics
         builder.AppendLine(symbol.ToString())
 
         For Each childSymbol As ISymbol In GetMembers(symbol)
-            Me.EnumSymbols(childSymbol, builder)
+            EnumSymbols(childSymbol, builder)
         Next
     End Sub
 
@@ -126,7 +125,6 @@ Class Cat
 End Class
 </text>.GetCode()
 
-
         Dim comp As VisualBasicCompilation = VisualBasicCompilation.Create(
             "test",
             syntaxTrees:={SyntaxFactory.ParseSyntaxTree(file1), SyntaxFactory.ParseSyntaxTree(file2)},
@@ -135,7 +133,7 @@ End Class
         Dim globalNamespace As INamespaceSymbol = comp.SourceModule.GlobalNamespace
 
         Dim builder As StringBuilder = New StringBuilder()
-        Me.EnumSymbols(globalNamespace, builder)
+        EnumSymbols(globalNamespace, builder)
 
         Dim expected As String = "Global" & vbCrLf &
                                  "My" & vbCrLf &
@@ -261,6 +259,7 @@ End Class
         Dim semanticInfo As TypeInfo = testCode.SemanticModel.GetTypeInfo(initializer)
         Assert.Equal("String", semanticInfo.Type.Name)
     End Sub
+
     <Fact>
     Public Sub GetSymbolXmlDocComments()
         Dim code As String =
@@ -348,4 +347,5 @@ End Class
             "Public Shared Function C2.M(Of TSource)(source As C1(Of TSource), index As Integer) As TSource",
             symbol.ToDisplayString(displayFormat))
     End Sub
+
 End Class

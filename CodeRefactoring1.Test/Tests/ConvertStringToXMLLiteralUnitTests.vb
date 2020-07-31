@@ -32,7 +32,7 @@ End Class"
     End Class</text>.Value
     End Sub
 End Class"
-        Me.Test(code, expected)
+        Test(code, expected)
     End Sub
 
 End Class

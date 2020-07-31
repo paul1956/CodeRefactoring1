@@ -46,7 +46,7 @@ namespace Utilities
 
             var hashCode = 0;
             var count = 0;
-            foreach (var value in values)
+            foreach (T value in values)
             {
                 if (count++ >= maxItemsToHash)
                 {
@@ -76,6 +76,5 @@ namespace Utilities
         /// See http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
         /// </summary>
         public const int FnvPrime = 16777619;
-
     }
 }

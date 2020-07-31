@@ -1,10 +1,17 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.Diagnostics
 Imports System.Runtime.InteropServices
+
 Imports EnvDTE
+
 Imports EnvDTE80
 Imports Microsoft.VisualStudio.ComponentModelHost
 Imports Microsoft.VisualStudio.Shell
@@ -51,6 +58,7 @@ Public NotInheritable Class Command1Package
     End Sub
 
 #Region "Package Members"
+
     ''' <summary>
     ''' Initialization of the package; this method is called right after the package is sited, so this is the place
     ''' where you can put all the initialization code that rely on services provided by VisualStudio.
@@ -60,13 +68,15 @@ Public NotInheritable Class Command1Package
         Stop
         Command1.Initialize(Me)
         MyBase.Initialize()
-        MyComponentModel = DirectCast(Me.GetService(GetType(SComponentModel)), IComponentModel)
+        MyComponentModel = DirectCast(GetService(GetType(SComponentModel)), IComponentModel)
         Dim defaultListener As DefaultTraceListener
         defaultListener = New DefaultTraceListener() With {.LogFileName = "C:\Users\PaulM\Documents\CodeRefactoringTrace.txt", .IndentSize = 4}
         Trace.Listeners.Add(defaultListener)
         Trace.WriteLine("Text")
     End Sub
+
 #End Region
+
     Public Shared Property MyComponentModel As IComponentModel
 
     Private Shared _dte As DTE2
@@ -82,6 +92,7 @@ Public NotInheritable Class Command1Package
             Return _dte
         End Get
     End Property
+
     Friend Shared ReadOnly Property PriorityCommandTarget() As IVsRegisterPriorityCommandTarget
         Get
             If _pct Is Nothing Then
@@ -91,7 +102,9 @@ Public NotInheritable Class Command1Package
             Return _pct
         End Get
     End Property
+
     Private Shared privateInstance As Command1Package
+
     Public Shared Property Instance() As Command1Package
         Get
             Return privateInstance
@@ -100,4 +113,5 @@ Public NotInheritable Class Command1Package
             privateInstance = value
         End Set
     End Property
+
 End Class

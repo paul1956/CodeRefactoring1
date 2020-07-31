@@ -1,4 +1,8 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -42,7 +46,7 @@ Namespace Style
             If VariableDeclarator.Initializer.Value.Kind = SyntaxKind.CollectionInitializer Then
                 Return
             End If
-            context.RegisterRefactoring(CodeAction.Create($"Remove As Clause", Function(c As CancellationToken) Me.MakeImplicit(document, VariableDeclarator, c)))
+            context.RegisterRefactoring(CodeAction.Create($"Remove As Clause", Function(c As CancellationToken) MakeImplicit(document, VariableDeclarator, c)))
         End Function
 
         Private Async Function MakeImplicit(document As Document, VariableDeclarator As VariableDeclaratorSyntax, cancellationToken As CancellationToken) As Task(Of Document)

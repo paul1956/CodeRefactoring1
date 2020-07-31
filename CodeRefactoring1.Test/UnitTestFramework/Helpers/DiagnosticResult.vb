@@ -12,11 +12,11 @@ Namespace TestHelper
     ''' Struct that stores information about a Diagnostic appearing in a source
     ''' </summary>
     Public Structure DiagnosticResult
-        Private innerlocations As DiagnosticResultLocation()
+        Private _innerlocations As DiagnosticResultLocation()
 
         Public ReadOnly Property Column As Integer
             Get
-                Return If(Me.Locations.Length > 0, Me.Locations(0).Column, -1)
+                Return If(Locations.Length > 0, Locations(0).Column, -1)
             End Get
         End Property
 
@@ -24,19 +24,19 @@ Namespace TestHelper
 
         Public ReadOnly Property Line As Integer
             Get
-                Return If(Me.Locations.Length > 0, Me.Locations(0).Line, -1)
+                Return If(Locations.Length > 0, Locations(0).Line, -1)
             End Get
         End Property
 
         Public Property Locations As DiagnosticResultLocation()
             Get
-                If Me.innerlocations Is Nothing Then
-                    Me.innerlocations = Array.Empty(Of DiagnosticResultLocation)()
+                If _innerlocations Is Nothing Then
+                    _innerlocations = Array.Empty(Of DiagnosticResultLocation)()
                 End If
-                Return Me.innerlocations
+                Return _innerlocations
             End Get
             Set
-                Me.innerlocations = Value
+                _innerlocations = Value
             End Set
         End Property
 
@@ -44,7 +44,7 @@ Namespace TestHelper
 
         Public ReadOnly Property Path As String
             Get
-                Return If(Me.Locations.Length > 0, Me.Locations(0).Path, "")
+                Return If(Locations.Length > 0, Locations(0).Path, "")
             End Get
         End Property
 
@@ -65,6 +65,7 @@ Namespace TestHelper
         Public Overrides Function GetHashCode() As Integer
             Throw New NotImplementedException()
         End Function
+
     End Structure
 
 End Namespace

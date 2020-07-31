@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -64,7 +68,7 @@ Public Module StringExtensions
 
         ' now this will calculate indentation regardless of actual content on the buffer except TAB
         For i As Integer = 0 To endPosition - 1
-            column += If(textSnippet(i) = ControlChars.Tab, tabSize - column Mod tabSize, 1)
+            column += If(textSnippet(i) = vbTab, tabSize - column Mod tabSize, 1)
         Next
 
         Return column - initialColumn

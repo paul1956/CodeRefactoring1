@@ -1,5 +1,10 @@
-﻿Namespace Refactoring
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Namespace Refactoring
     Public Module UnusedImportDirectives
+
         Friend Async Function RemoveUnusedImportDirectivesAsync(document As Document, cancellationToken As CancellationToken) As Task(Of Document)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync()
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync()
@@ -8,6 +13,7 @@
             document = document.WithSyntaxRoot(root)
             Return document
         End Function
+
         Private Function GetUnusedImportDirectives(model As SemanticModel, cancellationToken As CancellationToken) As HashSet(Of SyntaxNode)
             Dim unusedImportDirectives As New HashSet(Of SyntaxNode)()
             Dim root As SyntaxNode = model.SyntaxTree.GetRoot(cancellationToken)
@@ -20,6 +26,7 @@
 
             Return unusedImportDirectives
         End Function
+
         Private Function RemoveUnusedImportDirectives(semanticModel As SemanticModel, root As SyntaxNode, cancellationToken As CancellationToken) As SyntaxNode
             Dim oldUsings As IEnumerable(Of SyntaxNode) = root.DescendantNodesAndSelf().Where(Function(s) TypeOf s Is ImportsStatementSyntax)
             Dim unusedUsings As HashSet(Of SyntaxNode) = GetUnusedImportDirectives(semanticModel, cancellationToken)
@@ -31,5 +38,6 @@
 
             Return root
         End Function
+
     End Module
 End Namespace

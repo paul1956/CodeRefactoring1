@@ -1,4 +1,8 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Explicit On
 Option Infer Off
 Option Strict On
 
@@ -11,6 +15,7 @@ Namespace Style
         Inherits CodeRefactoringProvider
 
         Private Const Title As String = "Add As Clause refactoring"
+
         Private ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(
             AddAsClauseDiagnosticId,
             AddAsClauseForLambdaDiagnosticId,
@@ -39,7 +44,7 @@ Namespace Style
 
             For Each DiagnosticEntry As Diagnostic In model.GetDiagnostics(context.Span)
                 ' Does Diagnostic contain any of the errors I care about?
-                If Me.FixableDiagnosticIds.Any(Function(m As String) m.ToString = DiagnosticEntry.Id.ToString) Then
+                If FixableDiagnosticIds.Any(Function(m As String) m.ToString = DiagnosticEntry.Id.ToString) Then
                     Continue For
                 End If
                 Return

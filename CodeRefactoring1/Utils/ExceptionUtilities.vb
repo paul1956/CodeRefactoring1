@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -18,4 +22,5 @@ Public Module ExceptionUtilities
         ' We do not throw from here because we don't want all Watson reports to be bucketed to this call.
         Return New InvalidOperationException(output)
     End Function
+
 End Module

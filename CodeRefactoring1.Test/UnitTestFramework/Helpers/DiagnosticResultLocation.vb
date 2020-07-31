@@ -5,6 +5,7 @@ Option Infer Off
 Option Strict On
 
 Namespace TestHelper
+
     ''' <summary>
     ''' Location where the diagnostic appears, as determined by path, line number, And column number.
     ''' </summary>

@@ -1,4 +1,8 @@
-﻿Imports Microsoft.CodeAnalysis.Diagnostics
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports Microsoft.CodeAnalysis.Diagnostics
 
 ''' <summary>
 ''' This attribute is applied to <see cref="DiagnosticAnalyzer"/>s for which no code fix is currently planned.
@@ -31,4 +35,5 @@ Friend NotInheritable Class NoCodeFixAttribute
     ''' The reason why the <see cref="DiagnosticAnalyzer"/> does not have a code fix.
     ''' </value>
     Public ReadOnly Property Reason() As String
+
 End Class

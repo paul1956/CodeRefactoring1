@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 'Namespace Microsoft.CodeAnalysis.Shared.Utilities
 ''' <summary>
@@ -44,10 +48,10 @@ Partial Friend Class SymbolEquivalenceComparer
     Public ReadOnly Property SignatureTypeEquivalenceComparer() As SignatureTypeSymbolEquivalenceComparer
 
     Friend Sub New(ByVal assemblyComparerOpt As IEqualityComparer(Of IAssemblySymbol), ByVal distinguishRefFromOut As Boolean)
-        Me._assemblyComparerOpt = assemblyComparerOpt
+        _assemblyComparerOpt = assemblyComparerOpt
 
-        Me.ParameterEquivalenceComparer = New ParameterSymbolEqualityComparer(Me, distinguishRefFromOut)
-        Me.SignatureTypeEquivalenceComparer = New SignatureTypeSymbolEquivalenceComparer(Me)
+        ParameterEquivalenceComparer = New ParameterSymbolEqualityComparer(Me, distinguishRefFromOut)
+        SignatureTypeEquivalenceComparer = New SignatureTypeSymbolEquivalenceComparer(Me)
 
         ' There are only so many EquivalenceVisitors and GetHashCodeVisitors we can have.
         ' Create them all up front.
@@ -56,14 +60,14 @@ Partial Friend Class SymbolEquivalenceComparer
         equivalenceVisitorsBuilder.Add(New EquivalenceVisitor(Me, compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=False))
         equivalenceVisitorsBuilder.Add(New EquivalenceVisitor(Me, compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=True))
         equivalenceVisitorsBuilder.Add(New EquivalenceVisitor(Me, compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False))
-        Me._equivalenceVisitors = equivalenceVisitorsBuilder.ToImmutable()
+        _equivalenceVisitors = equivalenceVisitorsBuilder.ToImmutable()
 
         Dim getHashCodeVisitorsBuilder As ImmutableArray(Of GetHashCodeVisitor).Builder = ImmutableArray.CreateBuilder(Of GetHashCodeVisitor)()
         getHashCodeVisitorsBuilder.Add(New GetHashCodeVisitor(Me, compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=True))
         getHashCodeVisitorsBuilder.Add(New GetHashCodeVisitor(Me, compareMethodTypeParametersByIndex:=True, objectAndDynamicCompareEqually:=False))
         getHashCodeVisitorsBuilder.Add(New GetHashCodeVisitor(Me, compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=True))
         getHashCodeVisitorsBuilder.Add(New GetHashCodeVisitor(Me, compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False))
-        Me._getHashCodeVisitors = getHashCodeVisitorsBuilder.ToImmutable()
+        _getHashCodeVisitors = getHashCodeVisitorsBuilder.ToImmutable()
     End Sub
 
     ' Very subtle logic here.  When checking if two parameters are the same, we can end up with
@@ -75,12 +79,12 @@ Partial Friend Class SymbolEquivalenceComparer
     ' that method type parameters are just compared by index and nothing else.
     Private Function GetEquivalenceVisitor(Optional ByVal compareMethodTypeParametersByIndex As Boolean = False, Optional ByVal objectAndDynamicCompareEqually As Boolean = False) As EquivalenceVisitor
         Dim visitorIndex As Integer = GetVisitorIndex(compareMethodTypeParametersByIndex, objectAndDynamicCompareEqually)
-        Return Me._equivalenceVisitors(visitorIndex)
+        Return _equivalenceVisitors(visitorIndex)
     End Function
 
     Private Function GetGetHashCodeVisitor(ByVal compareMethodTypeParametersByIndex As Boolean, ByVal objectAndDynamicCompareEqually As Boolean) As GetHashCodeVisitor
         Dim visitorIndex As Integer = GetVisitorIndex(compareMethodTypeParametersByIndex, objectAndDynamicCompareEqually)
-        Return Me._getHashCodeVisitors(visitorIndex)
+        Return _getHashCodeVisitors(visitorIndex)
     End Function
 
     Private Shared Function GetVisitorIndex(ByVal compareMethodTypeParametersByIndex As Boolean, ByVal objectAndDynamicCompareEqually As Boolean) As Integer
@@ -100,14 +104,14 @@ Partial Friend Class SymbolEquivalenceComparer
     End Function
 
     Public Function ReturnTypeEquals(ByVal x As IMethodSymbol, ByVal y As IMethodSymbol, Optional ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol) = Nothing) As Boolean
-        Return Me.GetEquivalenceVisitor().ReturnTypesAreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
+        Return GetEquivalenceVisitor().ReturnTypesAreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
     End Function
 
     ''' <summary>
     ''' Compares given symbols <paramref name="x"/> and <paramref name="y"/> for equivalence.
     ''' </summary>
     Public Shadows Function Equals(ByVal x As ISymbol, ByVal y As ISymbol) As Boolean Implements IEqualityComparer(Of ISymbol).Equals
-        Return Me.EqualsCore(x, y, Nothing)
+        Return EqualsCore(x, y, Nothing)
     End Function
 
     ''' <summary>
@@ -117,16 +121,16 @@ Partial Friend Class SymbolEquivalenceComparer
     ''' </summary>
     ''' <remarks>This API is only supported for <see cref="SymbolEquivalenceComparer.IgnoreAssembliesInstance"/>.</remarks>
     Public Shadows Function Equals(ByVal x As ISymbol, ByVal y As ISymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-        Debug.Assert(Me._assemblyComparerOpt Is Nothing)
-        Return Me.EqualsCore(x, y, equivalentTypesWithDifferingAssemblies)
+        Debug.Assert(_assemblyComparerOpt Is Nothing)
+        Return EqualsCore(x, y, equivalentTypesWithDifferingAssemblies)
     End Function
 
     Private Function EqualsCore(ByVal x As ISymbol, ByVal y As ISymbol, ByVal equivalentTypesWithDifferingAssemblies As Dictionary(Of INamedTypeSymbol, INamedTypeSymbol)) As Boolean
-        Return Me.GetEquivalenceVisitor().AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
+        Return GetEquivalenceVisitor().AreEquivalent(x, y, equivalentTypesWithDifferingAssemblies)
     End Function
 
     Public Shadows Function GetHashCode(ByVal x As ISymbol) As Integer Implements IEqualityComparer(Of ISymbol).GetHashCode
-        Return Me.GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False).GetHashCode(x, currentHash:=0)
+        Return GetGetHashCodeVisitor(compareMethodTypeParametersByIndex:=False, objectAndDynamicCompareEqually:=False).GetHashCode(x, currentHash:=0)
     End Function
 
     Private Shared Function UnwrapAlias(ByVal symbol As ISymbol) As ISymbol
@@ -192,6 +196,7 @@ Partial Friend Class SymbolEquivalenceComparer
         Dim k As TypeKind = x.TypeKind
         Return If(k = TypeKind.Module, TypeKind.Class, k)
     End Function
-End Class
-'End Namespace
 
+End Class
+
+'End Namespace

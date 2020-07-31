@@ -1,4 +1,8 @@
-﻿Imports CodeRefactoring1.Usage.UnusedParametersCodeFixProvider
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports CodeRefactoring1.Usage.UnusedParametersCodeFixProvider
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 
@@ -112,8 +116,8 @@ Namespace Usage
             Public Solution As Solution
 
             Public Sub Merge(ByVal sol As SolutionWithDocs)
-                Me.Solution = sol.Solution
-                Me.Docs.AddRange(sol.Docs)
+                Solution = sol.Solution
+                Docs.AddRange(sol.Docs)
             End Sub
 
         End Structure

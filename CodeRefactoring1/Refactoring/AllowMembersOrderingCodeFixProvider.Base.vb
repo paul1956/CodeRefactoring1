@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
@@ -34,7 +38,7 @@ Namespace Refactoring
             Dim root As CompilationUnitSyntax = DirectCast(Await document.GetSyntaxRootAsync(cancellationToken), CompilationUnitSyntax)
 
             Dim newTypeBlock As TypeBlockSyntax = Nothing
-            Dim orderChanged As Boolean = TryReplaceTypeMembers(typeBlock, membersDeclaration, membersDeclaration.OrderBy(Function(member As DeclarationStatementSyntax) member, Me.GetMemberDeclarationComparer(document, cancellationToken)), newTypeBlock)
+            Dim orderChanged As Boolean = TryReplaceTypeMembers(typeBlock, membersDeclaration, membersDeclaration.OrderBy(Function(member As DeclarationStatementSyntax) member, GetMemberDeclarationComparer(document, cancellationToken)), newTypeBlock)
             If Not orderChanged Then Return Nothing
 
             Dim newDocument As Document = document.WithSyntaxRoot(root.
@@ -55,11 +59,11 @@ Namespace Refactoring
             Dim diagnosticSpan As TextSpan = diagnostic.Location.SourceSpan
 
             Dim typeBlock As TypeBlockSyntax = DirectCast(root.FindToken(diagnosticSpan.Start).Parent.FirstAncestorOrSelfOfType(GetType(ClassBlockSyntax), GetType(StructureBlockSyntax), GetType(ModuleBlockSyntax)), TypeBlockSyntax)
-            Dim newDocument As Document = Await Me.AllowMembersOrderingAsync(context.Document, typeBlock, context.CancellationToken)
+            Dim newDocument As Document = Await AllowMembersOrderingAsync(context.Document, typeBlock, context.CancellationToken)
             If newDocument IsNot Nothing Then
-                context.RegisterCodeFix(action:=CodeAction.Create(title:=String.Format(Me.CodeActionDescription, typeBlock), createChangedDocument:=Function(ct As CancellationToken)
-                                                                                                                                                        Return Task.FromResult(result:=newDocument)
-                                                                                                                                                    End Function, equivalenceKey:="BaseAllowMembersOrderingCodeFixProvider"), diagnostic:=diagnostic)
+                context.RegisterCodeFix(action:=CodeAction.Create(title:=String.Format(CodeActionDescription, typeBlock), createChangedDocument:=Function(ct As CancellationToken)
+                                                                                                                                                     Return Task.FromResult(result:=newDocument)
+                                                                                                                                                 End Function, equivalenceKey:="BaseAllowMembersOrderingCodeFixProvider"), diagnostic:=diagnostic)
             End If
         End Function
 

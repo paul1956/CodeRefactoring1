@@ -1,11 +1,14 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 Imports System.Runtime.CompilerServices
+
 Imports Microsoft.CodeAnalysis
 
 Module Extensions
+
     <Flags>
     Friend Enum SymbolDisplayCompilerInternalOptions
+
         ''' <summary>
         ''' None
         ''' </summary>
@@ -47,6 +50,7 @@ Module Extensions
         '''   b) not setting this option will produce "int[][,]".
         ''' </summary>
         ReverseArrayRankSpecifiers = 1 << 5
+
     End Enum
 
     ''' <summary>

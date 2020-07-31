@@ -1,11 +1,18 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
-Imports Microsoft.CodeAnalysis.CodeFixes
+
 Imports System.Collections.Immutable
 
+Imports Microsoft.CodeAnalysis.CodeFixes
+
 Namespace Performance
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(RemoveWhereWhenItIsPossibleCodeFixProvider)), Composition.Shared>
     Public Class RemoveWhereWhenItIsPossibleCodeFixProvider
         Inherits CodeFixProvider
@@ -20,7 +27,7 @@ Namespace Performance
             Dim diagnostic As Diagnostic = context.Diagnostics.First
             Dim name As String = diagnostic.Properties!methodName
             Dim message As String = $"Remove 'Where' moving predicate to '{name}'"
-            context.RegisterCodeFix(CodeAction.Create(message, Function(c As CancellationToken) Me.RemoveWhere(context.Document, diagnostic, c), NameOf(RemoveWhereWhenItIsPossibleCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create(message, Function(c As CancellationToken) RemoveWhere(context.Document, diagnostic, c), NameOf(RemoveWhereWhenItIsPossibleCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 
@@ -45,5 +52,7 @@ Namespace Performance
             Dim newDocument As Document = document.WithSyntaxRoot(newRoot)
             Return newDocument
         End Function
+
     End Class
+
 End Namespace

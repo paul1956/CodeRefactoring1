@@ -3,14 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Text
-Imports System.Threading
-Imports Microsoft.CodeAnalysis
+Imports CodeRefactoring1.Utilities
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
-Imports Microsoft.CodeAnalysis.VisualBasic
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
-Imports VBRefactorings.Utilities
 
 Namespace Style
     Public Module AddAsClauseUtilities
@@ -679,13 +675,13 @@ Namespace Style
         End Function
 
         Public Function NewVariableDeclaratorSyntaxWithAsClauseAsync(model As SemanticModel, currentDocument As Document, variableDeclarator As VariableDeclaratorSyntax) As VariableDeclaratorSyntax
-            Contracts.Contract.Assume(CurrentDocument IsNot Nothing)
-            If VariableDeclarator Is Nothing Then
-                Throw New ArgumentException($"Argument {NameOf(VariableDeclarator)} can't be nothing")
+            Contracts.Contract.Assume(currentDocument IsNot Nothing)
+            If variableDeclarator Is Nothing Then
+                Throw New ArgumentException($"Argument {NameOf(variableDeclarator)} can't be nothing")
             End If
             Dim variableDeclaratorSyntax1 As VariableDeclaratorSyntax = Nothing
             Try
-                Dim Expression As ExpressionSyntax = VariableDeclarator.Initializer.Value
+                Dim Expression As ExpressionSyntax = variableDeclarator.Initializer.Value
                 Dim variableITypeSymbol As (pITypeSymbol As ITypeSymbol, _Error As Boolean) = Expression.DetermineType(model, CancellationToken.None)
                 If variableITypeSymbol._Error Then
                     Return Nothing

@@ -156,6 +156,7 @@ Namespace Roslyn.UnitTestFramework
             Dim span As TextSpan = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex)
             spans.GetOrAdd(spanStartTuple.Item2, Function() New List(Of TextSpan)()).Add(span)
         End Sub
+
         Private Sub AddMatch(ByVal input As String, ByVal value As String, ByVal currentIndex As Integer, ByVal matches As List(Of Tuple(Of Integer, String)))
             Dim index As Integer = input.IndexOf(value, currentIndex)
             If index >= 0 Then
@@ -280,5 +281,6 @@ Namespace Roslyn.UnitTestFramework
                 Next span
             Next kvp
         End Sub
+
     End Module
 End Namespace

@@ -1,6 +1,8 @@
-﻿Imports System.Runtime.CompilerServices
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
-Imports Microsoft.CodeAnalysis.Diagnostics
+Imports System.Runtime.CompilerServices
 
 Public Module VBAnalyzerExtensions
 
@@ -51,27 +53,6 @@ Public Module VBAnalyzerExtensions
     End Function
 
     <Extension>
-    Public Function GetCommonBaseType(source As ITypeSymbol, other As ITypeSymbol) As ITypeSymbol
-        If source Is Nothing AndAlso other IsNot Nothing Then
-            Return other
-        End If
-        If source IsNot Nothing AndAlso other Is Nothing Then
-            Return source
-        End If
-
-        Dim baseType As ITypeSymbol = source
-        While baseType IsNot Nothing
-            Dim otherBaseType As ITypeSymbol = other
-            While otherBaseType IsNot Nothing
-                If baseType.Equals(otherBaseType) Then Return baseType
-                otherBaseType = otherBaseType.BaseType
-            End While
-            baseType = baseType.BaseType
-        End While
-        Return Nothing
-    End Function
-
-    <Extension>
     Public Function HasAttribute(attributeLists As SyntaxList(Of AttributeListSyntax), attributeName As String) As Boolean
         Return attributeLists.SelectMany(Function(a) a.Attributes).Any(Function(a) a.Name.ToString().EndsWith(attributeName, StringComparison.OrdinalIgnoreCase))
     End Function
@@ -79,7 +60,7 @@ Public Module VBAnalyzerExtensions
     <Extension>
     Public Function HasAttributeOnAncestorOrSelf(node As SyntaxNode, ParamArray attributeNames As String()) As Boolean
         Dim vbNode As VisualBasicSyntaxNode = TryCast(node, VisualBasicSyntaxNode)
-        If (vbNode Is Nothing) Then Throw New System.Exception("Node is not a VB node.")
+        If (vbNode Is Nothing) Then Throw New Exception("Node is not a VB node.")
         For Each attributeName As String In attributeNames
             If (vbNode.HasAttributeOnAncestorOrSelf(attributeName)) Then Return True
         Next
@@ -88,56 +69,56 @@ Public Module VBAnalyzerExtensions
 
     <Extension>
     Public Function HasAttributeOnAncestorOrSelf(node As VisualBasicSyntaxNode, attributeName As String) As Boolean
-        Dim parentMethod As VisualBasic.Syntax.MethodBlockBaseSyntax = DirectCast(node.FirstAncestorOrSelfOfType(GetType(MethodBlockSyntax), GetType(ConstructorBlockSyntax)), MethodBlockBaseSyntax)
+        Dim parentMethod As MethodBlockBaseSyntax = DirectCast(node.FirstAncestorOrSelfOfType(GetType(MethodBlockSyntax), GetType(ConstructorBlockSyntax)), MethodBlockBaseSyntax)
         If If(parentMethod?.BlockStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim type As VisualBasic.Syntax.TypeBlockSyntax = DirectCast(node.FirstAncestorOrSelfOfType(GetType(ClassBlockSyntax), GetType(StructureBlockSyntax)), TypeBlockSyntax)
+        Dim type As TypeBlockSyntax = DirectCast(node.FirstAncestorOrSelfOfType(GetType(ClassBlockSyntax), GetType(StructureBlockSyntax)), TypeBlockSyntax)
         While (type IsNot Nothing)
             If type.BlockStatement.AttributeLists.HasAttribute(attributeName) Then Return True
             type = DirectCast(type.FirstAncestorOfType(GetType(ClassBlockSyntax), GetType(StructureBlockSyntax)), TypeBlockSyntax)
         End While
-        Dim propertyBlock As VisualBasic.Syntax.PropertyBlockSyntax = node.FirstAncestorOrSelfOfType(Of PropertyBlockSyntax)()
+        Dim propertyBlock As PropertyBlockSyntax = node.FirstAncestorOrSelfOfType(Of PropertyBlockSyntax)()
         If If(propertyBlock?.PropertyStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim accessor As VisualBasic.Syntax.AccessorBlockSyntax = node.FirstAncestorOrSelfOfType(Of AccessorBlockSyntax)()
+        Dim accessor As AccessorBlockSyntax = node.FirstAncestorOrSelfOfType(Of AccessorBlockSyntax)()
         If If(accessor?.AccessorStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim anInterface As VisualBasic.Syntax.InterfaceBlockSyntax = node.FirstAncestorOrSelfOfType(Of InterfaceBlockSyntax)()
+        Dim anInterface As InterfaceBlockSyntax = node.FirstAncestorOrSelfOfType(Of InterfaceBlockSyntax)()
         If If(anInterface?.InterfaceStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim anEnum As VisualBasic.Syntax.EnumBlockSyntax = node.FirstAncestorOrSelfOfType(Of EnumBlockSyntax)()
+        Dim anEnum As EnumBlockSyntax = node.FirstAncestorOrSelfOfType(Of EnumBlockSyntax)()
         If If(anEnum?.EnumStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim theModule As VisualBasic.Syntax.ModuleBlockSyntax = node.FirstAncestorOrSelfOfType(Of ModuleBlockSyntax)()
+        Dim theModule As ModuleBlockSyntax = node.FirstAncestorOrSelfOfType(Of ModuleBlockSyntax)()
         If If(theModule?.ModuleStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim eventBlock As VisualBasic.Syntax.EventBlockSyntax = node.FirstAncestorOrSelfOfType(Of EventBlockSyntax)()
+        Dim eventBlock As EventBlockSyntax = node.FirstAncestorOrSelfOfType(Of EventBlockSyntax)()
         If If(eventBlock?.EventStatement.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim theEvent As VisualBasic.Syntax.EventStatementSyntax = TryCast(node, EventStatementSyntax)
+        Dim theEvent As EventStatementSyntax = TryCast(node, EventStatementSyntax)
         If If(theEvent?.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim theProperty As VisualBasic.Syntax.PropertyStatementSyntax = TryCast(node, PropertyStatementSyntax)
+        Dim theProperty As PropertyStatementSyntax = TryCast(node, PropertyStatementSyntax)
         If If(theProperty?.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim field As VisualBasic.Syntax.FieldDeclarationSyntax = TryCast(node, FieldDeclarationSyntax)
+        Dim field As FieldDeclarationSyntax = TryCast(node, FieldDeclarationSyntax)
         If If(field?.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim parameter As VisualBasic.Syntax.ParameterSyntax = TryCast(node, ParameterSyntax)
+        Dim parameter As ParameterSyntax = TryCast(node, ParameterSyntax)
         If If(parameter?.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
-        Dim aDelegate As VisualBasic.Syntax.DelegateStatementSyntax = TryCast(node, DelegateStatementSyntax)
+        Dim aDelegate As DelegateStatementSyntax = TryCast(node, DelegateStatementSyntax)
         If If(aDelegate?.AttributeLists.HasAttribute(attributeName), False) Then
             Return True
         End If
@@ -159,37 +140,5 @@ Public Module VBAnalyzerExtensions
             typeSymbol.SpecialType = SpecialType.System_Single OrElse
             typeSymbol.SpecialType = SpecialType.System_Double
     End Function
-
-    <Extension>
-    Public Sub RegisterCompilationStartAction(context As AnalysisContext, languageVersion As LanguageVersion, registrationAction As Action(Of CompilationStartAnalysisContext))
-        context.RegisterCompilationStartAction(Sub(compilationContext) compilationContext.RunIfVBVersionOrGreater(languageVersion, Sub() registrationAction?.Invoke(compilationContext)))
-    End Sub
-
-    <Extension>
-    Public Sub RegisterSyntaxNodeAction(Of TLanguageKindEnum As Structure)(context As AnalysisContext, languageVersion As LanguageVersion, action As Action(Of SyntaxNodeAnalysisContext), ParamArray syntaxKinds As TLanguageKindEnum())
-        context.RegisterCompilationStartAction(languageVersion, Sub(compilationContext) compilationContext.RegisterSyntaxNodeAction(action, syntaxKinds))
-    End Sub
-
-#Disable Warning RS1012 ' Start action has no registered actions.
-
-    <Extension>
-    Public Sub RunIfVBVersionOrGreater(context As CompilationStartAnalysisContext, languageVersion As LanguageVersion, action As Action)
-#Enable Warning RS1012 ' Start action has no registered actions.
-        context.Compilation.RunIfVBVersionOrGreater(action, languageVersion)
-    End Sub
-
-    <Extension>
-    Public Sub RunIfVBVersionOrGreater(compilation As Compilation, action As Action, languageVersion As LanguageVersion)
-        Dim vbCompilation As VisualBasic.VisualBasicCompilation = TryCast(compilation, VisualBasicCompilation)
-        If vbCompilation Is Nothing Then
-            Return
-        End If
-        vbCompilation.LanguageVersion.RunWithVBVersionOrGreater(action, languageVersion)
-    End Sub
-
-    <Extension>
-    Public Sub RunWithVBVersionOrGreater(languageVersion As LanguageVersion, action As Action, greaterOrEqualThanLanguageVersion As LanguageVersion)
-        If languageVersion >= greaterOrEqualThanLanguageVersion Then action?.Invoke()
-    End Sub
 
 End Module

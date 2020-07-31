@@ -1,9 +1,9 @@
-﻿Imports System.Collections.Generic
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 Imports System.Collections.Immutable
-Imports System.Linq
-Imports System.Threading.Tasks
-Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CodeActions
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 
 ''' <summary>
@@ -18,11 +18,11 @@ Friend MustInherit Class DocumentBasedFixAllProvider
         Dim fixAction As CodeAction
         Select Case fixAllContext.Scope
             Case FixAllScope.Document
-                fixAction = CodeAction.Create(Me.CodeActionTitle, Function(c As CancellationToken) Me.GetDocumentFixesAsync(fixAllContext.WithCancellationToken(c)), NameOf(DocumentBasedFixAllProvider))
+                fixAction = CodeAction.Create(CodeActionTitle, Function(c As CancellationToken) GetDocumentFixesAsync(fixAllContext.WithCancellationToken(c)), NameOf(DocumentBasedFixAllProvider))
             Case FixAllScope.Project
-                fixAction = CodeAction.Create(Me.CodeActionTitle, Function(c As CancellationToken) Me.GetProjectFixesAsync(fixAllContext.WithCancellationToken(c), fixAllContext.Project), NameOf(DocumentBasedFixAllProvider))
+                fixAction = CodeAction.Create(CodeActionTitle, Function(c As CancellationToken) GetProjectFixesAsync(fixAllContext.WithCancellationToken(c), fixAllContext.Project), NameOf(DocumentBasedFixAllProvider))
             Case FixAllScope.Solution
-                fixAction = CodeAction.Create(Me.CodeActionTitle, Function(c As CancellationToken) Me.GetSolutionFixesAsync(fixAllContext.WithCancellationToken(c)), NameOf(DocumentBasedFixAllProvider))
+                fixAction = CodeAction.Create(CodeActionTitle, Function(c As CancellationToken) GetSolutionFixesAsync(fixAllContext.WithCancellationToken(c)), NameOf(DocumentBasedFixAllProvider))
             Case Else
                 fixAction = Nothing
         End Select
@@ -49,7 +49,7 @@ Friend MustInherit Class DocumentBasedFixAllProvider
             Return fixAllContext.Document
         End If
 
-        Dim newRoot As SyntaxNode = Await Me.FixAllInDocumentAsync(fixAllContext, fixAllContext.Document, diagnostics).ConfigureAwait(False)
+        Dim newRoot As SyntaxNode = Await FixAllInDocumentAsync(fixAllContext, fixAllContext.Document, diagnostics).ConfigureAwait(False)
         If newRoot Is Nothing Then
             Return fixAllContext.Document
         End If
@@ -69,7 +69,7 @@ Friend MustInherit Class DocumentBasedFixAllProvider
                 Continue For
             End If
 
-            newDocuments.Add(Me.FixAllInDocumentAsync(fixAllContext, document, diagnostics))
+            newDocuments.Add(FixAllInDocumentAsync(fixAllContext, document, diagnostics))
         Next document
 
         For i As Integer = 0 To documents.Length - 1
@@ -85,11 +85,12 @@ Friend MustInherit Class DocumentBasedFixAllProvider
     End Function
 
     Private Function GetProjectFixesAsync(ByVal fixAllContext As FixAllContext, ByVal project As Project) As Task(Of Solution)
-        Return Me.GetSolutionFixesAsync(fixAllContext, project.Documents.ToImmutableArray())
+        Return GetSolutionFixesAsync(fixAllContext, project.Documents.ToImmutableArray())
     End Function
 
     Private Function GetSolutionFixesAsync(ByVal fixAllContext As FixAllContext) As Task(Of Solution)
         Dim documents As ImmutableArray(Of Document) = fixAllContext.Solution.Projects.SelectMany(Function(i As Project) i.Documents).ToImmutableArray()
-        Return Me.GetSolutionFixesAsync(fixAllContext, documents)
+        Return GetSolutionFixesAsync(fixAllContext, documents)
     End Function
+
 End Class

@@ -3,17 +3,9 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-Imports System.Composition
-Imports System.Threading
-Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CodeActions
+Imports CodeRefactoring1.Utilities
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
-Imports Microsoft.CodeAnalysis.Text
-Imports Microsoft.CodeAnalysis.VisualBasic
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-
-Imports VBRefactorings.Utilities
 
 Namespace Style
 
@@ -25,7 +17,7 @@ Namespace Style
 
         Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String)
             Get
-                Return ImmutableArray.Create(ByValAnalyzerFixAnalyzer.DiagnosticId)
+                Return ImmutableArray.Create(RemoveByValAnalyzerDiagnosticId)
             End Get
         End Property
 

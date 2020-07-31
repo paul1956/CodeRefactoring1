@@ -1,6 +1,6 @@
-﻿Option Explicit On
-Option Infer Off
-Option Strict On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports System.Resources
 
@@ -15,15 +15,15 @@ Public Class ResourceXClass
     ''' </summary>
     ''' <param name="CurrentProjectFolderWithProjectFile"></param>
     Sub New(CurrentProjectFolderWithProjectFile As String)
-        Me.ResourceFilenameWithPath = GetGlobalizationFileDirectory(CurrentProjectFolderWithProjectFile)
-        If String.IsNullOrWhiteSpace(Me.ResourceFilenameWithPath) Then
+        ResourceFilenameWithPath = GetGlobalizationFileDirectory(CurrentProjectFolderWithProjectFile)
+        If String.IsNullOrWhiteSpace(ResourceFilenameWithPath) Then
             Exit Sub
         End If
-        Me.Initialized = InitializedValues.True
+        Initialized = InitializedValues.True
     End Sub
 
     Sub New()
-        Me.Initialized = InitializedValues.Testing
+        Initialized = InitializedValues.Testing
     End Sub
 
     <Flags>
@@ -32,7 +32,9 @@ Public Class ResourceXClass
         NoResourceDirectory
         Testing
     End Enum
+
     Private Property ResourceFilenameWithPath As String = ""
+
     Public Shared Function GetValidIdentifierName(BaseName As String, Unique As Boolean) As String
         If Unique Then
             Dim Hash As String = $"_{BaseName.GetHashCode.ToString.Replace("-", "")}"
@@ -68,9 +70,9 @@ Public Class ResourceXClass
         If Me.Initialized = InitializedValues.Testing Then
             Return True
         End If
-        Using resourceWriter As New ResXResourceWriter(Me.ResourceFilenameWithPath)
+        Using resourceWriter As New ResXResourceWriter(ResourceFilenameWithPath)
             'Get existing resources
-            Using reader As New ResXResourceReader(Me.ResourceFilenameWithPath) With {.UseResXDataNodes = True}
+            Using reader As New ResXResourceReader(ResourceFilenameWithPath) With {.UseResXDataNodes = True}
                 For Each resEntry As DictionaryEntry In reader
                     Dim node As ResXDataNode = TryCast(resEntry.Value, ResXDataNode)
                     If node Is Nothing Then
@@ -100,7 +102,7 @@ Public Class ResourceXClass
             Return BaseName
         End If
         Dim PossibleName As String = GetValidIdentifierName(BaseName, False)
-        Using reader As New ResXResourceReader(Me.ResourceFilenameWithPath) With {.UseResXDataNodes = True}
+        Using reader As New ResXResourceReader(ResourceFilenameWithPath) With {.UseResXDataNodes = True}
             For Each resEntry As DictionaryEntry In reader
                 Dim node As ResXDataNode = TryCast(resEntry.Value, ResXDataNode)
                 If node Is Nothing Then
@@ -115,6 +117,7 @@ Public Class ResourceXClass
         End Using
         Return BaseName
     End Function
+
     Private Shared Function FindLanguageResourceFile(CultureFolderName As String, RootDirectory As String) As String
         If Not RootDirectory.Contains("\") Then
             Return String.Empty
@@ -147,4 +150,5 @@ Public Class ResourceXClass
         Dim RootDirector As String = FolderList.Join("\"c)
         Return RootDirector
     End Function
+
 End Class

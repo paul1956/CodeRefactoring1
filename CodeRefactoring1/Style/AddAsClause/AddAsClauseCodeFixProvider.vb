@@ -8,11 +8,8 @@ Option Infer Off
 Option Strict On
 
 Imports System.Collections.Immutable
-Imports System.Composition
-Imports Microsoft.CodeAnalysis
+
 Imports Microsoft.CodeAnalysis.CodeFixes
-Imports Microsoft.CodeAnalysis.Text
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
 

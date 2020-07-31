@@ -142,42 +142,6 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to In C#6 the nameof() operator should be used to specify the name of a program element instead of a string literal as it produce code that is easier to refactor..
-        '''</summary>
-        Friend ReadOnly Property NameOfAnalyzer_Description() As String
-            Get
-                Return ResourceManager.GetString("NameOfAnalyzer_Description", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized string similar to Use &apos;nameof({0})&apos; instead of specifying the program element name..
-        '''</summary>
-        Friend ReadOnly Property NameOfAnalyzer_MessageFormat() As String
-            Get
-                Return ResourceManager.GetString("NameOfAnalyzer_MessageFormat", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized string similar to Use nameof.
-        '''</summary>
-        Friend ReadOnly Property NameOfAnalyzer_Title() As String
-            Get
-                Return ResourceManager.GetString("NameOfAnalyzer_Title", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized string similar to Use nameof().
-        '''</summary>
-        Friend ReadOnly Property NameOfCodeFixProvider_Title() As String
-            Get
-                Return ResourceManager.GetString("NameOfCodeFixProvider_Title", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
         '''  Looks up a localized string similar to Remove ByVal from function declaration.
         '''</summary>
         Friend ReadOnly Property RemoveByValDescription() As String

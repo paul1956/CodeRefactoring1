@@ -1,4 +1,9 @@
-﻿Public Module CheckSyntax
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Public Module CheckSyntax
+
     Public Function CheckSyntax(source As String) As (Boolean, String)
         Dim tree As CompilationUnitSyntax = SyntaxFactory.ParseCompilationUnit(source)
         Dim strDetail As String = ""
@@ -19,4 +24,5 @@
         Next
         Return (False, strDetail)
     End Function
+
 End Module

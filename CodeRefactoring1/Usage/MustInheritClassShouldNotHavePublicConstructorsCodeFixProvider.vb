@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 
@@ -32,7 +36,7 @@ Namespace Usage
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diag As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) Me.ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
+            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
             Return Task.FromResult(0)
         End Function
 

@@ -23,39 +23,40 @@ Class TestCodeContainer
     Public Property SemanticModel As SemanticModel
 
     Public Sub New(textWithMarker As String)
-        Me.Position = textWithMarker.IndexOf("$"c)
-        If Me.Position <> -1 Then
-            textWithMarker = textWithMarker.Remove(Me.Position, 1)
+        Position = textWithMarker.IndexOf("$"c)
+        If Position <> -1 Then
+            textWithMarker = textWithMarker.Remove(Position, 1)
         End If
 
-        Me.Text = textWithMarker
-        Me.SyntaxTree = VisualBasic.SyntaxFactory.ParseSyntaxTree(Me.Text)
-        If Me.Position <> -1 Then
-            Me.Token = Me.SyntaxTree.GetRoot().FindToken(Me.Position)
-            Me.SyntaxNode = Me.Token.Parent
+        Text = textWithMarker
+        SyntaxTree = VisualBasic.SyntaxFactory.ParseSyntaxTree(Text)
+        If Position <> -1 Then
+            Token = SyntaxTree.GetRoot().FindToken(Position)
+            SyntaxNode = Token.Parent
         End If
 
         ' Use the mscorlib from our current process
-        Me.Compilation = VisualBasicCompilation.Create(
+        Compilation = VisualBasicCompilation.Create(
             "test",
-            syntaxTrees:={Me.SyntaxTree},
+            syntaxTrees:={SyntaxTree},
             SharedReferences.References)
 
-        Me.SemanticModel = Me.Compilation.GetSemanticModel(Me.SyntaxTree)
+        SemanticModel = Compilation.GetSemanticModel(SyntaxTree)
     End Sub
 
     Public Sub GetStatementsBetweenMarkers(ByRef firstStatement As StatementSyntax, ByRef lastStatement As StatementSyntax)
-        Dim span As TextSpan = Me.GetSpanBetweenMarkers()
-        Dim statementsInside As IEnumerable(Of StatementSyntax) = Me.SyntaxTree.GetRoot().DescendantNodes(span).OfType(Of StatementSyntax).Where(Function(s) span.Contains(s.Span))
+        Dim span As TextSpan = GetSpanBetweenMarkers()
+        Dim statementsInside As IEnumerable(Of StatementSyntax) = SyntaxTree.GetRoot().DescendantNodes(span).OfType(Of StatementSyntax).Where(Function(s) span.Contains(s.Span))
         Dim first As StatementSyntax = statementsInside.First()
         firstStatement = first
         lastStatement = statementsInside.Where(Function(s) s.Parent Is first.Parent).Last()
     End Sub
 
     Public Function GetSpanBetweenMarkers() As TextSpan
-        Dim startComment As SyntaxTrivia = Me.SyntaxTree.GetRoot().DescendantTrivia().First(Function(t) t.ToString().Contains("start"))
-        Dim endComment As SyntaxTrivia = Me.SyntaxTree.GetRoot().DescendantTrivia().First(Function(t) t.ToString().Contains("end"))
+        Dim startComment As SyntaxTrivia = SyntaxTree.GetRoot().DescendantTrivia().First(Function(t) t.ToString().Contains("start"))
+        Dim endComment As SyntaxTrivia = SyntaxTree.GetRoot().DescendantTrivia().First(Function(t) t.ToString().Contains("end"))
         Dim span As TextSpan = TextSpan.FromBounds(startComment.FullSpan.End, endComment.FullSpan.Start)
         Return span
     End Function
+
 End Class

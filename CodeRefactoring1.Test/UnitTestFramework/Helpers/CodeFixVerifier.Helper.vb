@@ -6,10 +6,12 @@ Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
 
 Namespace TestHelper
+
     ' Diagnostic Producer class with extra methods dealing with applying codefixes
     ' All methods are shared
     Partial Public MustInherit Class CodeFixVerifier
         Inherits DiagnosticVerifier
+
         ''' <summary>
         ''' Apply the inputted CodeAction to the inputted document.
         ''' Meant to be used to apply codefixes.
@@ -73,5 +75,7 @@ Namespace TestHelper
             root = Formatter.Format(root, Formatter.Annotation, simplifiedDoc.Project.Solution.Workspace)
             Return root.GetText().ToString()
         End Function
+
     End Class
+
 End Namespace

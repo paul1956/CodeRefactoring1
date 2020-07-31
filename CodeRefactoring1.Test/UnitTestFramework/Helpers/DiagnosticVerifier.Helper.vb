@@ -4,11 +4,10 @@ Option Infer Off
 Option Strict On
 ' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+Imports System.Collections.Immutable
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.Diagnostics
 Imports Microsoft.CodeAnalysis.Text
-Imports System.Collections.Immutable
 
 Namespace TestHelper
 
@@ -23,6 +22,7 @@ Namespace TestHelper
         'Private Shared ReadOnly s_systemCollectionsImmutableReference As MetadataReference = MetadataReference.CreateFromFile(GetType(ImmutableArray).Assembly.Location)
         'Private Shared ReadOnly s_runtimeReference As MetadataReference = MetadataReference.CreateFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(GetType(Object).Assembly.Location), "System.Runtime.dll"))
         Friend Shared DefaultFilePathPrefix As String = "Test"
+
         Friend Shared CSharpDefaultFileExt As String = "cs"
         Friend Shared VisualBasicDefaultExt As String = "vb"
         Friend Shared TestProjectName As String = "TestProject"
@@ -95,6 +95,7 @@ Namespace TestHelper
 #End Region
 
 #Region " Set up compilation And documents"
+
         ''' <summary>
         ''' Given an array of strings as sources And a language, turn them into a project And return the documents And spans of it.
         ''' </summary>
@@ -140,7 +141,6 @@ Namespace TestHelper
 
             Dim projectId As ProjectId = ProjectId.CreateNewId(debugName:=TestProjectName)
 
-
             Dim AdhocSolution As Solution = New AdhocWorkspace() _
                                .CurrentSolution _
                                .AddProject(projectId, TestProjectName, TestProjectName, language) _
@@ -157,7 +157,9 @@ Namespace TestHelper
 
             Return AdhocSolution.GetProject(projectId)
         End Function
-#End Region
-    End Class
-End Namespace
 
+#End Region
+
+    End Class
+
+End Namespace

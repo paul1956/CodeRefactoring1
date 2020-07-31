@@ -1,5 +1,5 @@
-﻿
-Imports CodeRefactoring1
+﻿Imports CodeRefactoring1
+Imports CodeRefactoring1.Style
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
@@ -12,11 +12,11 @@ Namespace ByValAnalyzer_Fix.Test
         Inherits CodeFixVerifier
 
         Protected Overrides Function GetBasicCodeFixProvider() As CodeFixProvider
-            Return New ByValAnalyzer_FixCodeFixProvider()
+            Return New ByValAnalyzerFixCodeFixProvider()
         End Function
 
         Protected Overrides Function GetBasicDiagnosticAnalyzer() As DiagnosticAnalyzer
-            Return New ByValAnalyzer_FixAnalyzer()
+            Return New ByValAnalyzerFixAnalyzer()
         End Function
 
         'Diagnostic And CodeFix both triggered And checked for
@@ -31,7 +31,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "ByValAnalyzer_Fix",
+            Dim expected As New DiagnosticResult With {.Id = RemoveByValAnalyzerDiagnosticId,
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -39,7 +39,7 @@ End Module"
                     }
             }
 
-            Me.VerifyBasicDiagnostic(test, expected)
+            VerifyBasicDiagnostic(test, expected)
 
             Dim fixtest As String = "
 Module Module1
@@ -49,7 +49,7 @@ Module Module1
     End Sub
 
 End Module"
-            Me.VerifyBasicFix(test, fixtest)
+            VerifyBasicFix(test, fixtest)
         End Sub
 
         'Diagnostic And CodeFix both triggered And checked for
@@ -65,7 +65,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "ByValAnalyzer_Fix",
+            Dim expected As New DiagnosticResult With {.Id = "RemoveByValAnalyzer",
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -73,7 +73,7 @@ End Module"
                     }
             }
 
-            Me.VerifyBasicDiagnostic(test, expected)
+            VerifyBasicDiagnostic(test, expected)
 
             Dim fixtest As String = "
 Module Module1
@@ -84,7 +84,7 @@ Module Module1
     End Sub
 
 End Module"
-            Me.VerifyBasicFix(test, fixtest)
+            VerifyBasicFix(test, fixtest)
         End Sub
 
         <TestMethod>
@@ -100,7 +100,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "ByValAnalyzer_Fix",
+            Dim expected As New DiagnosticResult With {.Id = "RevoveByValAnalyzer",
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -108,7 +108,7 @@ End Module"
                     }
             }
 
-            Me.VerifyBasicDiagnostic(test, expected)
+            VerifyBasicDiagnostic(test, expected)
 
             Dim fixtest As String = "
 Module Module1
@@ -120,7 +120,7 @@ Module Module1
     End Sub
 
 End Module"
-            Me.VerifyBasicFix(test, fixtest)
+            VerifyBasicFix(test, fixtest)
         End Sub
 
         <TestMethod>
@@ -135,7 +135,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "ByValAnalyzer_Fix",
+            Dim expected As New DiagnosticResult With {.Id = "RevoveByValAnalyzer",
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -143,7 +143,7 @@ End Module"
                     }
             }
 
-            Me.VerifyBasicDiagnostic(test, expected)
+            VerifyBasicDiagnostic(test, expected)
 
             Dim fixtest As String = "
 Module Module1
@@ -154,14 +154,14 @@ Module Module1
     End Sub
 
 End Module"
-            Me.VerifyBasicFix(test, fixtest)
+            VerifyBasicFix(test, fixtest)
         End Sub
 
         'No diagnostics expected to show up
         <TestMethod>
         Public Sub TestNoByVal()
             Dim test As String = ""
-            Me.VerifyBasicDiagnostic(test)
+            VerifyBasicDiagnostic(test)
         End Sub
 
     End Class

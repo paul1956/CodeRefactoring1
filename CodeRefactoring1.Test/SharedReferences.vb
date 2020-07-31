@@ -13,6 +13,7 @@ Public Module SharedReferences
 
     Private ReadOnly _References As New List(Of MetadataReference)
     Private ReadOnly _ReferencePath As New List(Of String)
+
     Private Sub BuildReferenceList()
         If _References.Count > 0 Then
             Return

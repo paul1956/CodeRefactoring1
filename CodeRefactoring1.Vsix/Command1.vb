@@ -1,15 +1,12 @@
-﻿Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports System
 Imports System.ComponentModel.Design
 Imports System.Diagnostics
-Imports System.Globalization
-Imports CodeRefactoring1.Vsix.EditorExtensions.Settings
+
 Imports Microsoft.VisualStudio.Shell
-Imports Microsoft.VisualStudio.Shell.Interop
 
 ''' <summary>
 ''' Command handler
@@ -29,7 +26,8 @@ Public NotInheritable Class Command1
     ''' <summary>
     ''' VS Package that provides this command, not null.
     ''' </summary>
-    Private ReadOnly package As Package
+    Private ReadOnly _package As Package
+
     ''' <summary>
     ''' Initializes a new instance of the <see cref="Command1"/> class.
     ''' Adds our command handlers for menu (the commands must exist in the command table file)
@@ -41,8 +39,8 @@ Public NotInheritable Class Command1
         End If
         Debug.Write($"In {NameOf(Command1)} Line 42")
         Stop
-        Me.package = package
-        Dim commandService As OleMenuCommandService = CType(Me.ServiceProvider.GetService(GetType(IMenuCommandService)), OleMenuCommandService)
+        _package = package
+        Dim commandService As OleMenuCommandService = CType(ServiceProvider.GetService(GetType(IMenuCommandService)), OleMenuCommandService)
         If commandService IsNot Nothing Then
             Dim menuCommandId As CommandID = New CommandID(CommandSet, CommandId)
             'Dim menuCommand As MenuCommand = New MenuCommand(AddressOf Me.MenuItemCallback, menuCommandId)
@@ -60,7 +58,7 @@ Public NotInheritable Class Command1
     ''' </summary>
     Private ReadOnly Property ServiceProvider As IServiceProvider
         Get
-            Return Me.package
+            Return _package
         End Get
     End Property
 

@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -39,16 +43,16 @@ Friend MustInherit Class Matcher(Of T)
         Private ReadOnly _matcher2 As Matcher(Of T)
 
         Public Sub New(ByVal matcher1 As Matcher(Of T), ByVal matcher2 As Matcher(Of T))
-            Me._matcher1 = matcher1
-            Me._matcher2 = matcher2
+            _matcher1 = matcher1
+            _matcher2 = matcher2
         End Sub
 
         Public Overrides Function ToString() As String
-            Return String.Format("({0}|{1})", Me._matcher1, Me._matcher2)
+            Return String.Format("({0}|{1})", _matcher1, _matcher2)
         End Function
 
         Public Overrides Function TryMatch(ByVal sequence As IList(Of T), ByRef index As Integer) As Boolean
-            Return Me._matcher1.TryMatch(sequence, index) OrElse Me._matcher2.TryMatch(sequence, index)
+            Return _matcher1.TryMatch(sequence, index) OrElse _matcher2.TryMatch(sequence, index)
         End Function
 
     End Class
@@ -59,15 +63,15 @@ Friend MustInherit Class Matcher(Of T)
         Private ReadOnly _matcher As Matcher(Of T)
 
         Public Sub New(ByVal M As Matcher(Of T))
-            Me._matcher = M
+            _matcher = M
         End Sub
 
         Public Overrides Function ToString() As String
-            Return String.Format("({0}*)", Me._matcher)
+            Return String.Format("({0}*)", _matcher)
         End Function
 
         Public Overrides Function TryMatch(ByVal sequence As IList(Of T), ByRef index As Integer) As Boolean
-            Do While Me._matcher.TryMatch(sequence, index)
+            Do While _matcher.TryMatch(sequence, index)
             Loop
 
             Return True
@@ -81,16 +85,16 @@ Friend MustInherit Class Matcher(Of T)
         Private ReadOnly _matchers() As Matcher(Of T)
 
         Public Sub New(ParamArray ByVal matchers() As Matcher(Of T))
-            Me._matchers = matchers
+            _matchers = matchers
         End Sub
 
         Public Overrides Function ToString() As String
-            Return String.Format("({0})", String.Join(",", CType(Me._matchers, Object())))
+            Return String.Format("({0})", String.Join(",", CType(_matchers, Object())))
         End Function
 
         Public Overrides Function TryMatch(ByVal sequence As IList(Of T), ByRef index As Integer) As Boolean
             Dim currentIndex As Integer = index
-            For Each M As Matcher(Of T) In Me._matchers
+            For Each M As Matcher(Of T) In _matchers
                 If Not M.TryMatch(sequence, currentIndex) Then
                     Return False
                 End If
@@ -109,16 +113,16 @@ Friend MustInherit Class Matcher(Of T)
         Private ReadOnly _predicate As Func(Of T, Boolean)
 
         Public Sub New(ByVal predicate As Func(Of T, Boolean), ByVal description As String)
-            Me._predicate = predicate
-            Me._description = description
+            _predicate = predicate
+            _description = description
         End Sub
 
         Public Overrides Function ToString() As String
-            Return Me._description
+            Return _description
         End Function
 
         Public Overrides Function TryMatch(ByVal sequence As IList(Of T), ByRef index As Integer) As Boolean
-            If index < sequence.Count AndAlso Me._predicate(sequence(index)) Then
+            If index < sequence.Count AndAlso _predicate(sequence(index)) Then
                 index += 1
                 Return True
             End If

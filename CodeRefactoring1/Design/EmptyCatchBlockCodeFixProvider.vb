@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
@@ -70,11 +74,11 @@ Namespace Design
 
             Dim tryBlock As VisualBasic.Syntax.TryBlockSyntax = DirectCast(declaration.Parent, TryBlockSyntax)
             If tryBlock.CatchBlocks.Count > 1 Then
-                context.RegisterCodeFix(CodeAction.Create(FixRemoveEmptyCatchBlock.ToString(), Function(c As CancellationToken) Me.RemoveCatch(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
+                context.RegisterCodeFix(CodeAction.Create(FixRemoveEmptyCatchBlock.ToString(), Function(c As CancellationToken) RemoveCatch(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
             Else
-                context.RegisterCodeFix(CodeAction.Create(FixRemoveTry.ToString(), Function(c As CancellationToken) Me.RemoveTry(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
+                context.RegisterCodeFix(CodeAction.Create(FixRemoveTry.ToString(), Function(c As CancellationToken) RemoveTry(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
             End If
-            context.RegisterCodeFix(CodeAction.Create(FixInsertExceptionClass.ToString(), Function(c As CancellationToken) Me.InsertExceptionClassCommentAsync(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(InsertExceptionClassCommentAsync)), diag)
+            context.RegisterCodeFix(CodeAction.Create(FixInsertExceptionClass.ToString(), Function(c As CancellationToken) InsertExceptionClassCommentAsync(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(InsertExceptionClassCommentAsync)), diag)
         End Function
 
     End Class

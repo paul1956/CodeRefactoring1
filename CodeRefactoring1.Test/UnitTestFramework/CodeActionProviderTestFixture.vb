@@ -10,21 +10,23 @@ Imports Microsoft.CodeAnalysis.Text
 Imports Xunit
 
 Namespace Roslyn.UnitTestFramework
+
     Public MustInherit Class CodeActionProviderTestFixture
+
         Protected Function CreateDocument(ByVal code As String) As Document
-            Dim fileExtension As String = If(Me.LanguageName = LanguageNames.CSharp, ".cs", ".vb")
+            Dim fileExtension As String = If(LanguageName = LanguageNames.CSharp, ".cs", ".vb")
 
             Dim projectId As ProjectId = ProjectId.CreateNewId(debugName:="TestProject")
             Dim documentId As DocumentId = DocumentId.CreateNewId(projectId, debugName:="Test" & fileExtension)
 
             Using NewAdhocWorkspace As AdhocWorkspace = New AdhocWorkspace()
-                Return NewAdhocWorkspace.CurrentSolution.AddProject(projectId, "TestProject", "TestProject", Me.LanguageName).AddMetadataReferences(projectId, SharedReferences.References).AddDocument(documentId, "Test" & fileExtension, SourceText.From(code)).GetDocument(documentId)
+                Return NewAdhocWorkspace.CurrentSolution.AddProject(projectId, "TestProject", "TestProject", LanguageName).AddMetadataReferences(projectId, SharedReferences.References).AddDocument(documentId, "Test" & fileExtension, SourceText.From(code)).GetDocument(documentId)
             End Using
         End Function
 
         Protected Sub VerifyDocument(ByVal expected As String, ByVal compareTokens As Boolean, ByVal document As Document)
             If compareTokens Then
-                Me.VerifyTokens(expected, Format(document).ToString())
+                VerifyTokens(expected, Format(document).ToString())
             Else
                 VerifyText(expected, document)
             End If
@@ -36,12 +38,12 @@ Namespace Roslyn.UnitTestFramework
         End Function
 
         Private Function ParseTokens(ByVal text As String) As IList(Of SyntaxToken)
-            Return Me.ParseTokens(text).Select(Function(t As SyntaxToken) CType(t, SyntaxToken)).ToList()
+            Return ParseTokens(text).Select(Function(t As SyntaxToken) CType(t, SyntaxToken)).ToList()
         End Function
 
         Private Function VerifyTokens(ByVal expected As String, ByVal actual As String) As Boolean
-            Dim expectedNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(expected)
-            Dim actualNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(actual)
+            Dim expectedNewTokens As IList(Of SyntaxToken) = ParseTokens(expected)
+            Dim actualNewTokens As IList(Of SyntaxToken) = ParseTokens(actual)
 
             For i As Integer = 0 To Math.Min(expectedNewTokens.Count, actualNewTokens.Count) - 1
                 Assert.Equal(expectedNewTokens(i).ToString(), actualNewTokens(i).ToString())
@@ -64,4 +66,5 @@ Namespace Roslyn.UnitTestFramework
 
         Protected MustOverride ReadOnly Property LanguageName() As String
     End Class
+
 End Namespace

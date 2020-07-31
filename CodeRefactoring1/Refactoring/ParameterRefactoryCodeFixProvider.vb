@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
@@ -116,7 +120,7 @@ Namespace Refactoring
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Change to new Class", Function(c As CancellationToken) Me.NewClassAsync(context.Document, diagnostic, c), NameOf(ParameterRefactoryCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create("Change to new Class", Function(c As CancellationToken) NewClassAsync(context.Document, diagnostic, c), NameOf(ParameterRefactoryCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 

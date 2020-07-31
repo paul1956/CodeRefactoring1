@@ -1,12 +1,18 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 
 Namespace Design
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(StaticConstructorExceptionCodeFixProvider)), Composition.Shared>
     Public Class StaticConstructorExceptionCodeFixProvider
         Inherits CodeFixProvider
 
-        Public Overrides NotOverridable ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(StaticConstructorExceptionAnalyzer.Id)
+        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(StaticConstructorExceptionAnalyzer.Id)
 
         Public Overrides Function GetFixAllProvider() As FixAllProvider
             Return WellKnownFixAllProviders.BatchFixer
@@ -14,7 +20,7 @@ Namespace Design
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First
-            context.RegisterCodeFix(CodeAction.Create("Remove this exception", Function(ct As CancellationToken) Me.RemoveThrow(context.Document, diagnostic, ct), NameOf(StaticConstructorExceptionCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create("Remove this exception", Function(ct As CancellationToken) RemoveThrow(context.Document, diagnostic, ct), NameOf(StaticConstructorExceptionCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 
@@ -25,5 +31,7 @@ Namespace Design
 
             Return document.WithSyntaxRoot((Await document.GetSyntaxRootAsync(cancellationToken)).RemoveNode(throwBlock, SyntaxRemoveOptions.KeepNoTrivia))
         End Function
+
     End Class
+
 End Namespace

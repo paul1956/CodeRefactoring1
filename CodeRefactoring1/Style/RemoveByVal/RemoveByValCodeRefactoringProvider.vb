@@ -1,3 +1,7 @@
+' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 Namespace Style
 
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:="RemoveByValVB"), [Shared]>
@@ -28,9 +32,9 @@ Namespace Style
 
             If token.Kind = SyntaxKind.ByValKeyword AndAlso token.Span.IntersectsWith(textSpan.Start) Then
                 context.RegisterRefactoring(New RemoveByValCodeAction("Remove unnecessary ByVal keyword",
-                                                                  CType(Function(c As CancellationToken) Me.RemoveOccuranceAsync(document, token, c), Func(Of Object, Task(Of Document)))))
+                                                                  CType(Function(c As CancellationToken) RemoveOccuranceAsync(document, token, c), Func(Of Object, Task(Of Document)))))
                 context.RegisterRefactoring(New RemoveByValCodeAction("Remove all occurrences of unnecessary ByVal keywords",
-                                                                  CType(Function(c As CancellationToken) Me.RemoveAllOccurancesAsync(document, c), Func(Of Object, Task(Of Document)))))
+                                                                  CType(Function(c As CancellationToken) RemoveAllOccurancesAsync(document, c), Func(Of Object, Task(Of Document)))))
             End If
         End Function
 
@@ -41,18 +45,18 @@ Namespace Style
             Private ReadOnly createChangedDocument As Func(Of Object, Task(Of Document))
 
             Public Sub New(title As String, createChangedDocument As Func(Of Object, Task(Of Document)))
-                Me._title = title
+                _title = title
                 Me.createChangedDocument = createChangedDocument
             End Sub
 
             Public Overrides ReadOnly Property Title As String
                 Get
-                    Return Me._title
+                    Return _title
                 End Get
             End Property
 
             Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
-                Return Me.createChangedDocument(cancellationToken)
+                Return createChangedDocument(cancellationToken)
             End Function
 
         End Class
@@ -63,11 +67,11 @@ Namespace Style
             Private ReadOnly _predicate As Func(Of SyntaxToken, Boolean)
 
             Public Sub New(predicate As Func(Of SyntaxToken, Boolean))
-                Me._predicate = predicate
+                _predicate = predicate
             End Sub
 
             Public Overrides Function VisitToken(token As SyntaxToken) As SyntaxToken
-                If token.Kind = SyntaxKind.ByValKeyword AndAlso Me._predicate(token) Then
+                If token.Kind = SyntaxKind.ByValKeyword AndAlso _predicate(token) Then
                     Dim NewTrailingTrivia As New List(Of SyntaxTrivia)
                     Dim TrailingTrivia As SyntaxTriviaList = token.TrailingTrivia
                     Dim TriviaUBound As Integer = TrailingTrivia.Count - 1

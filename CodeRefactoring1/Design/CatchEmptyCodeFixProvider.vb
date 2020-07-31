@@ -1,8 +1,14 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 
 Namespace Design
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(CatchEmptyCodeFixProvider)), Composition.Shared>
     Public Class CatchEmptyCodeFixProvider
         Inherits CodeFixProvider
@@ -15,7 +21,7 @@ Namespace Design
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diag As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Add an Exception class", Function(c As CancellationToken) Me.MakeCatchEmptyAsync(context.Document, diag, c), NameOf(CatchEmptyCodeFixProvider)), diag)
+            context.RegisterCodeFix(CodeAction.Create("Add an Exception class", Function(c As CancellationToken) MakeCatchEmptyAsync(context.Document, diag, c), NameOf(CatchEmptyCodeFixProvider)), diag)
             Return Task.FromResult(0)
         End Function
 
@@ -39,5 +45,7 @@ Namespace Design
             Dim newDoc As Document = document.WithSyntaxRoot(newRoot)
             Return newDoc
         End Function
+
     End Class
+
 End Namespace

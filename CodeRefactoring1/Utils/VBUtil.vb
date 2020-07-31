@@ -1,4 +1,8 @@
-﻿Imports System.Runtime.CompilerServices
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Runtime.CompilerServices
 
 Friend Module VBUtil
 
@@ -115,6 +119,7 @@ Friend Module VBUtil
 
         Return SyntaxFactory.UnaryExpression(SyntaxKind.NotExpression, SyntaxFactory.Token(SyntaxKind.NotKeyword), AddParensForUnaryExpressionIfRequired(condition))
     End Function
+
     <Extension>
     Public Function IsKind(ByVal node As SyntaxNode, ByVal kind1 As SyntaxKind, ByVal kind2 As SyntaxKind) As Boolean
         If node Is Nothing Then
@@ -206,4 +211,5 @@ Friend Module VBUtil
         End Select
         Throw New ArgumentOutOfRangeException(NameOf(op))
     End Function
+
 End Module

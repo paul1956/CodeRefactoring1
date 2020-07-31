@@ -44,7 +44,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -60,7 +60,7 @@ End Class"
                         End Function
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <TestMethod()> Public Sub UnitTestAddAsClauseInMultiLineLambdaSubroutineSplit()
@@ -82,7 +82,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -93,7 +93,7 @@ End Class"
                      End Sub
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <TestMethod()> Public Sub UnitTestAddAsClauseInSingleLineLambdaFunctionSplit()
@@ -119,7 +119,7 @@ End Class"
                 .Locations = New DiagnosticResultLocation() {New DiagnosticResultLocation("Test0.vb", 4, 30)}
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected1, expected2)
+            VerifyBasicDiagnostic(OriginalSource, expected1, expected2)
 
             Const FixedlSource As String =
 "Class Class1
@@ -128,7 +128,7 @@ End Class"
         add1 = Function(Num As UInteger, Num1 As Integer) Num + Num1
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <TestMethod()> Public Sub UnitTestAddAsClauseInSingleLineLambdaSubroutineSplit()
@@ -151,7 +151,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -163,7 +163,7 @@ End Class"
         Throw New NotImplementedException()
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
     End Class

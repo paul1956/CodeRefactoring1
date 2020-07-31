@@ -43,7 +43,7 @@ Namespace TestHelper
         ''' <param name="codeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="allowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyBasicFix(oldSource As String, newSource As String, Optional codeFixIndex As Integer? = Nothing, Optional allowNewCompilerDiagnostics As Boolean = False)
-            VerifyFix(LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), Me.GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
         End Sub
 
         ''' <summary>
@@ -54,7 +54,7 @@ Namespace TestHelper
         ''' <param name="CodeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="AllowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyCSharpFix(OldSource As String, NewSource As String, Optional CodeFixIndex As Integer? = Nothing, Optional AllowNewCompilerDiagnostics As Boolean = False)
-            VerifyFix(LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), Me.GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
         End Sub
 
         Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (Integer, String)
@@ -148,5 +148,7 @@ Namespace TestHelper
 
             Assert.AreEqual(NewSource.Trim, Actual.Trim, FindFirstDifferenceLine(NewSource.Trim, Actual.Trim))
         End Sub
+
     End Class
+
 End Namespace

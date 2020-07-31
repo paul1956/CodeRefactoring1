@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 Imports System.Reflection
 
 Imports Microsoft.CodeAnalysis.Diagnostics
@@ -67,8 +71,8 @@ Namespace Usage
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "DeserializeObject", "Public Shared Overloads Function DeserializeObject(Of T)(value As String) As T"), SyntaxKind.InvocationExpression)
-            context.RegisterSyntaxNodeAction(Sub(c) Me.Analyze(c, "Parse", "Public Shared Overloads Function Parse(json As String) As Newtonsoft.Json.Linq.JObject"), SyntaxKind.InvocationExpression)
+            context.RegisterSyntaxNodeAction(Sub(c) Analyze(c, "DeserializeObject", "Public Shared Overloads Function DeserializeObject(Of T)(value As String) As T"), SyntaxKind.InvocationExpression)
+            context.RegisterSyntaxNodeAction(Sub(c) Analyze(c, "Parse", "Public Shared Overloads Function Parse(json As String) As Newtonsoft.Json.Linq.JObject"), SyntaxKind.InvocationExpression)
         End Sub
 
     End Class

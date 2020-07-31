@@ -1,10 +1,15 @@
-﻿Option Infer On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Infer On
 Option Explicit Off
 Option Strict Off
 
 Imports System.Collections.Concurrent
 Imports System.Collections.Immutable
 Imports System.Reflection
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
 
@@ -155,6 +160,7 @@ Friend Class FixAllContextHelper
     Private Shared Function GetDiagnosticAnalyzersForContext(ByVal fixAllContext As CodeFixes.FixAllContext) As ImmutableArray(Of DiagnosticAnalyzer)
         Return DiagnosticAnalyzers.Where(Function(x As KeyValuePair(Of String, ImmutableArray(Of Type))) fixAllContext.DiagnosticIds.Contains(x.Key)).SelectMany(Function(x As KeyValuePair(Of String, ImmutableArray(Of Type))) x.Value).Distinct().Select(Function(type As Type) DirectCast(Activator.CreateInstance(type), DiagnosticAnalyzer)).ToImmutableArray()
     End Function
+
     Private Shared Async Function GetDocumentDiagnosticsToFixAsync(ByVal diagnostics As ImmutableArray(Of Diagnostic), ByVal projects As ImmutableArray(Of Project), ByVal cancellationToken As CancellationToken) As Task(Of ImmutableDictionary(Of Document, ImmutableArray(Of Diagnostic)))
         Dim treeToDocumentMap As ImmutableDictionary(Of SyntaxTree, Document) = Await GetTreeToDocumentMapAsync(projects, cancellationToken).ConfigureAwait(False)
         Dim builder As ImmutableDictionary(Of Document, ImmutableArray(Of Diagnostic)).Builder = ImmutableDictionary.CreateBuilder(Of Document, ImmutableArray(Of Diagnostic))()
@@ -190,4 +196,5 @@ Friend Class FixAllContextHelper
         Next Project
         Return builder.ToImmutable()
     End Function
+
 End Class

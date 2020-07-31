@@ -1,14 +1,21 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Globalization
 Imports System.Windows.Forms
+
+Imports CodeRefactoring1.Vsix.EditorExtensions.Settings
+
 Imports Microsoft.VisualStudio
 Imports Microsoft.VisualStudio.Shell.Interop
-Imports CodeRefactoring1.Vsix.EditorExtensions.Settings
 
 Namespace EditorExtensions
     Public Module Logger
@@ -54,5 +61,6 @@ Namespace EditorExtensions
 
             Return pane IsNot Nothing
         End Function
+
     End Module
 End Namespace

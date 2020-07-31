@@ -2,11 +2,13 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.Reflection
 Imports System.Runtime.CompilerServices
 Imports Microsoft.CodeAnalysis.Text
 
 Public Module CompareGenerticObject
+
     <Extension>
     Public Function CompareT(Of T)(ByVal Left As T, ByVal Right As T, ByRef MismatchedPropertyName As String) As Boolean
         Dim properties() As PropertyInfo = Left.GetType().GetProperties(BindingFlags.Public Or BindingFlags.Instance)
@@ -46,6 +48,7 @@ Public Module CompareGenerticObject
         Next
         Return True
     End Function
+
     <Extension>
     Public Function CompareTextSpan(ByVal Left As TextSpan, ByVal Right As TextSpan, ByRef MismatchedPropertyName As String) As Boolean
         Dim properties() As PropertyInfo = Left.GetType().GetProperties(BindingFlags.Public Or BindingFlags.Instance)

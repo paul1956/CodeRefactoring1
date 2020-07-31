@@ -1,14 +1,20 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
+
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
 
 Namespace Performance
+
     <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(StringBuilderInLoopCodeFixProvider)), Composition.Shared>
     Public Class StringBuilderInLoopCodeFixProvider
         Inherits CodeFixProvider
 
-        Public Overrides NotOverridable ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(StringBuilderInLoopAnalyzer.Id)
+        Public NotOverridable Overrides ReadOnly Property FixableDiagnosticIds As ImmutableArray(Of String) = ImmutableArray.Create(StringBuilderInLoopAnalyzer.Id)
 
         Public Overrides Function GetFixAllProvider() As FixAllProvider
             Return Nothing
@@ -16,7 +22,7 @@ Namespace Performance
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First
-            context.RegisterCodeFix(CodeAction.Create($"Use StringBuilder to create a value for '{diagnostic.Properties!assignmentExpressionLeft}'", Function(c As CancellationToken) Me.UseStringBuilder(context.Document, diagnostic, c), NameOf(StringBuilderInLoopCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create($"Use StringBuilder to create a value for '{diagnostic.Properties!assignmentExpressionLeft}'", Function(c As CancellationToken) UseStringBuilder(context.Document, diagnostic, c), NameOf(StringBuilderInLoopCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 
@@ -24,7 +30,6 @@ Namespace Performance
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
             Dim diagosticSpan As TextSpan = diagnostic.Location.SourceSpan
             Dim expressionStatement As AssignmentStatementSyntax = root.FindToken(diagosticSpan.Start).Parent.AncestorsAndSelf.OfType(Of AssignmentStatementSyntax).First
-
 
             Dim expressionStatementParent As SyntaxNode = expressionStatement.Parent
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
@@ -80,5 +85,7 @@ Namespace Performance
             End While
             Return builderName
         End Function
+
     End Class
+
 End Namespace

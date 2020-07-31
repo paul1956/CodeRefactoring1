@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.Diagnostics
 
@@ -79,7 +83,7 @@ Namespace Refactoring
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeInvocation, SyntaxKind.InvocationExpression)
+            context.RegisterSyntaxNodeAction(AddressOf AnalyzeInvocation, SyntaxKind.InvocationExpression)
         End Sub
 
     End Class

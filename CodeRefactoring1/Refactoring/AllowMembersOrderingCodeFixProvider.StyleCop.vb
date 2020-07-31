@@ -1,4 +1,8 @@
-﻿Imports Microsoft.CodeAnalysis.CodeFixes
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports Microsoft.CodeAnalysis.CodeFixes
 
 Namespace Refactoring
 
@@ -62,7 +66,7 @@ Namespace Refactoring
             End Function
 
             Private Function GetAccessLevelPoints(tokens As SyntaxTokenList) As Integer
-                Return SumRankPoints(tokens, Me.accessLevelRank, Me.accessLevelRank(SyntaxKind.PrivateKeyword))
+                Return SumRankPoints(tokens, accessLevelRank, accessLevelRank(SyntaxKind.PrivateKeyword))
             End Function
 
             Private Function GetName(node As SyntaxNode) As String
@@ -73,7 +77,7 @@ Namespace Refactoring
                     Return DirectCast(node, PropertyStatementSyntax).Identifier.Text
                 End If
                 If TypeOf node Is PropertyBlockSyntax Then
-                    Return Me.GetName(DirectCast(node, PropertyBlockSyntax).PropertyStatement)
+                    Return GetName(DirectCast(node, PropertyBlockSyntax).PropertyStatement)
                 End If
                 If TypeOf node Is MethodBlockSyntax Then
                     Return DirectCast(node, MethodBlockSyntax).SubOrFunctionStatement.Identifier.Text
@@ -91,7 +95,7 @@ Namespace Refactoring
                     Return DirectCast(node, EventStatementSyntax).Identifier.Text
                 End If
                 If TypeOf node Is EventBlockSyntax Then
-                    Return Me.GetName(DirectCast(node, EventBlockSyntax).EventStatement)
+                    Return GetName(DirectCast(node, EventBlockSyntax).EventStatement)
                 End If
                 If TypeOf node Is OperatorBlockSyntax Then
                     Return DirectCast(node, OperatorBlockSyntax).OperatorStatement.OperatorToken.Text
@@ -110,14 +114,14 @@ Namespace Refactoring
 
             Private Function GetRankPoints(node As DeclarationStatementSyntax) As Integer
                 Dim points As Integer = 0
-                If Not Me.typeRank.TryGetValue(node.GetType(), points) Then
+                If Not typeRank.TryGetValue(node.GetType(), points) Then
                     Return 0
                 End If
                 Return points
             End Function
 
             Private Function GetSpecialModifierPoints(tokens As SyntaxTokenList) As Integer
-                Return SumRankPoints(tokens, Me.specialModifierRank, 100)
+                Return SumRankPoints(tokens, specialModifierRank, 100)
             End Function
 
             Public Function Compare(x As DeclarationStatementSyntax, y As DeclarationStatementSyntax) As Integer Implements IComparer(Of DeclarationStatementSyntax).Compare
@@ -126,18 +130,18 @@ Namespace Refactoring
                 If y Is Nothing Then Return -1
                 If x.Equals(y) Then Return 0
 
-                Dim comparedPoints As Integer = Me.GetRankPoints(x).CompareTo(Me.GetRankPoints(y))
+                Dim comparedPoints As Integer = GetRankPoints(x).CompareTo(GetRankPoints(y))
                 If comparedPoints <> 0 Then Return comparedPoints
 
                 Dim xModifiers As SyntaxTokenList = x.GetModifiers
                 Dim yModifiers As SyntaxTokenList = y.GetModifiers
-                comparedPoints = Me.GetAccessLevelPoints(xModifiers).CompareTo(Me.GetAccessLevelPoints(yModifiers))
+                comparedPoints = GetAccessLevelPoints(xModifiers).CompareTo(GetAccessLevelPoints(yModifiers))
                 If comparedPoints <> 0 Then Return comparedPoints
 
-                comparedPoints = Me.GetSpecialModifierPoints(xModifiers).CompareTo(Me.GetSpecialModifierPoints(yModifiers))
+                comparedPoints = GetSpecialModifierPoints(xModifiers).CompareTo(GetSpecialModifierPoints(yModifiers))
                 If comparedPoints <> 0 Then Return comparedPoints
 
-                Return Me.GetName(x).CompareTo(Me.GetName(y))
+                Return GetName(x).CompareTo(GetName(y))
             End Function
 
         End Class

@@ -1,8 +1,9 @@
 ﻿Imports CodeRefactoring1.Globalization
-Imports Roslyn.UnitTestFramework
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeRefactorings
+Imports Roslyn.UnitTestFramework
 Imports Xunit
+
 Namespace UnitTest
 
     Public Class MoveStringToResourceUnitTests
@@ -26,7 +27,7 @@ Class C
         Get
     End Property
 End Class</text>.Value
-            Me.TestNoActions(code)
+            TestNoActions(code)
         End Sub
 
         <Fact()>
@@ -38,7 +39,7 @@ End Class</text>.Value
             Dim expected As String = <text>Class C
             Property P As String = ResourceRetriever.GetString("Test")
         End Class</text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
 
         <Fact()>
@@ -50,8 +51,9 @@ End Class</text>.Value
             Dim expected As String = <text>Structure S
             Property P As String = ResourceRetriever.GetString("Test")
         End Structure</text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
+
         <Fact()>
         Public Sub TestRefactoringOnField()
             Dim code As String = <text>Class C
@@ -61,8 +63,9 @@ End Class</text>.Value
             Dim expected As String = <text>Class C
             Private P As String = ResourceRetriever.GetString("Test")
         End Class</text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
+
         <Fact()>
         Public Sub TestRefactorinExpressionStatement()
             Dim code As String = <text>Class C
@@ -82,8 +85,9 @@ End Class</text>.Value
                        Dim x = P
                     End Sub
         End Class</text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
+
         <Fact()>
         Public Sub TestRefactorinMethodStatementWithOptionalParams()
             Dim code As String = <text>Class C
@@ -91,8 +95,9 @@ End Class</text>.Value
                     stop
                 End Sub
             End Class</text>.Value
-            Me.TestNoActions(code)
+            TestNoActions(code)
         End Sub
+
         <Fact()>
         Public Sub TestRefactorinFunctionOrSubWithOptionalParameter()
             Dim code As String = <text>Class C
@@ -100,8 +105,9 @@ End Class</text>.Value
             Return P
             End Function
         End Class</text>.Value
-            Me.TestNoActions(code)
+            TestNoActions(code)
         End Sub
+
         <Fact()>
         Public Sub TestRefactorinSimpleArgument()
             Dim code As String = <text>Class C
@@ -123,8 +129,9 @@ End Class</text>.Value
         End Sub
     End Class
 </text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
+
         <Fact()>
         Public Sub TestRefactorinLocalDeclarationStatement()
             Dim code As String = <text>Class C
@@ -137,7 +144,9 @@ End Class</text>.Value
                         Dim P as String = ResourceRetriever.GetString("Test")
                     End Sub
         End Class</text>.Value
-            Me.Test(code, expected)
+            Test(code, expected)
         End Sub
+
     End Class
+
 End Namespace

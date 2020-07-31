@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 
 Imports Microsoft.CodeAnalysis.CodeFixes
 
@@ -38,7 +42,7 @@ Namespace Usage
             Dim parameters As IEnumerable(Of KeyValuePair(Of String, String)) = diagnostic.Properties.Where(Function(p) p.Key.StartsWith("param"))
             For Each param As KeyValuePair(Of String, String) In parameters
                 Dim message As String = $"Use '{param}'"
-                context.RegisterCodeFix(CodeAction.Create(message, Function(c) Me.FixParamAsync(context.Document, diagnostic, param.Value, c), NameOf(ArgumentExceptionCodeFixProvider)), diagnostic)
+                context.RegisterCodeFix(CodeAction.Create(message, Function(c) FixParamAsync(context.Document, diagnostic, param.Value, c), NameOf(ArgumentExceptionCodeFixProvider)), diagnostic)
             Next
             Return Task.FromResult(0)
         End Function

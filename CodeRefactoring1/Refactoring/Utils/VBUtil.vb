@@ -1,8 +1,14 @@
-﻿Option Explicit On
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Explicit On
 Option Infer Off
 Option Strict On
+
 Namespace Refactoring
     Public Module VBUtil
+
         ''' <summary>
         ''' Inverts a boolean condition. Note: The condition object can be frozen (from AST) it's cloned internally.
         ''' </summary>
@@ -52,6 +58,7 @@ Namespace Refactoring
 
             Return SyntaxFactory.UnaryExpression(SyntaxKind.NotExpression, SyntaxFactory.Token(SyntaxKind.NotKeyword), AddParensForUnaryExpressionIfRequired(condition))
         End Function
+
         ''' <summary>
         ''' When negating an expression this is required, otherwise you would end up with
         ''' a or b -> !a or b
@@ -63,6 +70,7 @@ Namespace Refactoring
 
             Return expression
         End Function
+
         Private Function GetBinaryExpressionOperatorTokenKind(op As SyntaxKind) As SyntaxKind
             Select Case op
                 Case SyntaxKind.EqualsExpression
@@ -88,6 +96,7 @@ Namespace Refactoring
             End Select
             Throw New ArgumentOutOfRangeException(NameOf(op))
         End Function
+
         ''' <summary>
         ''' Get negation of the condition operator
         ''' </summary>
@@ -107,6 +116,7 @@ Namespace Refactoring
             End Select
             Throw New ArgumentOutOfRangeException(NameOf(op))
         End Function
+
         ''' <summary>
         ''' Get negation of the specified relational operator
         ''' </summary>
@@ -138,5 +148,6 @@ Namespace Refactoring
             End Select
             Throw New ArgumentOutOfRangeException(NameOf(op))
         End Function
+
     End Module
 End Namespace

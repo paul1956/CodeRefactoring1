@@ -2,15 +2,19 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
+
+Imports System.Collections.Immutable
+Imports System.Text
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
-Imports System.Text
-Imports System.Collections.Immutable
 
 Namespace TestHelper
+
     ''' <summary> Superclass of all Unit Tests for DiagnosticAnalyzers. </summary>
     Partial Public MustInherit Class DiagnosticVerifier
+
 #Region " To be implemented by Test classes "
+
         ''' <summary>
         ''' Get the CSharp analyzer being tested - to be implemented in non-abstract class
         ''' </summary>
@@ -24,6 +28,7 @@ Namespace TestHelper
         Protected Overridable Function GetBasicDiagnosticAnalyzer() As DiagnosticAnalyzer
             Return Nothing
         End Function
+
 #End Region
 
 #Region " Verifier wrappers "
@@ -36,7 +41,7 @@ Namespace TestHelper
         ''' <param name="expected"> DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyCSharpDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics({source}, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -47,7 +52,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyBasicDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics({source}, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -58,7 +63,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyCSharpDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics(sources, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -69,7 +74,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyBasicDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics(sources, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -88,6 +93,7 @@ Namespace TestHelper
 #End Region
 
 #Region " Actual comparisons And verifications "
+
         ''' <summary>
         ''' Checks each of the actual Diagnostics found And compares them with the corresponding DiagnosticResult in the array of expected results.
         ''' Diagnostics are considered equal only if the DiagnosticResultLocation, Id, Severity, And Message of the DiagnosticResult match the actual diagnostic.
@@ -130,7 +136,6 @@ Actual:
 {0}",
                         FormatDiagnostics(analyzer, actual)))
                     End If
-
                 Else
 
                     VerifyDiagnosticLocation(analyzer, actual, actual.Location, expected.Locations.First())
@@ -245,9 +250,11 @@ Diagnostic:
                 End If
             End If
         End Sub
+
 #End Region
 
 #Region " Formatting Diagnostics "
+
         ''' <summary>
         ''' Helper method to format a Diagnostic into an easily readable string
         ''' </summary>
@@ -301,6 +308,9 @@ Diagnostic:
             Next
             Return builder.ToString()
         End Function
+
 #End Region
+
     End Class
+
 End Namespace

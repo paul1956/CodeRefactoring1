@@ -12,8 +12,6 @@ Imports Microsoft.CodeAnalysis.Diagnostics
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
-Imports Style
-
 Imports TestHelper
 
 Imports Xunit
@@ -28,7 +26,7 @@ Namespace AddAsClause.UnitTest
         End Function
 
         Protected Overrides Function GetBasicDiagnosticAnalyzer() As DiagnosticAnalyzer
-            Return New AddAsClauseAnalyzer()
+            Return New CodeRefactoring1.Style.AddAsClauseAnalyzer()
         End Function
 
         <Fact>
@@ -88,7 +86,7 @@ End Module", "a.vb")
             Next
     End Sub
 End Class"
-            Me.VerifyBasicDiagnostic(OriginalSource)
+            VerifyBasicDiagnostic(OriginalSource)
         End Sub
 
         <Fact>
@@ -103,7 +101,7 @@ End Class"
             Return 0
         End Function
 End Class"
-            Me.VerifyBasicDiagnostic(OriginalSource)
+            VerifyBasicDiagnostic(OriginalSource)
 
         End Sub
 
@@ -117,7 +115,7 @@ End Class"
             Next
     End Sub
 End Class"
-            Me.VerifyBasicDiagnostic(OriginalSource)
+            VerifyBasicDiagnostic(OriginalSource)
         End Sub
 
         <Fact>
@@ -144,7 +142,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Imports Microsoft.CodeAnalysis
@@ -160,7 +158,7 @@ Partial Public MustInherit Class DiagnosticVerifier
         Return Nothing
     End Function
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -179,7 +177,7 @@ End Module"
                             New DiagnosticResultLocation("Test0.vb", 4, 13)
                         }
                 }
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports  System.Collections.Generic
@@ -188,7 +186,7 @@ Module Program
         Dim s As New List(Of Long)
     End Sub
 End Module"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -215,7 +213,7 @@ End Module"
                             New DiagnosticResultLocation("Test0.vb", 11, 13)
                         }
                 }
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Imports System
@@ -228,11 +226,11 @@ Namespace NS
 End Namespace
 Module Program
     Public Sub Main()
-        Dim s As AliasedType.S(Of Long) = New AliasedType.S(Of Long)
+        Dim s As New AliasedType.S(Of Long)
         Console.WriteLine(s.ToString)
     End Sub
 End Module"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -253,7 +251,7 @@ End Module"
                             New DiagnosticResultLocation("Test0.vb", 6, 13)
                         }
                 }
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Option Explicit On
@@ -264,7 +262,7 @@ Module Program
         Dim s As Char() = {""X""c}
     End Sub
 End Module"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -290,7 +288,7 @@ End Class</text>.Value
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Dim FixedlSource As String =
 <text>Option Explicit Off
@@ -304,7 +302,7 @@ Class Class1
         Next
     End Sub
 End Class</text>.Value
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -328,7 +326,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -341,7 +339,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -361,7 +359,7 @@ End Module"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Module Module1
@@ -370,7 +368,7 @@ End Module"
         Next
     End Sub
 End Module"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -392,7 +390,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Import System
@@ -403,7 +401,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -427,7 +425,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System.Collections.Generic
@@ -440,7 +438,7 @@ Class Class1
        Next
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -465,7 +463,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -479,7 +477,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -502,7 +500,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports Microsoft.CodeAnalysis
@@ -514,7 +512,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource, allowNewCompilerDiagnostics:=True)
+            VerifyBasicFix(OriginalSource, FixedlSource, allowNewCompilerDiagnostics:=True)
         End Sub
 
         <Fact>
@@ -544,26 +542,26 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
     Sub Main()
         Dim getSortColumn As System.Func(Of Integer, String) = Function(index As Integer)
-                                                                   Select Case index
-                                                                       Case 0
-                                                                           Return ""FirstName""
-                                                                       Case 1
-                                                                           Return ""LastName""
-                                                                       Case 2
-                                                                           Return ""CompanyName""
-                                                                       Case Else
-                                                                           Return ""LastName""
-                                                                   End Select
-                                                               End Function
+                                Select Case index
+                                    Case 0
+                                        Return ""FirstName""
+                                    Case 1
+                                        Return ""LastName""
+                                    Case 2
+                                        Return ""CompanyName""
+                                    Case Else
+                                        Return ""LastName""
+                                End Select
+                            End Function
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -585,17 +583,17 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
     Sub Main()
         Dim writeToLog As System.Action(Of String) = Sub(msg As String)
-                                                         Dim l As String = msg
-                                                     End Sub
+                            Dim l As String = msg
+                         End Sub
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -614,7 +612,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -622,7 +620,7 @@ End Class"
         Dim add1 As System.Func(Of Integer, Integer) = Function(num As Integer) num + 1
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -646,7 +644,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -658,7 +656,7 @@ Class Class1
         Throw New NotImplementedException()
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -681,7 +679,7 @@ End Class"
                         }
                 }
 
-            Me.VerifyBasicDiagnostic(OriginalSource, expected)
+            VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Option Infer Off
@@ -693,7 +691,7 @@ Class Class1
             Dim X As Integer = 1
     End Sub
 End Class"
-            Me.VerifyBasicFix(OriginalSource, FixedlSource)
+            VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
     End Class

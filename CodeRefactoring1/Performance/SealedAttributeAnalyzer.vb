@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -55,7 +59,7 @@ Namespace Performance
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSymbolAction(AddressOf Me.Analyze, SymbolKind.NamedType)
+            context.RegisterSymbolAction(AddressOf Analyze, SymbolKind.NamedType)
         End Sub
 
     End Class

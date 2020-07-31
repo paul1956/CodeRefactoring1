@@ -6,21 +6,15 @@ Option Explicit On
 Option Infer Off
 Option Strict On
 
-Imports System.Composition
-Imports System.Threading
-Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CodeActions
-Imports Microsoft.CodeAnalysis.CodeRefactorings
 Imports Microsoft.CodeAnalysis.Formatting
-Imports Microsoft.CodeAnalysis.Text
-Imports Microsoft.CodeAnalysis.VisualBasic
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
+
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(ConstStringToXMLLiteralRefactoring)), [Shared]>
     Public Class ConstStringToXMLLiteralRefactoring
         Inherits CodeRefactoringProvider
         Const DoubleQuote As Char = """"c
+
         Private Async Function ConvertToXMLLiteralAsync(document As Document, localDeclaration As LocalDeclarationStatementSyntax, lVariableDeclarator As VariableDeclaratorSyntax, c As CancellationToken) As Task(Of Document)
             Dim newRoot As SyntaxNode
 
@@ -55,6 +49,7 @@ Namespace Style
             End Try
             Return document.WithSyntaxRoot(newRoot)
         End Function
+
         Public NotOverridable Overrides Async Function ComputeRefactoringsAsync(context As CodeRefactoringContext) As Task
             Dim span As TextSpan = context.Span
             If Not span.IsEmpty OrElse context.Span.Start = 0 Then

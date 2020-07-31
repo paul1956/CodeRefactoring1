@@ -1,4 +1,9 @@
-﻿Namespace Usage.MethodAnalyzers
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Namespace Usage.MethodAnalyzers
+
     Public Class MethodInformation
         Public Property MethodName As String
         Public Property MethodFullDefinition As String
@@ -11,5 +16,7 @@
             Me.ArgumentIndex = argumentIndex
             Me.MethodAction = methodAction
         End Sub
+
     End Class
+
 End Namespace

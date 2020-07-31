@@ -180,19 +180,19 @@
       <Version>2.8.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost">
-      <Version>16.1.89</Version>
+      <Version>16.6.255</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop">
       <Version>7.10.6071</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK">
-      <Version>16.0.202</Version>
+      <Version>16.0.206</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0">
-      <Version>16.2.29122.156</Version>
+      <Version>16.6.30107.105</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Framework">
-      <Version>16.2.29122.156</Version>
+      <Version>16.6.30107.105</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop">
       <Version>7.10.6072</Version>
@@ -201,13 +201,13 @@
       <Version>15.0.26932</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Workspace">
-      <Version>16.1.64</Version>
+      <Version>16.3.43</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration">
-      <Version>16.1.64</Version>
+      <Version>16.3.43</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.2</Version>
+      <Version>12.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

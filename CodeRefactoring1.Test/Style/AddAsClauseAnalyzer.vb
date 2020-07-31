@@ -2,14 +2,18 @@
 Option Explicit On
 Option Infer Off
 Option Strict On
+
 Imports System.Collections.Immutable
+
 Imports CodeRefactoring1
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
+
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public Class AddAsClauseAnalyzer
         Inherits DiagnosticAnalyzer
@@ -147,6 +151,7 @@ Namespace Style
                 Throw
             End Try
         End Sub
+
         Private Shared Sub AnalyzeClassForStatement(context As SyntaxNodeAnalysisContext)
             Try
                 Dim model As SemanticModel = context.SemanticModel
@@ -205,5 +210,7 @@ Namespace Style
                 Throw
             End Try
         End Sub
+
     End Class
+
 End Namespace
