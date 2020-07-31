@@ -7,7 +7,7 @@ Imports System.Diagnostics.Debug
 Namespace Globalization
 
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(MoveStringToResourceFileRefactoringProvider)), [Shared]>
-    Public Class MoveStringToResourceFileRefactoringProvider
+    Partial Public Class MoveStringToResourceFileRefactoringProvider
         Inherits CodeRefactoringProvider
         Private _resourceClass As ResourceXClass
 
@@ -20,8 +20,6 @@ Namespace Globalization
                 If invocation.Kind = SyntaxKind.StringLiteralExpression Then
                     Dim InvicationRightToken As SyntaxToken = CType(invocation, LiteralExpressionSyntax).Token
                     ResourceText = InvicationRightToken.ValueText.Replace("""", """""")
-                    'Case SyntaxKind.InterpolatedStringExpression
-                    '    ResourceText = CType(invocation, InterpolatedStringExpressionSyntax).Contents.ToString
                 Else
                     Stop
                 End If
@@ -99,29 +97,6 @@ Namespace Globalization
                     Exit Function
             End Select
         End Function
-
-        Private Class MoveStringToResourceFileCodeAction
-            Inherits CodeAction
-
-            Private ReadOnly _title As String
-            Private ReadOnly _generateDocument As Func(Of CancellationToken, Task(Of Document))
-
-            Public Sub New(title As String, generateDocument As Func(Of CancellationToken, Task(Of Document)))
-                _title = title
-                _generateDocument = generateDocument
-            End Sub
-
-            Public Overrides ReadOnly Property Title As String
-                Get
-                    Return _title
-                End Get
-            End Property
-
-            Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
-                Return _generateDocument(cancellationToken)
-            End Function
-
-        End Class
 
     End Class
 

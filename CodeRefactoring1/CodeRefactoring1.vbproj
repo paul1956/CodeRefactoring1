@@ -136,6 +136,7 @@
     <Compile Include="Extensions\TypeExtensions.vb" />
     <Compile Include="Extensions\VBAnalyzerExtensions.vb" />
     <Compile Include="Extensions\VBGeneratedCodeAnalysisExtensions.vb" />
+    <Compile Include="Globalization\MoveStringToResourceFileRefactoringProvider.CodeAction.vb" />
     <Compile Include="Globalization\MoveStringToResourceFileRefactoringProvider.vb" />
     <Compile Include="HelpLink.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -174,7 +175,7 @@
     <Compile Include="Refactoring\Utils\VBUtil.vb" />
     <Compile Include="Reliability\UseConfigureAwaitFalseAnalyzer.vb" />
     <Compile Include="Reliability\UseConfigureAwaitFalseCodeFixProvider.vb" />
-    <Compile Include="ResourceClass.vb" />
+    <Compile Include="Globalization\ResourceXClass.vb" />
     <Compile Include="Shared\Utilities\SymbolEquivalenceComparer.AssemblyComparers.vb" />
     <Compile Include="Shared\Utilities\SymbolEquivalenceComparer.EquivalenceVisitor.vb" />
     <Compile Include="Shared\Utilities\SymbolEquivalenceComparer.GetHashCodeVisitor.vb" />
