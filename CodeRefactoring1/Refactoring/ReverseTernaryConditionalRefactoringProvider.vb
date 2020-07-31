@@ -2,10 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Explicit On
-Option Infer Off
-Option Strict On
-
 <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(ReverseTernaryConditionalRefactoringProvider)), [Shared]>
 Friend Class ReverseTernaryConditionalRefactoringProvider
     Inherits CodeRefactoringProvider
@@ -100,7 +96,7 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
     Private Class ReverseIfOperatorCodeAction
         Inherits CodeAction
 
-        Private ReadOnly generateDocument As Func(Of CancellationToken, Task(Of Document))
+        Private ReadOnly _generateDocument As Func(Of CancellationToken, Task(Of Document))
         Private ReadOnly _title As String
 
         Public Overrides ReadOnly Property Title As String
@@ -111,11 +107,11 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
 
         Public Sub New(title As String, generateDocument As Func(Of CancellationToken, Task(Of Document)))
             _title = title
-            Me.generateDocument = generateDocument
+            _generateDocument = generateDocument
         End Sub
 
         Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
-            Return generateDocument(cancellationToken)
+            Return _generateDocument(cancellationToken)
         End Function
 
     End Class

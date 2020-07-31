@@ -25,7 +25,6 @@ VBF0069 | Usage | Info | NeverUsedAnalyzer
 VBF0070 | Reliability | Hidden | UseConfigureAwaitFalseAnalyzer
 VBF0092 | Refactoring | Hidden | ChangeAnyToAllAnalyzer
 VBF0101 | Style | Error | AddAsClauseAnalyzer
-VBF0102 | Style | Info | ByValAnalyzerFixAnalyzer
 VBF0103 | Style | Warning | AddAsClauseForLambdasAnalyzer
 VBF0104 | Style | Error | AddAsClauseAsObjectAnalyzer
-VBF0999 | Style | Info | ByValAnalyzer_FixAnalyzer
+VBF0999 | Style | Info | ByValAnalyzerFixAnalyzer

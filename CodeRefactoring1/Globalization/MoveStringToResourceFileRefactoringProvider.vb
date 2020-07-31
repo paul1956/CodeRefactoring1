@@ -2,10 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Explicit On
-Option Infer Off
-Option Strict On
-
 Imports System.Diagnostics.Debug
 
 Namespace Globalization
@@ -13,7 +9,7 @@ Namespace Globalization
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(MoveStringToResourceFileRefactoringProvider)), [Shared]>
     Public Class MoveStringToResourceFileRefactoringProvider
         Inherits CodeRefactoringProvider
-        Private ResourceClass As ResourceXClass
+        Private _resourceClass As ResourceXClass
 
         Private Async Function MoveStringToResourceFileAsync(Statement As StatementSyntax, invocation As ExpressionSyntax, document As Document, cancellationToken As CancellationToken) As Task(Of Document)
             Assert(Not (invocation) Is Nothing)
@@ -30,7 +26,7 @@ Namespace Globalization
                     Stop
                 End If
 
-                Dim identifierNameString As String = ResourceClass.GetUniqueResourceName(ResourceText)
+                Dim identifierNameString As String = _resourceClass.GetUniqueResourceName(ResourceText)
                 Dim ModifiedIdentifier As ModifiedIdentifierSyntax = SyntaxFactory.ModifiedIdentifier(identifierNameString)
                 Dim ResourceRetriever As ExpressionSyntax = SyntaxFactory.ParseExpression($" ResourceRetriever.GetString(""{identifierNameString}"")")
                 Dim NewEqualsValue As EqualsValueSyntax = SyntaxFactory.EqualsValue(ResourceRetriever)
@@ -57,7 +53,7 @@ Namespace Globalization
                     Case Else
 
                 End Select
-                If ResourceClass.AddToResourceFile(identifierNameString, ResourceText) Then
+                If _resourceClass.AddToResourceFile(identifierNameString, ResourceText) Then
                     Return document.WithSyntaxRoot(newRoot)
                 End If
             Catch ex As Exception
@@ -73,14 +69,14 @@ Namespace Globalization
             If invocation Is Nothing Then
                 Exit Function
             End If
-            If ResourceClass Is Nothing Then
+            If _resourceClass Is Nothing Then
                 If context.Document.Project.FilePath Is Nothing Then
-                    ResourceClass = New ResourceXClass()
+                    _resourceClass = New ResourceXClass()
                 Else
-                    ResourceClass = New ResourceXClass(context.Document.Project.FilePath)
+                    _resourceClass = New ResourceXClass(context.Document.Project.FilePath)
                 End If
             End If
-            If Me.ResourceClass.Initialized = ResourceXClass.InitializedValues.NoResourceDirectory Then
+            If Me._resourceClass.Initialized = ResourceXClass.InitializedValues.NoResourceDirectory Then
                 Exit Function
             End If
             Select Case invocation.Kind
@@ -108,11 +104,11 @@ Namespace Globalization
             Inherits CodeAction
 
             Private ReadOnly _title As String
-            Private ReadOnly generateDocument As Func(Of CancellationToken, Task(Of Document))
+            Private ReadOnly _generateDocument As Func(Of CancellationToken, Task(Of Document))
 
             Public Sub New(title As String, generateDocument As Func(Of CancellationToken, Task(Of Document)))
                 _title = title
-                Me.generateDocument = generateDocument
+                _generateDocument = generateDocument
             End Sub
 
             Public Overrides ReadOnly Property Title As String
@@ -122,7 +118,7 @@ Namespace Globalization
             End Property
 
             Protected Overrides Function GetChangedDocumentAsync(cancellationToken As CancellationToken) As Task(Of Document)
-                Return generateDocument(cancellationToken)
+                Return _generateDocument(cancellationToken)
             End Function
 
         End Class

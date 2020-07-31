@@ -2,16 +2,9 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports System.Text.RegularExpressions
-Imports System.Threading
-Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module GeneratedCodeAnalysisExtensions
     Public Cache As New WeakReference(Of ImmutableDictionary(Of SyntaxTree, Boolean))(ImmutableDictionary(Of SyntaxTree, Boolean).Empty)

@@ -4,10 +4,10 @@ Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
 Imports TestHelper
+Imports Xunit
 
 Namespace ByValAnalyzer_Fix.Test
 
-    <TestClass>
     Public Class UnitTest
         Inherits CodeFixVerifier
 
@@ -20,7 +20,7 @@ Namespace ByValAnalyzer_Fix.Test
         End Function
 
         'Diagnostic And CodeFix both triggered And checked for
-        <TestMethod>
+        <Fact>
         Public Sub TestByValNoExtraTrivia()
 
             Dim test As String = "
@@ -53,7 +53,7 @@ End Module"
         End Sub
 
         'Diagnostic And CodeFix both triggered And checked for
-        <TestMethod>
+        <Fact>
         Public Sub TestByValWithLeadingTrivia()
 
             Dim test As String = "
@@ -65,7 +65,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "RemoveByValAnalyzer",
+            Dim expected As New DiagnosticResult With {.Id = RemoveByValAnalyzerDiagnosticId,
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -87,7 +87,7 @@ End Module"
             VerifyBasicFix(test, fixtest)
         End Sub
 
-        <TestMethod>
+        <Fact>
         Public Sub TestByValWithTrailingMultiLineTrivia()
 
             Dim test As String = "
@@ -100,7 +100,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "RevoveByValAnalyzer",
+            Dim expected As New DiagnosticResult With {.Id = RemoveByValAnalyzerDiagnosticId,
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -113,9 +113,9 @@ End Module"
             Dim fixtest As String = "
 Module Module1
 
-    Sub Main(X As String, ' Comment
+    Sub Main(X As String, _ ' Comment
  _ ' Another Comment
-             Y As Integer)
+Y As Integer)
 
     End Sub
 
@@ -123,7 +123,7 @@ End Module"
             VerifyBasicFix(test, fixtest)
         End Sub
 
-        <TestMethod>
+        <Fact>
         Public Sub TestByValWithTrailingTrivia()
 
             Dim test As String = "
@@ -135,7 +135,7 @@ Module Module1
     End Sub
 
 End Module"
-            Dim expected As New DiagnosticResult With {.Id = "RevoveByValAnalyzer",
+            Dim expected As New DiagnosticResult With {.Id = RemoveByValAnalyzerDiagnosticId,
                 .Message = String.Format("Remove ByVal from parameter {0}", "1"),
                 .Severity = DiagnosticSeverity.Info,
                 .Locations = New DiagnosticResultLocation() {
@@ -148,8 +148,8 @@ End Module"
             Dim fixtest As String = "
 Module Module1
 
-    Sub Main(X As String, ' Comment
-             Y As Integer)
+    Sub Main(X As String, _ ' Comment
+Y As Integer)
 
     End Sub
 
@@ -158,7 +158,7 @@ End Module"
         End Sub
 
         'No diagnostics expected to show up
-        <TestMethod>
+        <Fact>
         Public Sub TestNoByVal()
             Dim test As String = ""
             VerifyBasicDiagnostic(test)

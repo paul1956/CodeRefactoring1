@@ -2,11 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
-
 Friend MustInherit Class Matcher(Of T)
 
     ' Tries to match this matcher against the provided sequence at the given index.  If the

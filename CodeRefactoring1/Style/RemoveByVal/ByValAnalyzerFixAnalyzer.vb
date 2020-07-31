@@ -14,8 +14,12 @@ Namespace Style
         Private Shared ReadOnly Description As LocalizableString = New LocalizableResourceString(NameOf(My.Resources.Resources.RemoveByValDescription), My.Resources.Resources.ResourceManager, GetType(My.Resources.Resources))
         Private Shared ReadOnly MessageFormat As LocalizableString = New LocalizableResourceString(NameOf(My.Resources.Resources.RemoveByValMessageFormat), My.Resources.Resources.ResourceManager, GetType(My.Resources.Resources))
 
+        ' You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
+        ' See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Localizing%20Analyzers.md for more on localization
+        Private Shared ReadOnly Title As LocalizableString = New LocalizableResourceString(NameOf(My.Resources.Resources.RemoveByValTitle), My.Resources.Resources.ResourceManager, GetType(My.Resources.Resources))
+
         Private Shared ReadOnly Rule As New DiagnosticDescriptor(
-                                                    RemoveAsClauseDiagnosticId,
+                                                    RemoveByValAnalyzerDiagnosticId,
                                                     Title,
                                                     MessageFormat,
                                                     Category,
@@ -26,9 +30,6 @@ Namespace Style
                                                     Array.Empty(Of String)
                                                     )
 
-        ' You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
-        ' See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/Localizing%20Analyzers.md for more on localization
-        Private Shared ReadOnly Title As LocalizableString = New LocalizableResourceString(NameOf(My.Resources.Resources.RemoveByValTitle), My.Resources.Resources.ResourceManager, GetType(My.Resources.Resources))
 
         Public Overrides ReadOnly Property SupportedDiagnostics As ImmutableArray(Of DiagnosticDescriptor)
             Get

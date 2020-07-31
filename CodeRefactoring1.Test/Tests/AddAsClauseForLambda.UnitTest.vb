@@ -6,6 +6,7 @@ Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
 
 Imports TestHelper
+Imports Xunit
 
 Namespace AddAsClauseForLambda.UnitTest
 
@@ -20,7 +21,8 @@ Namespace AddAsClauseForLambda.UnitTest
             Return New AddAsClauseForLambdasAnalyzer()
         End Function
 
-        <TestMethod()> Public Sub UnitTestAddAsClauseInMultiLineLambdaFunctionSplit()
+        <Fact>
+        Public Sub UnitTestAddAsClauseInMultiLineLambdaFunctionSplit()
             Const OriginalSource As String =
 "Class Class1
     Sub Main()
@@ -38,7 +40,7 @@ End Class"
 
             Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
-                    .Severity = DiagnosticSeverity.Error,
+                    .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 4, 34)
                         }
@@ -63,7 +65,8 @@ End Class"
             VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
-        <TestMethod()> Public Sub UnitTestAddAsClauseInMultiLineLambdaSubroutineSplit()
+        <Fact>
+        Public Sub UnitTestAddAsClauseInMultiLineLambdaSubroutineSplit()
             Const OriginalSource As String =
 "Class Class1
     Sub Main()
@@ -76,7 +79,7 @@ End Class"
 
             Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
-                    .Severity = DiagnosticSeverity.Error,
+                    .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 4, 26)
                         }
@@ -96,7 +99,8 @@ End Class"
             VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
-        <TestMethod()> Public Sub UnitTestAddAsClauseInSingleLineLambdaFunctionSplit()
+        <Fact>
+        Public Sub UnitTestAddAsClauseInSingleLineLambdaFunctionSplit()
             Const OriginalSource As String =
 "Class Class1
     Sub Main()
@@ -108,14 +112,14 @@ End Class"
                 {
                 .Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
                 .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
-                .Severity = DiagnosticSeverity.Error,
+                .Severity = DiagnosticSeverity.Warning,
                 .Locations = New DiagnosticResultLocation() {New DiagnosticResultLocation("Test0.vb", 4, 25)}
                 }
             Dim expected2 As DiagnosticResult = New DiagnosticResult With
                 {
                 .Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
                 .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
-                .Severity = DiagnosticSeverity.Error,
+                .Severity = DiagnosticSeverity.Warning,
                 .Locations = New DiagnosticResultLocation() {New DiagnosticResultLocation("Test0.vb", 4, 30)}
                 }
 
@@ -131,7 +135,8 @@ End Class"
             VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
-        <TestMethod()> Public Sub UnitTestAddAsClauseInSingleLineLambdaSubroutineSplit()
+        <Fact>
+        Public Sub UnitTestAddAsClauseInSingleLineLambdaSubroutineSplit()
             Const OriginalSource As String =
 "Class Class1
     Sub Main()
@@ -145,7 +150,7 @@ End Class"
 
             Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
-                    .Severity = DiagnosticSeverity.Error,
+                    .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 4, 28)
                         }
