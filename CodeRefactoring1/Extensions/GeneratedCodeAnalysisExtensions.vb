@@ -5,6 +5,9 @@
 Imports System.Collections.Immutable
 Imports System.Runtime.CompilerServices
 Imports System.Text.RegularExpressions
+Imports System.Threading
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module GeneratedCodeAnalysisExtensions
     Public Cache As New WeakReference(Of ImmutableDictionary(Of SyntaxTree, Boolean))(ImmutableDictionary(Of SyntaxTree, Boolean).Empty)

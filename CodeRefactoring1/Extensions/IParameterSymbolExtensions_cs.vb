@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 'Namespace Microsoft.CodeAnalysis.Shared.Extensions
+Imports Microsoft.CodeAnalysis
 
 Public Module IParameterSymbolExtensions
 

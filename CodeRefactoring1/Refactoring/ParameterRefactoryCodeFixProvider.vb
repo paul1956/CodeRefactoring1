@@ -3,13 +3,19 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Refactoring
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(ParameterRefactoryCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(ParameterRefactoryCodeFixProvider)), [Shared]>
     Public Class ParameterRefactoryCodeFixProvider
         Inherits CodeFixProvider
 
@@ -120,7 +126,7 @@ Namespace Refactoring
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Change to new Class", Function(c As CancellationToken) NewClassAsync(context.Document, diagnostic, c), NameOf(ParameterRefactoryCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create("Change to new Class", Function(c As CancellationToken) Me.NewClassAsync(context.Document, diagnostic, c), NameOf(ParameterRefactoryCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 

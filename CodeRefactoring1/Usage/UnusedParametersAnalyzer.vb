@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
@@ -104,7 +106,7 @@ You should delete the parameter in such cases."
         End Function
 
         Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim mBlockSyntax As MethodBlockSyntax = TryCast(context.Node, MethodBlockSyntax)
             If mBlockSyntax IsNot Nothing Then
                 If mBlockSyntax.SubOrFunctionStatement IsNot Nothing Then
@@ -146,7 +148,7 @@ You should delete the parameter in such cases."
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Analyzer, SyntaxKind.SubBlock, SyntaxKind.ConstructorBlock, SyntaxKind.FunctionBlock)
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.SubBlock, SyntaxKind.ConstructorBlock, SyntaxKind.FunctionBlock)
         End Sub
 
     End Class

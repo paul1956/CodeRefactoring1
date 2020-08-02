@@ -2,7 +2,7 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Public Module DiagnosticIds
+Public Module DiagnosticIdStrings
     Public Const NoneDiagnosticId As String = "VBF0000"
     Public Const AlwaysUseVarDiagnosticId As String = "VBF0001"
     Public Const ArgumentExceptionDiagnosticId As String = "VBF0002"
@@ -88,7 +88,7 @@ Public Module DiagnosticIds
     Public Const NameOf_ExternalDiagnosticId As String = "VBF0108"
     Public Const StringFormatArgs_ExtraArgsDiagnosticId As String = "VBF0111"
     Public Const DeclarePublicApiRuleIdDiagnosticId As String = "VBF0116"
-    Public Const RemoveByValAnalyzerDiagnosticId As String = "VBF0999"
+    Public Const RemoveByValDiagnosticId As String = "VBF0999"
     Public Const ERR_EnumNotExpression1DiagnosticId As String = "BC30107"
     Public Const ERR_TypeNotExpression1DiagnosticId As String = "BC30108"
     Public Const ERR_ClassNotExpression1DiagnosticId As String = "BC30109"
@@ -100,4 +100,5 @@ Public Module DiagnosticIds
     Public Const ERR_StrictDisallowsImplicitProcDiagnosticId As String = "BC30210"
     Public Const ERR_NameNotDeclared1DiagnosticId As String = "BC30451"
     Public Const ERR_StrictDisallowsLateBindingDiagnosticId As String = "BC30574"
+
 End Module

@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Performance
 
@@ -45,7 +47,7 @@ Namespace Performance
         Private Shared Function IsDeclarationConstFriendly(declaration As LocalDeclarationStatementSyntax, semanticModel As SemanticModel) As Boolean
             For Each variable As VariableDeclaratorSyntax In declaration.Declarators
                 ' In VB an initializer can either be
-                ' infered with an ititializer or declared via
+                ' inferred with an initializer or declared via
                 ' As New ReferenceType
                 If variable.Initializer Is Nothing Then Return False
 
@@ -60,7 +62,7 @@ Namespace Performance
 
                 ' is declared as null reference type
                 If variable.AsClause IsNot Nothing Then
-                    Dim variableType As VisualBasic.Syntax.TypeSyntax = variable.AsClause.Type
+                    Dim variableType As TypeSyntax = variable.AsClause.Type
                     variableConvertedType = semanticModel.GetTypeInfo(variableType).ConvertedType
                 Else
                     Dim symbol As ISymbol = semanticModel.GetDeclaredSymbol(variable.Names.First())
@@ -76,15 +78,15 @@ Namespace Performance
                 If variable.Initializer.Value.Kind = SyntaxKind.NothingLiteralExpression Then Return True
 
                 ' Value can be converted to variable type?
-                Dim conversion As VisualBasic.Conversion = semanticModel.ClassifyConversion(variable.Initializer.Value, variableConvertedType)
-                If (Not conversion.Exists OrElse conversion.IsUserDefined) Then Return False
+                Dim conversion As Conversion = semanticModel.ClassifyConversion(variable.Initializer.Value, variableConvertedType)
+                If Not conversion.Exists OrElse conversion.IsUserDefined Then Return False
 
             Next
             Return True
         End Function
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim localDeclaration As LocalDeclarationStatementSyntax = DirectCast(context.Node, LocalDeclarationStatementSyntax)
             Dim semanticModel As SemanticModel = context.SemanticModel
             If Not localDeclaration.Modifiers.OfType(Of ConstDirectiveTriviaSyntax).Any() AndAlso
@@ -99,7 +101,7 @@ Namespace Performance
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.LocalDeclarationStatement)
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.LocalDeclarationStatement)
         End Sub
 
     End Class

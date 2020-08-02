@@ -1,4 +1,6 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports System.Text
 Imports Microsoft.CodeAnalysis
@@ -21,7 +23,7 @@ Public Class SymbolsAndSemantics
         builder.AppendLine(symbol.ToString())
 
         For Each childSymbol As ISymbol In GetMembers(symbol)
-            EnumSymbols(childSymbol, builder)
+            Me.EnumSymbols(childSymbol, builder)
         Next
     End Sub
 
@@ -133,7 +135,7 @@ End Class
         Dim globalNamespace As INamespaceSymbol = comp.SourceModule.GlobalNamespace
 
         Dim builder As StringBuilder = New StringBuilder()
-        EnumSymbols(globalNamespace, builder)
+        Me.EnumSymbols(globalNamespace, builder)
 
         Dim expected As String = "Global" & vbCrLf &
                                  "My" & vbCrLf &

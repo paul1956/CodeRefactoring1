@@ -2,6 +2,16 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Composition
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
+Imports Microsoft.CodeAnalysis.CodeRefactorings
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 Namespace Style
 
     <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(RemoveAsClauseRefactoringProvider)), [Shared]>
@@ -42,7 +52,7 @@ Namespace Style
             If VariableDeclarator.Initializer.Value.Kind = SyntaxKind.CollectionInitializer Then
                 Return
             End If
-            context.RegisterRefactoring(CodeAction.Create($"Remove As Clause", Function(c As CancellationToken) MakeImplicit(document, VariableDeclarator, c)))
+            context.RegisterRefactoring(CodeAction.Create($"Remove As Clause", Function(c As CancellationToken) Me.MakeImplicit(document, VariableDeclarator, c)))
         End Function
 
         Private Async Function MakeImplicit(document As Document, VariableDeclarator As VariableDeclaratorSyntax, cancellationToken As CancellationToken) As Task(Of Document)

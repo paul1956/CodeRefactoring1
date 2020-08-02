@@ -3,13 +3,18 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Performance
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(MakeLocalVariableConstWhenPossibleCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(MakeLocalVariableConstWhenPossibleCodeFixProvider)), [Shared]>
     Public Class MakeLocalVariableConstWhenPossibleCodeFixProvider
         Inherits CodeFixProvider
 
@@ -18,9 +23,9 @@ Namespace Performance
         Public Shared Async Function MakeConstantAsync(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Document)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
             Dim diagnosticSpan As Text.TextSpan = diagnostic.Location.SourceSpan
-            Dim localDeclaration As VisualBasic.Syntax.LocalDeclarationStatementSyntax = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType(Of LocalDeclarationStatementSyntax).First()
+            Dim localDeclaration As Syntax.LocalDeclarationStatementSyntax = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType(Of LocalDeclarationStatementSyntax).First()
 
-            Dim declaration As VisualBasic.Syntax.VariableDeclaratorSyntax = localDeclaration.Declarators.First
+            Dim declaration As Syntax.VariableDeclaratorSyntax = localDeclaration.Declarators.First
 
             Dim dimModifier As SyntaxToken = localDeclaration.Modifiers.First()
 
@@ -31,7 +36,7 @@ Namespace Performance
 
             Dim modifiers As SyntaxTokenList = localDeclaration.Modifiers.Replace(dimModifier, constant)
 
-            Dim newLocalDeclaration As VisualBasic.Syntax.LocalDeclarationStatementSyntax = localDeclaration.
+            Dim newLocalDeclaration As Syntax.LocalDeclarationStatementSyntax = localDeclaration.
             WithModifiers(modifiers).
             WithLeadingTrivia(localDeclaration.GetLeadingTrivia()).
             WithTrailingTrivia(localDeclaration.GetTrailingTrivia()).

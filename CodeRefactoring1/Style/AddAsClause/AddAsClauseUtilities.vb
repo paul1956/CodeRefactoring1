@@ -3,10 +3,16 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Text
-Imports CodeRefactoring1.Utilities
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory
+Imports VBRefactorings.Utilities
 
 Namespace Style
     Public Module AddAsClauseUtilities
@@ -391,7 +397,7 @@ Namespace Style
             Else
                 TypeListSplit = GetTypesExtracted(TypeListString)
             End If
-            For k As Integer = 0 To (TypeListSplit.Count - 1) - FunctionOffset
+            For k As Integer = 0 To TypeListSplit.Count - 1 - FunctionOffset
                 If TypeListSplit(k).Contains("(") And Not TypeListSplit(k).Contains(")") Then
                     Throw New FormatException($"GetTypes Type contains '(' but not ')' - {TypeListSplit(k)}")
                 End If
@@ -561,6 +567,24 @@ Namespace Style
             Catch ex As Exception
                 Throw
             End Try
+        End Function
+
+        Public Async Function AddAsClauseDocumentAsync(root As SyntaxNode, Model As SemanticModel, CurrentDocument As Document, OldVariableDeclarator As VariableDeclaratorSyntax, CancelToken As CancellationToken) As Task(Of Document)
+            Dim editor As DocumentEditor = Await DocumentEditor.CreateAsync(CurrentDocument, CancelToken)
+            editor.ReplaceNode(OldVariableDeclarator, AddAsClauseAsync(root, Model, CurrentDocument, OldVariableDeclarator))
+            Return editor.GetChangedDocument
+        End Function
+
+        Public Async Function AddAsClauseDocumentAsync(CurrentDocument As Document, ForStatement As ForStatementSyntax, CancelToken As CancellationToken) As Task(Of Document)
+            Dim editor As DocumentEditor = Await DocumentEditor.CreateAsync(CurrentDocument, CancelToken)
+            editor.ReplaceNode(ForStatement, Await AddAsClauseAsync(CurrentDocument, ForStatement, CancelToken))
+            Return editor.GetChangedDocument
+        End Function
+
+        Public Async Function AddAsClauseDocumentAsync(CurrentDocument As Document, ForEachStatement As ForEachStatementSyntax, CancelToken As CancellationToken) As Task(Of Document)
+            Dim editor As DocumentEditor = Await DocumentEditor.CreateAsync(CurrentDocument, CancelToken)
+            editor.ReplaceNode(ForEachStatement, Await AddAsClauseAsync(CurrentDocument, ForEachStatement, CancelToken))
+            Return editor.GetChangedDocument
         End Function
 
         Public Async Function NewForControlVariableWithAsClause(CurrentDocument As Document, ForStatement As ForStatementSyntax, CancelToken As CancellationToken) As Task(Of VariableDeclaratorSyntax)

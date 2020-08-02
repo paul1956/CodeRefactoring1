@@ -1,8 +1,13 @@
-﻿Imports CodeRefactoring1.Style
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeRefactorings
 Imports Roslyn.UnitTestFramework
+Imports VBRefactorings.Style
 Imports Xunit
+
 Namespace UnitTest
 
     <TestClass()>
@@ -34,8 +39,9 @@ End Class"
     End Class</text>.Value
     End Sub
 End Class"
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
     End Class
+
 End Namespace

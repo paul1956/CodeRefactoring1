@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -41,7 +45,7 @@ Namespace TestHelper
         ''' <param name="expected"> DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyCSharpDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics({source}, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -52,7 +56,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the source</param>
         Protected Sub VerifyBasicDiagnostic(source As String, ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics({source}, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics({source}, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -63,7 +67,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyCSharpDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics(sources, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -74,7 +78,7 @@ Namespace TestHelper
         ''' <param name="expected">DiagnosticResults that should appear after the analyzer Is run on the sources</param>
         Protected Sub VerifyBasicDiagnostic(sources As String(), ParamArray expected As DiagnosticResult())
 
-            VerifyDiagnostics(sources, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), expected)
+            VerifyDiagnostics(sources, LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), expected)
         End Sub
 
         ''' <summary>
@@ -126,7 +130,7 @@ Diagnostics:
 
                 If expected.Line = -1 AndAlso expected.Column = -1 Then
 
-                    If (actual.Location <> Location.None) Then
+                    If actual.Location <> Location.None Then
 
                         Assert.IsTrue(False,
                         String.Format(
@@ -141,7 +145,7 @@ Actual:
                     VerifyDiagnosticLocation(analyzer, actual, actual.Location, expected.Locations.First())
                     Dim additionalLocations As Location() = actual.AdditionalLocations.ToArray()
 
-                    If (additionalLocations.Length <> expected.Locations.Length - 1) Then
+                    If additionalLocations.Length <> expected.Locations.Length - 1 Then
 
                         Assert.IsTrue(False,
                     String.Format(
@@ -158,7 +162,7 @@ Actual:
                     Next
                 End If
 
-                If (actual.Id <> expected.Id) Then
+                If actual.Id <> expected.Id Then
 
                     Assert.IsTrue(False,
     String.Format(
@@ -170,7 +174,7 @@ Diagnostic:
                             expected.Id, actual.Id, FormatDiagnostics(analyzer, actual)))
                 End If
 
-                If (actual.Severity <> expected.Severity) Then
+                If actual.Severity <> expected.Severity Then
 
                     Assert.IsTrue(False,
 String.Format(
@@ -182,7 +186,7 @@ Diagnostic:
                             expected.Severity, actual.Severity, FormatDiagnostics(analyzer, actual)))
                 End If
 
-                If (actual.GetMessage() <> expected.Message) Then
+                If actual.GetMessage() <> expected.Message Then
 
                     Assert.IsTrue(False,
 String.Format(
@@ -219,9 +223,9 @@ Diagnostic:
             Dim actualLinePosition As Text.LinePosition = actualSpan.StartLinePosition
 
             ' Only check line position if there Is an actual line in the real diagnostic
-            If (actualLinePosition.Line > 0) Then
+            If actualLinePosition.Line > 0 Then
 
-                If (actualLinePosition.Line + 1.0 <> expected.Line) Then
+                If actualLinePosition.Line + 1.0 <> expected.Line Then
 
                     Assert.IsTrue(False,
                         String.Format(
@@ -235,9 +239,9 @@ Diagnostic:
             End If
 
             ' Only check column position if there Is an actual column position in the real diagnostic
-            If (actualLinePosition.Character > 0) Then
+            If actualLinePosition.Character > 0 Then
 
-                If (actualLinePosition.Character + 1.0 <> expected.Column) Then
+                If actualLinePosition.Character + 1.0 <> expected.Column Then
 
                     Assert.IsTrue(False,
                         String.Format(
@@ -273,10 +277,10 @@ Diagnostic:
 
                 For Each rule As DiagnosticDescriptor In rules
 
-                    If (rule IsNot Nothing AndAlso rule.Id = diagnostics(i).Id) Then
+                    If rule IsNot Nothing AndAlso rule.Id = diagnostics(i).Id Then
 
                         Dim location As Location = diagnostics(i).Location
-                        If (location = Location.None) Then
+                        If location = Location.None Then
 
                             builder.AppendFormat("GetGlobalResult({0}.{1})", analyzerType.Name, rule.Id)
                         Else

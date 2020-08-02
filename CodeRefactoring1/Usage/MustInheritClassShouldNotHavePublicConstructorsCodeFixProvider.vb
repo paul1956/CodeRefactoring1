@@ -3,12 +3,18 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), [Shared]>
     Public Class MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider
         Inherits CodeFixProvider
 
@@ -36,7 +42,7 @@ Namespace Usage
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diag As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
+            context.RegisterCodeFix(CodeAction.Create("Use 'Friend' instead of 'Public'", Function(c As CancellationToken) Me.ReplacePublicWithProtectedAsync(context.Document, diag, c), NameOf(MustInheritClassShouldNotHavePublicConstructorsCodeFixProvider)), diag)
             Return Task.FromResult(0)
         End Function
 

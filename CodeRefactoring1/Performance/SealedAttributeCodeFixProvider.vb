@@ -3,12 +3,17 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Performance
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(SealedAttributeCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(SealedAttributeCodeFixProvider)), [Shared]>
     Public Class SealedAttributeCodeFixProvider
         Inherits CodeFixProvider
 
@@ -23,7 +28,7 @@ Namespace Performance
             Dim diag As Diagnostic = context.Diagnostics.First()
             Dim sourceSpan As Text.TextSpan = diag.Location.SourceSpan
             Dim type As VisualBasic.Syntax.ClassStatementSyntax = root.FindToken(sourceSpan.Start).Parent.AncestorsAndSelf().OfType(Of ClassStatementSyntax)().First()
-            context.RegisterCodeFix(CodeAction.Create("Mark as NotInheritable", Function(ct As CancellationToken) MarkClassAsSealed(context.Document, diag, ct), NameOf(SealedAttributeCodeFixProvider)), diag)
+            context.RegisterCodeFix(CodeAction.Create("Mark as NotInheritable", Function(ct As CancellationToken) Me.MarkClassAsSealed(context.Document, diag, ct), NameOf(SealedAttributeCodeFixProvider)), diag)
         End Function
 
         Private Async Function MarkClassAsSealed(document As Document, diagnostic As Diagnostic, cancellationToken As CancellationToken) As Task(Of Document)

@@ -2,7 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Composition
 Imports System.Diagnostics.Debug
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeRefactorings
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Globalization
 
@@ -12,7 +19,7 @@ Namespace Globalization
         Private _resourceClass As ResourceXClass
 
         Private Async Function MoveStringToResourceFileAsync(Statement As StatementSyntax, invocation As ExpressionSyntax, document As Document, cancellationToken As CancellationToken) As Task(Of Document)
-            Assert(Not (invocation) Is Nothing)
+            Assert(Not invocation Is Nothing)
             Try
                 Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(False)
                 Dim ResourceText As String = ""
@@ -87,7 +94,7 @@ Namespace Globalization
                         Exit Function
                     End If
                     context.RegisterRefactoring(New MoveStringToResourceFileCodeAction("Move String to Resource File",
-                                                Function(c As CancellationToken) MoveStringToResourceFileAsync(Statement, invocation, context.Document, c)))
+                                                Function(c As CancellationToken) Me.MoveStringToResourceFileAsync(Statement, invocation, context.Document, c)))
                 Case SyntaxKind.NothingLiteralExpression
                     Exit Function
                 Case SyntaxKind.CharacterLiteralExpression

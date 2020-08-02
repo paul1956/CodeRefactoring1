@@ -2,11 +2,6 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
-
 Imports System.Diagnostics
 Imports System.Runtime.InteropServices
 
@@ -68,7 +63,7 @@ Public NotInheritable Class Command1Package
         Stop
         Command1.Initialize(Me)
         MyBase.Initialize()
-        MyComponentModel = DirectCast(GetService(GetType(SComponentModel)), IComponentModel)
+        MyComponentModel = DirectCast(Me.GetService(GetType(SComponentModel)), IComponentModel)
         Dim defaultListener As DefaultTraceListener
         defaultListener = New DefaultTraceListener() With {.LogFileName = "C:\Users\PaulM\Documents\CodeRefactoringTrace.txt", .IndentSize = 4}
         Trace.Listeners.Add(defaultListener)
@@ -109,7 +104,7 @@ Public NotInheritable Class Command1Package
         Get
             Return privateInstance
         End Get
-        Private Set(ByVal value As Command1Package)
+        Private Set(value As Command1Package)
             privateInstance = value
         End Set
     End Property

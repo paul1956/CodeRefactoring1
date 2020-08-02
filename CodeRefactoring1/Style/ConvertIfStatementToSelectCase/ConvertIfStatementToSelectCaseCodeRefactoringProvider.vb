@@ -2,7 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeRefactorings
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Style
 
@@ -12,7 +19,7 @@ Namespace Style
 
         Private Shared ReadOnly validTypes() As SpecialType = {SpecialType.System_String, SpecialType.System_Boolean, SpecialType.System_Char, SpecialType.System_Byte, SpecialType.System_SByte, SpecialType.System_Int16, SpecialType.System_Int32, SpecialType.System_Int64, SpecialType.System_UInt16, SpecialType.System_UInt32, SpecialType.System_UInt64}
 
-        Private Shared Function CollectCaseLabels(ByVal result As List(Of CaseClauseSyntax), ByVal context As SemanticModel, ByVal condition As ExpressionSyntax, ByVal switchExpr As ExpressionSyntax) As Boolean
+        Private Shared Function CollectCaseLabels(result As List(Of CaseClauseSyntax), context As SemanticModel, condition As ExpressionSyntax, switchExpr As ExpressionSyntax) As Boolean
             If TypeOf condition Is ParenthesizedExpressionSyntax Then
                 Return CollectCaseLabels(result, context, CType(condition, ParenthesizedExpressionSyntax).Expression, switchExpr)
             End If
@@ -43,14 +50,14 @@ Namespace Style
             Return False
         End Function
 
-        Private Shared Function IsConstantExpression(ByVal context As SemanticModel, ByVal expr As ExpressionSyntax) As Boolean
+        Private Shared Function IsConstantExpression(context As SemanticModel, expr As ExpressionSyntax) As Boolean
             If TypeOf expr Is LiteralExpressionSyntax Then
                 Return True
             End If
             Return context.GetConstantValue(expr).HasValue
         End Function
 
-        Private Shared Function IsValidSwitchType(ByVal type As ITypeSymbol) As Boolean
+        Private Shared Function IsValidSwitchType(type As ITypeSymbol) As Boolean
             If type Is Nothing OrElse TypeOf type Is IErrorTypeSymbol Then
                 Return False
             End If
@@ -67,7 +74,7 @@ Namespace Style
             Return Array.IndexOf(validTypes, type.SpecialType) <> -1
         End Function
 
-        Friend Shared Function CollectCaseBlocks(ByVal result As List(Of CaseBlockSyntax), ByVal context As SemanticModel, ByVal ifBlock As MultiLineIfBlockSyntax, ByVal switchExpr As ExpressionSyntax) As Boolean
+        Friend Shared Function CollectCaseBlocks(result As List(Of CaseBlockSyntax), context As SemanticModel, ifBlock As MultiLineIfBlockSyntax, switchExpr As ExpressionSyntax) As Boolean
             ' if
             Dim labels As List(Of CaseClauseSyntax) = New List(Of CaseClauseSyntax)
             If Not CollectCaseLabels(labels, context, ifBlock.IfStatement.Condition, switchExpr) Then
@@ -92,7 +99,7 @@ Namespace Style
             Return True
         End Function
 
-        Friend Shared Function GetSelectCaseExpression(ByVal context As SemanticModel, ByVal expr As ExpressionSyntax) As ExpressionSyntax
+        Friend Shared Function GetSelectCaseExpression(context As SemanticModel, expr As ExpressionSyntax) As ExpressionSyntax
             Dim binaryOp As BinaryExpressionSyntax = TryCast(expr, BinaryExpressionSyntax)
             If binaryOp Is Nothing Then
                 Return Nothing
@@ -118,7 +125,7 @@ Namespace Style
             Return Nothing
         End Function
 
-        Public Overrides Async Function ComputeRefactoringsAsync(ByVal context As CodeRefactoringContext) As Task
+        Public Overrides Async Function ComputeRefactoringsAsync(context As CodeRefactoringContext) As Task
             Dim document As Document = context.Document
             If document.Project.Solution.Workspace.Kind = WorkspaceKind.MiscellaneousFiles Then
                 Return
@@ -159,7 +166,7 @@ Namespace Style
                                              DiagnosticSeverity.Info,
                                              "To 'Select Case'",
                                              Function(ct As CancellationToken)
-                                                 Dim selectCaseStatement As SelectBlockSyntax = SyntaxFactory.SelectBlock(SyntaxFactory.SelectStatement(selectCaseExpression).WithCaseKeyword(SyntaxFactory.Token(SyntaxKind.CaseKeyword)), (New SyntaxList(Of CaseBlockSyntax)()).AddRange(caseBlocks)).NormalizeWhitespace()
+                                                 Dim selectCaseStatement As SelectBlockSyntax = SyntaxFactory.SelectBlock(SyntaxFactory.SelectStatement(selectCaseExpression).WithCaseKeyword(SyntaxFactory.Token(SyntaxKind.CaseKeyword)), New SyntaxList(Of CaseBlockSyntax)().AddRange(caseBlocks)).NormalizeWhitespace()
                                                  Return Task.FromResult(document.WithSyntaxRoot(root.ReplaceNode(ifBlock, selectCaseStatement.WithLeadingTrivia(ifBlock.GetLeadingTrivia()).WithTrailingTrivia(ifBlock.GetTrailingTrivia()).WithAdditionalAnnotations(Formatter.Annotation))))
                                              End Function)
                                             )

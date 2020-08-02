@@ -3,6 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Resources
+Imports System.Threading
+Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Class ResourceXClass
 
@@ -66,7 +68,7 @@ Public Class ResourceXClass
     ''' <param name="value"></param>
     ''' <param name="comment"></param>
     ''' <returns></returns>
-    Public Function AddToResourceFile(ByVal key As String, ByVal value As String, Optional ByVal comment As String = "") As Boolean
+    Public Function AddToResourceFile(key As String, value As String, Optional comment As String = "") As Boolean
         If Me.Initialized = InitializedValues.Testing Then
             Return True
         End If

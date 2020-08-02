@@ -3,14 +3,20 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Performance
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(StringBuilderInLoopCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(StringBuilderInLoopCodeFixProvider)), [Shared]>
     Public Class StringBuilderInLoopCodeFixProvider
         Inherits CodeFixProvider
 
@@ -22,7 +28,7 @@ Namespace Performance
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First
-            context.RegisterCodeFix(CodeAction.Create($"Use StringBuilder to create a value for '{diagnostic.Properties!assignmentExpressionLeft}'", Function(c As CancellationToken) UseStringBuilder(context.Document, diagnostic, c), NameOf(StringBuilderInLoopCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create($"Use StringBuilder to create a value for '{diagnostic.Properties!assignmentExpressionLeft}'", Function(c As CancellationToken) Me.UseStringBuilder(context.Document, diagnostic, c), NameOf(StringBuilderInLoopCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 

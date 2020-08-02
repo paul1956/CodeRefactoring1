@@ -2,9 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports CodeRefactoring1.Usage.MethodAnalyzers
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports VBRefactorings.Usage.MethodAnalyzers
 
 Public Class MethodChecker
 
@@ -17,14 +19,14 @@ Public Class MethodChecker
     End Sub
 
     Public Sub AnalyzeConstructor(methodInformation As MethodInformation)
-        If ConstructorNameNotFound(methodInformation) OrElse MethodFullNameNotFound(methodInformation.MethodFullDefinition) Then Exit Sub
+        If Me.ConstructorNameNotFound(methodInformation) OrElse Me.MethodFullNameNotFound(methodInformation.MethodFullDefinition) Then Exit Sub
         Dim argumentList As ArgumentListSyntax = TryCast(_context.Node, ObjectCreationExpressionSyntax).ArgumentList
-        Dim arguments As List(Of Object) = GetArguments(argumentList)
-        Execute(methodInformation, arguments, argumentList)
+        Dim arguments As List(Of Object) = Me.GetArguments(argumentList)
+        Me.Execute(methodInformation, arguments, argumentList)
     End Sub
 
     Private Function ConstructorNameNotFound(methodInformation As MethodInformation) As Boolean
-        Return AbreviatedConstructorNameNotFound(methodInformation) AndAlso QualifiedConstructorNameNotFound(methodInformation)
+        Return Me.AbreviatedConstructorNameNotFound(methodInformation) AndAlso Me.QualifiedConstructorNameNotFound(methodInformation)
     End Function
 
     Private Function AbreviatedConstructorNameNotFound(methodInformation As MethodInformation) As Boolean
@@ -40,12 +42,12 @@ Public Class MethodChecker
     End Function
 
     Public Sub AnalyzeMethod(methodInformation As MethodInformation)
-        If MethodNameNotFound(methodInformation) OrElse MethodFullNameNotFound(methodInformation.MethodFullDefinition) Then
+        If Me.MethodNameNotFound(methodInformation) OrElse Me.MethodFullNameNotFound(methodInformation.MethodFullDefinition) Then
             Exit Sub
         End If
         Dim argumentList As ArgumentListSyntax = DirectCast(_context.Node, InvocationExpressionSyntax).ArgumentList
-        Dim arguments As List(Of Object) = GetArguments(argumentList)
-        Execute(methodInformation, arguments, argumentList)
+        Dim arguments As List(Of Object) = Me.GetArguments(argumentList)
+        Me.Execute(methodInformation, arguments, argumentList)
     End Sub
 
     Private Function MethodNameNotFound(methodInformation As MethodInformation) As Boolean
@@ -66,7 +68,7 @@ Public Class MethodChecker
         Try
             methodInformation.MethodAction.Invoke(arguments)
         Catch ex As Exception
-            While (ex.InnerException IsNot Nothing)
+            While ex.InnerException IsNot Nothing
                 ex = ex.InnerException
             End While
             Dim diag As Diagnostic = Diagnostic.Create(_diagnosticDescriptor, argumentList.Arguments(methodInformation.ArgumentIndex).GetLocation(), ex.Message)

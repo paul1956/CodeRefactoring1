@@ -1,7 +1,11 @@
-﻿Imports CodeRefactoring1.Globalization
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeRefactorings
 Imports Roslyn.UnitTestFramework
+Imports VBRefactorings.Globalization
 Imports Xunit
 
 Namespace UnitTest
@@ -27,7 +31,7 @@ Class C
         Get
     End Property
 End Class</text>.Value
-            TestNoActions(code)
+            Me.TestNoActions(code)
         End Sub
 
         <Fact()>
@@ -39,7 +43,7 @@ End Class</text>.Value
             Dim expected As String = <text>Class C
             Property P As String = ResourceRetriever.GetString("Test")
         End Class</text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
         <Fact()>
@@ -51,7 +55,7 @@ End Class</text>.Value
             Dim expected As String = <text>Structure S
             Property P As String = ResourceRetriever.GetString("Test")
         End Structure</text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
         <Fact()>
@@ -63,7 +67,7 @@ End Class</text>.Value
             Dim expected As String = <text>Class C
             Private P As String = ResourceRetriever.GetString("Test")
         End Class</text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
         <Fact()>
@@ -85,7 +89,7 @@ End Class</text>.Value
                        Dim x = P
                     End Sub
         End Class</text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
         <Fact()>
@@ -95,7 +99,7 @@ End Class</text>.Value
                     stop
                 End Sub
             End Class</text>.Value
-            TestNoActions(code)
+            Me.TestNoActions(code)
         End Sub
 
         <Fact()>
@@ -105,7 +109,7 @@ End Class</text>.Value
             Return P
             End Function
         End Class</text>.Value
-            TestNoActions(code)
+            Me.TestNoActions(code)
         End Sub
 
         <Fact()>
@@ -129,7 +133,7 @@ End Class</text>.Value
         End Sub
     End Class
 </text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
         <Fact()>
@@ -144,7 +148,7 @@ End Class</text>.Value
                         Dim P as String = ResourceRetriever.GetString("Test")
                     End Sub
         End Class</text>.Value
-            Test(code, expected)
+            Me.Test(code, expected)
         End Sub
 
     End Class

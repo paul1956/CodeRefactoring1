@@ -3,7 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.InteropServices
-Imports CodeRefactoring1.Utilities
+Imports Microsoft.CodeAnalysis
+Imports VBRefactorings.Utilities
 
 Partial Public Module ISymbolExtensions
 

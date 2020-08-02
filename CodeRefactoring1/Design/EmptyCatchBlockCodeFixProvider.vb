@@ -3,13 +3,18 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Design
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(EmptyCatchBlockCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(EmptyCatchBlockCodeFixProvider)), [Shared]>
     Public Class EmptyCatchBlockCodeFixProvider
         Inherits CodeFixProvider
         Friend Shared ReadOnly FixInsertExceptionClass As New LocalizableResourceString(NameOf(My.Resources.EmptyCatchBlockCodeFixProvider_InsertException), My.Resources.ResourceManager, GetType(My.Resources.Resources))
@@ -74,11 +79,11 @@ Namespace Design
 
             Dim tryBlock As VisualBasic.Syntax.TryBlockSyntax = DirectCast(declaration.Parent, TryBlockSyntax)
             If tryBlock.CatchBlocks.Count > 1 Then
-                context.RegisterCodeFix(CodeAction.Create(FixRemoveEmptyCatchBlock.ToString(), Function(c As CancellationToken) RemoveCatch(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
+                context.RegisterCodeFix(CodeAction.Create(FixRemoveEmptyCatchBlock.ToString(), Function(c As CancellationToken) Me.RemoveCatch(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
             Else
-                context.RegisterCodeFix(CodeAction.Create(FixRemoveTry.ToString(), Function(c As CancellationToken) RemoveTry(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
+                context.RegisterCodeFix(CodeAction.Create(FixRemoveTry.ToString(), Function(c As CancellationToken) Me.RemoveTry(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(RemoveTry)), diag)
             End If
-            context.RegisterCodeFix(CodeAction.Create(FixInsertExceptionClass.ToString(), Function(c As CancellationToken) InsertExceptionClassCommentAsync(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(InsertExceptionClassCommentAsync)), diag)
+            context.RegisterCodeFix(CodeAction.Create(FixInsertExceptionClass.ToString(), Function(c As CancellationToken) Me.InsertExceptionClassCommentAsync(context.Document, declaration, c), NameOf(EmptyCatchBlockCodeFixProvider) & NameOf(InsertExceptionClassCommentAsync)), diag)
         End Function
 
     End Class

@@ -5,6 +5,8 @@
 Imports System.Collections.Immutable
 Imports System.ComponentModel
 Imports System.Runtime.CompilerServices
+Imports VBRefactorings
+Imports Microsoft.CodeAnalysis
 
 Namespace Utilities
 
@@ -130,9 +132,9 @@ Namespace Utilities
         ' Determine if "type" inherits from "baseType", ignoring constructed types, and dealing
         ' only with original types.
         <Extension>
-        Public Function InheritsFromOrEqualsIgnoringConstruction(ByVal type As ITypeSymbol, ByVal baseType As ITypeSymbol) As Boolean
+        Friend Function InheritsFromOrEqualsIgnoringConstruction(type As ITypeSymbol, baseType As ITypeSymbol) As Boolean
             Dim originalBaseType As ITypeSymbol = baseType.OriginalDefinition
-            Return type.GetBaseTypesAndThis().Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.Instance.Equals(t.OriginalDefinition, originalBaseType))
+            Return type.GetBaseTypesAndThis.Contains(Function(t As ITypeSymbol) SymbolEquivalenceComparer.s_instance.Equals(t.OriginalDefinition, originalBaseType))
         End Function
 
         <Extension()>
@@ -147,7 +149,7 @@ Namespace Utilities
 
             Dim originalContainingType As INamedTypeSymbol = containingType.OriginalDefinition
             Dim withinNamedType As INamedTypeSymbol = TryCast(within, INamedTypeSymbol)
-            Dim withinAssembly As IAssemblySymbol = If((TryCast(within, IAssemblySymbol)), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
+            Dim withinAssembly As IAssemblySymbol = If(TryCast(within, IAssemblySymbol), DirectCast(within, INamedTypeSymbol).ContainingAssembly)
 
             ' A nested symbol is only accessible to us if its container is accessible as well.
             If Not IsNamedTypeAccessible(containingType, within) Then

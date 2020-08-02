@@ -3,12 +3,17 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(RemovePrivateMethodNeverUsedCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(RemovePrivateMethodNeverUsedCodeFixProvider)), [Shared]>
     Public Class RemovePrivateMethodNeverUsedCodeFixProvider
         Inherits CodeFixProvider
 
@@ -29,7 +34,7 @@ Namespace Usage
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create($"Remove unused private method: {diagnostic.Properties!identifier}", Function(c As CancellationToken) RemoveMethodAsync(context.Document, diagnostic, c), NameOf(RemovePrivateMethodNeverUsedCodeFixProvider)), diagnostic)
+            context.RegisterCodeFix(CodeAction.Create($"Remove unused private method: {diagnostic.Properties!identifier}", Function(c As CancellationToken) Me.RemoveMethodAsync(context.Document, diagnostic, c), NameOf(RemovePrivateMethodNeverUsedCodeFixProvider)), diagnostic)
             Return Task.FromResult(0)
         End Function
 

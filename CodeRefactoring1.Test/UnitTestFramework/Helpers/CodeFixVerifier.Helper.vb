@@ -1,4 +1,8 @@
-﻿Imports System.Collections.Immutable
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Imports System.Collections.Immutable
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeActions
@@ -42,9 +46,9 @@ Namespace TestHelper
             Dim oldIndex As Integer = 0
             Dim newIndex As Integer = 0
 
-            While (newIndex < newArray.Length)
+            While newIndex < newArray.Length
 
-                If (oldIndex < oldArray.Length AndAlso oldArray(oldIndex).Id = newArray(newIndex).Id) Then
+                If oldIndex < oldArray.Length AndAlso oldArray(oldIndex).Id = newArray(newIndex).Id Then
                     oldIndex += 1
                     newIndex += 1
                 Else

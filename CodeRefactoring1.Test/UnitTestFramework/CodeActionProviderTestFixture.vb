@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -26,7 +30,7 @@ Namespace Roslyn.UnitTestFramework
 
         Protected Sub VerifyDocument(ByVal expected As String, ByVal compareTokens As Boolean, ByVal document As Document)
             If compareTokens Then
-                VerifyTokens(expected, Format(document).ToString())
+                Me.VerifyTokens(expected, Format(document).ToString())
             Else
                 VerifyText(expected, document)
             End If
@@ -38,12 +42,12 @@ Namespace Roslyn.UnitTestFramework
         End Function
 
         Private Function ParseTokens(ByVal text As String) As IList(Of SyntaxToken)
-            Return ParseTokens(text).Select(Function(t As SyntaxToken) CType(t, SyntaxToken)).ToList()
+            Return Me.ParseTokens(text).Select(Function(t As SyntaxToken) t).ToList()
         End Function
 
         Private Function VerifyTokens(ByVal expected As String, ByVal actual As String) As Boolean
-            Dim expectedNewTokens As IList(Of SyntaxToken) = ParseTokens(expected)
-            Dim actualNewTokens As IList(Of SyntaxToken) = ParseTokens(actual)
+            Dim expectedNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(expected)
+            Dim actualNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(actual)
 
             For i As Integer = 0 To Math.Min(expectedNewTokens.Count, actualNewTokens.Count) - 1
                 Assert.Equal(expectedNewTokens(i).ToString(), actualNewTokens(i).ToString())

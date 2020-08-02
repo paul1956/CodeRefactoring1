@@ -1,11 +1,13 @@
-﻿Imports CodeRefactoring1
-Imports CodeRefactoring1.Style
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Diagnostics
-
 Imports TestHelper
+Imports VBRefactorings
+Imports VBRefactorings.Style
 Imports Xunit
 
 Namespace AddAsClauseForLambda.UnitTest
@@ -38,7 +40,7 @@ Namespace AddAsClauseForLambda.UnitTest
     End Sub
 End Class"
 
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
                     .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
@@ -46,7 +48,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -62,7 +64,7 @@ End Class"
                         End Function
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -77,7 +79,7 @@ End Class"
     End Sub
 End Class"
 
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
                     .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
@@ -85,7 +87,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -96,7 +98,7 @@ End Class"
                      End Sub
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -110,20 +112,20 @@ End Class"
 End Class"
             Dim expected1 As DiagnosticResult = New DiagnosticResult With
                 {
-                .Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
+                .Id = AddAsClauseForLambdaDiagnosticId,
                 .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
                 .Severity = DiagnosticSeverity.Warning,
                 .Locations = New DiagnosticResultLocation() {New DiagnosticResultLocation("Test0.vb", 4, 25)}
                 }
             Dim expected2 As DiagnosticResult = New DiagnosticResult With
                 {
-                .Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
+                .Id = AddAsClauseForLambdaDiagnosticId,
                 .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
                 .Severity = DiagnosticSeverity.Warning,
                 .Locations = New DiagnosticResultLocation() {New DiagnosticResultLocation("Test0.vb", 4, 30)}
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected1, expected2)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected1, expected2)
 
             Const FixedlSource As String =
 "Class Class1
@@ -132,7 +134,7 @@ End Class"
         add1 = Function(Num As UInteger, Num1 As Integer) Num + Num1
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -148,7 +150,7 @@ End Class"
     End Sub
 End Class"
 
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseForLambdaDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseForLambdaDiagnosticId,
                     .Message = String.Format("Option Strict On requires all Lambda declarations to have an 'As' clause.", "Class1"),
                     .Severity = DiagnosticSeverity.Warning,
                     .Locations = New DiagnosticResultLocation() {
@@ -156,7 +158,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -168,7 +170,7 @@ End Class"
         Throw New NotImplementedException()
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
     End Class

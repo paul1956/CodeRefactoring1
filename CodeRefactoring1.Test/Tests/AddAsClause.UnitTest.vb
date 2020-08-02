@@ -1,10 +1,6 @@
-﻿Option Compare Text
-Option Explicit On
-Option Infer Off
-Option Strict On
-
-Imports CodeRefactoring1
-Imports CodeRefactoring1.Style
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
 
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
@@ -13,7 +9,8 @@ Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports TestHelper
-
+Imports VBRefactorings
+Imports VBRefactorings.Style
 Imports Xunit
 
 Namespace AddAsClause.UnitTest
@@ -26,7 +23,7 @@ Namespace AddAsClause.UnitTest
         End Function
 
         Protected Overrides Function GetBasicDiagnosticAnalyzer() As DiagnosticAnalyzer
-            Return New CodeRefactoring1.Style.AddAsClauseAnalyzer()
+            Return New AddAsClauseAnalyzer()
         End Function
 
         <Fact>
@@ -86,7 +83,7 @@ End Module", "a.vb")
             Next
     End Sub
 End Class"
-            VerifyBasicDiagnostic(OriginalSource)
+            Me.VerifyBasicDiagnostic(OriginalSource)
         End Sub
 
         <Fact>
@@ -101,7 +98,7 @@ End Class"
             Return 0
         End Function
 End Class"
-            VerifyBasicDiagnostic(OriginalSource)
+            Me.VerifyBasicDiagnostic(OriginalSource)
 
         End Sub
 
@@ -115,7 +112,7 @@ End Class"
             Next
     End Sub
 End Class"
-            VerifyBasicDiagnostic(OriginalSource)
+            Me.VerifyBasicDiagnostic(OriginalSource)
         End Sub
 
         <Fact>
@@ -134,7 +131,7 @@ Partial Public MustInherit Class DiagnosticVerifier
         Return Nothing
     End Function
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -142,7 +139,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Imports Microsoft.CodeAnalysis
@@ -158,7 +155,7 @@ Partial Public MustInherit Class DiagnosticVerifier
         Return Nothing
     End Function
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -170,14 +167,14 @@ Module Program
         Dim s = New List(Of Long)
     End Sub
 End Module"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 4, 13)
                         }
                 }
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports  System.Collections.Generic
@@ -186,7 +183,7 @@ Module Program
         Dim s As New List(Of Long)
     End Sub
 End Module"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -206,14 +203,14 @@ Module Program
         Console.WriteLine(s.ToString)
     End Sub
 End Module"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 11, 13)
                         }
                 }
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Imports System
@@ -230,7 +227,7 @@ Module Program
         Console.WriteLine(s.ToString)
     End Sub
 End Module"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -244,14 +241,14 @@ Module Program
         Dim s = {""X""c}
     End Sub
 End Module"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
                             New DiagnosticResultLocation("Test0.vb", 6, 13)
                         }
                 }
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String = "
 Option Explicit On
@@ -262,7 +259,7 @@ Module Program
         Dim s As Char() = {""X""c}
     End Sub
 End Module"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -280,7 +277,7 @@ Class Class1
     End Sub
 End Class</text>.Value
             'ERR_StrictDisallowImplicitObject
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -288,7 +285,7 @@ End Class</text>.Value
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Dim FixedlSource As String =
 <text>Option Explicit Off
@@ -302,7 +299,7 @@ Class Class1
         Next
     End Sub
 End Class</text>.Value
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -318,7 +315,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -326,7 +323,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -339,7 +336,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -351,7 +348,7 @@ End Class"
         Next
     End Sub
 End Module"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -359,7 +356,7 @@ End Module"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Module Module1
@@ -368,7 +365,7 @@ End Module"
         Next
     End Sub
 End Module"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -382,7 +379,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -390,7 +387,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Import System
@@ -401,7 +398,7 @@ Class Class1
         Next
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -417,7 +414,7 @@ Class Class1
        Next
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -425,7 +422,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System.Collections.Generic
@@ -438,7 +435,7 @@ Class Class1
        Next
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -455,7 +452,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -463,7 +460,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -477,7 +474,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -492,7 +489,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -500,7 +497,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports Microsoft.CodeAnalysis
@@ -512,7 +509,7 @@ Class Class1
             Next
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource, allowNewCompilerDiagnostics:=True)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource, allowNewCompilerDiagnostics:=True)
         End Sub
 
         <Fact>
@@ -534,7 +531,7 @@ End Class"
                             End Function
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -542,7 +539,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -561,7 +558,7 @@ End Class"
                             End Function
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -575,7 +572,7 @@ End Class"
     End Sub
 End Class"
 
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -583,7 +580,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -593,7 +590,7 @@ End Class"
                          End Sub
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -604,7 +601,7 @@ End Class"
         Dim add1 = Function(num As Integer) num + 1
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -612,7 +609,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Class Class1
@@ -620,7 +617,7 @@ End Class"
         Dim add1 As System.Func(Of Integer, Integer) = Function(num As Integer) num + 1
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -636,7 +633,7 @@ Class Class1
     End Sub
 End Class"
 
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -644,7 +641,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Imports System
@@ -656,7 +653,7 @@ Class Class1
         Throw New NotImplementedException()
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
         <Fact>
@@ -671,7 +668,7 @@ Class Class1
             Dim X = 1
     End Sub
 End Class"
-            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = DiagnosticIds.AddAsClauseDiagnosticId,
+            Dim expected As DiagnosticResult = New DiagnosticResult With {.Id = AddAsClauseDiagnosticId,
                     .Message = "Option Strict On requires all variable declarations to have an 'As' clause.",
                     .Severity = DiagnosticSeverity.Error,
                     .Locations = New DiagnosticResultLocation() {
@@ -679,7 +676,7 @@ End Class"
                         }
                 }
 
-            VerifyBasicDiagnostic(OriginalSource, expected)
+            Me.VerifyBasicDiagnostic(OriginalSource, expected)
 
             Const FixedlSource As String =
 "Option Infer Off
@@ -691,7 +688,7 @@ Class Class1
             Dim X As Integer = 1
     End Sub
 End Class"
-            VerifyBasicFix(OriginalSource, FixedlSource)
+            Me.VerifyBasicFix(OriginalSource, FixedlSource)
         End Sub
 
     End Class

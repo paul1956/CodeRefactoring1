@@ -3,15 +3,20 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.FindSymbols
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
     Public Structure DocumentIdAndRoot
-        Friend DocumentId As DocumentId
-        Friend Root As SyntaxNode
+        Friend _documentId As DocumentId
+        Friend _root As SyntaxNode
 
         Public Shared Operator <>(left As DocumentIdAndRoot, right As DocumentIdAndRoot) As Boolean
             Return Not left = right
@@ -31,7 +36,7 @@ Namespace Usage
 
     End Structure
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(UnusedParametersCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(UnusedParametersCodeFixProvider)), [Shared]>
     Public Class UnusedParametersCodeFixProvider
         Inherits CodeFixProvider
 
@@ -44,7 +49,7 @@ Namespace Usage
             Dim parameter As ParameterSyntax = root.FindToken(diagnostic.Location.SourceSpan.Start).Parent.FirstAncestorOrSelf(Of ParameterSyntax)
             Dim docs As List(Of DocumentIdAndRoot) = Await RemoveParameterAsync(document, parameter, root, cancellationToken)
             For Each doc As DocumentIdAndRoot In docs
-                newSolution = newSolution.WithDocumentSyntaxRoot(doc.DocumentId, doc.Root)
+                newSolution = newSolution.WithDocumentSyntaxRoot(doc._documentId, doc._root)
             Next
             Return newSolution
         End Function
@@ -58,10 +63,10 @@ Namespace Usage
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
             Dim method As SyntaxNode = parameter.FirstAncestorOfType(GetType(SubNewStatementSyntax), GetType(MethodBlockSyntax))
             Dim methodSymbol As ISymbol = semanticModel.GetDeclaredSymbol(method)
-            Dim references As IEnumerable(Of FindSymbols.ReferencedSymbol) = Await SymbolFinder.FindReferencesAsync(methodSymbol, solution, cancellationToken)
-            Dim documentGroups As IEnumerable(Of IGrouping(Of Document, FindSymbols.ReferenceLocation)) = references.SelectMany(Function(r) r.Locations).GroupBy(Function(loc) loc.Document)
+            Dim references As IEnumerable(Of ReferencedSymbol) = Await SymbolFinder.FindReferencesAsync(methodSymbol, solution, cancellationToken)
+            Dim documentGroups As IEnumerable(Of IGrouping(Of Document, ReferenceLocation)) = references.SelectMany(Function(r) r.Locations).GroupBy(Function(loc) loc.Document)
             Dim docs As List(Of DocumentIdAndRoot) = New List(Of DocumentIdAndRoot)
-            For Each documentGroup As IGrouping(Of Document, FindSymbols.ReferenceLocation) In documentGroups
+            For Each documentGroup As IGrouping(Of Document, ReferenceLocation) In documentGroups
                 Dim referencingDocument As Document = documentGroup.Key
                 Dim locRoot As SyntaxNode
                 Dim locSemanticModel As SemanticModel
@@ -99,12 +104,12 @@ Namespace Usage
                     End If
                 Next
                 Dim newLocRoot As SyntaxNode = locRoot.ReplaceNodes(replacingArgs.Keys, Function(original, rewritten) replacingArgs(original))
-                docs.Add(New DocumentIdAndRoot With {.DocumentId = referencingDocument.Id, .Root = newLocRoot})
+                docs.Add(New DocumentIdAndRoot With {._documentId = referencingDocument.Id, ._root = newLocRoot})
             Next
             If Not foundDocument Then
                 Dim newRoot As SyntaxNode = root.ReplaceNode(parameterList, newParameterList)
                 Dim newDocument As Document = document.WithSyntaxRoot(newRoot)
-                docs.Add(New DocumentIdAndRoot With {.DocumentId = document.Id, .Root = newRoot})
+                docs.Add(New DocumentIdAndRoot With {._documentId = document.Id, ._root = newRoot})
             End If
             Return docs
         End Function

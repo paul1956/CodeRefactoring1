@@ -4,6 +4,7 @@
 
 Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports Microsoft.VisualBasic
 
 Public Module StringExtensions
 
@@ -42,7 +43,7 @@ Public Module StringExtensions
     End Function
 
     <Extension()>
-    Public Function Contains(ByVal s As String, ByVal StringList() As String) As Boolean
+    Public Function Contains(s As String, StringList() As String) As Boolean
         If StringList Is Nothing OrElse StringList.Length = 0 Then
             Return False
         End If
@@ -63,14 +64,14 @@ Public Module StringExtensions
 
         ' now this will calculate indentation regardless of actual content on the buffer except TAB
         For i As Integer = 0 To endPosition - 1
-            column += If(textSnippet(i) = vbTab, tabSize - column Mod tabSize, 1)
+            column += If(textSnippet(i) = vbTab, tabSize - (column Mod tabSize), 1)
         Next
 
         Return column - initialColumn
     End Function
 
     <Extension()>
-    Public Function Count(ByVal value As String, ByVal ch As Char) As Integer
+    Public Function Count(value As String, ch As Char) As Integer
         Return value.Count(Function(c As Char) c = ch)
     End Function
 
@@ -93,19 +94,19 @@ Public Module StringExtensions
     End Function
 
     <Extension()>
-    Public Function Left(ByVal str As String, ByVal Length As Integer) As String
+    Public Function Left(str As String, Length As Integer) As String
         Return str.Substring(0, Math.Min(Length, str.Length))
     End Function
 
     <Extension()>
-    Public Function Mid(ByVal s As String, ByVal index As Integer, ByVal Length As Integer) As String
+    Public Function Mid(s As String, index As Integer, Length As Integer) As String
         Return s.Substring(index, Length)
     End Function
 
     ' Remove element at index "index". Result is one element shorter.
     ' Similar to List.RemoveAt, but for arrays.
     <Extension()>
-    Public Sub RemoveAt(Of T)(ByRef a() As T, ByVal index As Integer)
+    Public Sub RemoveAt(Of T)(ByRef a() As T, index As Integer)
         ' Move elements after "index" down 1 position.
         Array.Copy(a, index + 1, a, index, a.GetUpperBound(0) - index)
         ' Shorten by 1 element.
@@ -118,7 +119,7 @@ Public Module StringExtensions
     End Function
 
     <Extension()>
-    Public Function Right(ByVal str As String, ByVal Length As Integer) As String
+    Public Function Right(str As String, Length As Integer) As String
         Return str.Substring(Math.Max(str.Length, Length) - Length)
     End Function
 
@@ -164,7 +165,7 @@ Public Module StringExtensions
     ''' <returns>new string truncated to the length specified in MaxStringLenght</returns>
     ''' <remarks>MaxStringLenght must be >=0 </remarks>
     <Extension()>
-    Public Function Truncate(ByRef StrIn As String, ByVal MaxStringLenght As Integer) As String
+    Public Function Truncate(ByRef StrIn As String, MaxStringLenght As Integer) As String
         Contracts.Contract.Requires(MaxStringLenght >= 0, "MaxStringLenght can't be less than 0")
         If String.IsNullOrWhiteSpace(StrIn) Then
             Return String.Empty

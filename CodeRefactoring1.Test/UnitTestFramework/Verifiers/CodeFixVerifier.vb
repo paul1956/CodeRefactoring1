@@ -1,4 +1,8 @@
-﻿Option Compare Text
+﻿' Licensed to the .NET Foundation under one or more agreements.
+' The .NET Foundation licenses this file to you under the MIT license.
+' See the LICENSE file in the project root for more information.
+
+Option Compare Text
 Option Explicit On
 Option Infer Off
 Option Strict On
@@ -43,7 +47,7 @@ Namespace TestHelper
         ''' <param name="codeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="allowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyBasicFix(oldSource As String, newSource As String, Optional codeFixIndex As Integer? = Nothing, Optional allowNewCompilerDiagnostics As Boolean = False)
-            VerifyFix(LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.VisualBasic, Me.GetBasicDiagnosticAnalyzer(), Me.GetBasicCodeFixProvider(), oldSource, newSource, codeFixIndex, allowNewCompilerDiagnostics)
         End Sub
 
         ''' <summary>
@@ -54,7 +58,7 @@ Namespace TestHelper
         ''' <param name="CodeFixIndex">Index determining which codefix to apply if there are multiple</param>
         ''' <param name="AllowNewCompilerDiagnostics">A bool controlling whether Or Not the test will fail if the CodeFix introduces other warnings after being applied</param>
         Protected Sub VerifyCSharpFix(OldSource As String, NewSource As String, Optional CodeFixIndex As Integer? = Nothing, Optional AllowNewCompilerDiagnostics As Boolean = False)
-            VerifyFix(LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
+            VerifyFix(LanguageNames.CSharp, Me.GetCSharpDiagnosticAnalyzer(), Me.GetCSharpCodeFixProvider(), OldSource, NewSource, CodeFixIndex, AllowNewCompilerDiagnostics)
         End Sub
 
         Private Shared Function FindFirstDifferenceColumn(DesiredLine As String, ActualLine As String) As (Integer, String)
@@ -115,7 +119,7 @@ Namespace TestHelper
                     Exit For
                 End If
 
-                If (CodeFixIndex IsNot Nothing) Then
+                If CodeFixIndex IsNot Nothing Then
                     NewDocument = ApplyFix(OldDocument, Actions.ElementAt(CInt(CodeFixIndex))).Result
                     Exit For
                 End If

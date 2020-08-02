@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Design
 
@@ -34,7 +36,7 @@ Namespace Design
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 
         Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim catchStatement As CatchStatementSyntax = DirectCast(context.Node, CatchStatementSyntax)
             If catchStatement Is Nothing Then Exit Sub
 
@@ -47,7 +49,7 @@ Namespace Design
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Analyzer, SyntaxKind.CatchStatement)
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.CatchStatement)
         End Sub
 
     End Class

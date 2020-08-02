@@ -3,8 +3,12 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
-Imports CodeRefactoring1.Utilities
+Imports System.Threading
 Imports Microsoft
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports VBRefactorings.Utilities
 
 Public Module ExpressionSyntaxExtensions
 
@@ -22,7 +26,7 @@ Public Module ExpressionSyntaxExtensions
         If TypeOf name Is QualifiedNameSyntax Then
             Dim qualifiedName As QualifiedNameSyntax = DirectCast(name, QualifiedNameSyntax)
             Return ContainsOpenName(qualifiedName.Left) OrElse ContainsOpenName(qualifiedName.Right)
-        ElseIf TypeOf name Is CodeAnalysis.VisualBasic.Syntax.GenericNameSyntax Then
+        ElseIf TypeOf name Is GenericNameSyntax Then
             Return DirectCast(name, GenericNameSyntax).IsUnboundGenericName
         Else
             Return False
@@ -48,7 +52,7 @@ Public Module ExpressionSyntaxExtensions
                         Return (Model.Compilation.ObjectType, False)
                     End If
 
-                    If (typeInfo.Type.IsErrorType) Then
+                    If typeInfo.Type.IsErrorType Then
                         Return (Model.Compilation.ObjectType, True)
                     ElseIf SymbolEqualityComparer.Default.Equals(typeInfo.Type, Model.Compilation.ObjectType) Then
                         Return (Model.Compilation.ObjectType, False)

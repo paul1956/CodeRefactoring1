@@ -2,16 +2,20 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
-Imports CodeRefactoring1.Usage.UnusedParametersCodeFixProvider
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports VBRefactorings.Usage.UnusedParametersCodeFixProvider
 
 Namespace Usage
 
     Public NotInheritable Class UnusedParametersCodeFixAllProvider
         Inherits FixAllProvider
 
-        Private Const message As String = "Remove unused parameter"
+        Private Const Message As String = "Remove unused parameter"
 
         Public Shared Instance As UnusedParametersCodeFixAllProvider = New UnusedParametersCodeFixAllProvider
 
@@ -20,7 +24,7 @@ Namespace Usage
 
         End Sub
 
-        Private Shared Async Function GetDiagnosticsInDocAsync(ByVal fixAllContext As CodeFixes.FixAllContext, ByVal document As Document) As Task(Of DiagnosticsInDoc)
+        Private Shared Async Function GetDiagnosticsInDocAsync(ByVal fixAllContext As FixAllContext, ByVal document As Document) As Task(Of DiagnosticsInDoc)
             Dim diagnostics As Immutable.ImmutableArray(Of Diagnostic) = Await fixAllContext.GetDocumentDiagnosticsAsync(document).ConfigureAwait(False)
             If Not diagnostics.Any Then
                 Return DiagnosticsInDoc.Empty
@@ -30,7 +34,7 @@ Namespace Usage
             Return doc
         End Function
 
-        Private Shared Async Function GetFixedSolutionAsync(ByVal fixAllContext As CodeFixes.FixAllContext, ByVal sol As SolutionWithDocs) As Task(Of Solution)
+        Private Shared Async Function GetFixedSolutionAsync(ByVal fixAllContext As FixAllContext, ByVal sol As SolutionWithDocs) As Task(Of Solution)
             Dim newSolution As Solution = sol.Solution
             For Each doc As DiagnosticsInDoc In sol.Docs
                 For Each node As SyntaxNode In doc.Nodes
@@ -40,14 +44,14 @@ Namespace Usage
                     Dim parameter As ParameterSyntax = trackedNode.AncestorsAndSelf().OfType(Of ParameterSyntax).First()
                     Dim docResults As List(Of DocumentIdAndRoot) = Await RemoveParameterAsync(document, parameter, root, fixAllContext.CancellationToken)
                     For Each docResult As DocumentIdAndRoot In docResults
-                        newSolution = newSolution.WithDocumentSyntaxRoot(docResult.DocumentId, docResult.Root)
+                        newSolution = newSolution.WithDocumentSyntaxRoot(docResult._documentId, docResult._root)
                     Next
                 Next
             Next
             Return newSolution
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As CodeFixes.FixAllContext, ByVal solution As Solution) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal solution As Solution) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim sol As SolutionWithDocs = New SolutionWithDocs() With {.Docs = docs, .Solution = solution}
             For Each pId As ProjectId In solution.Projects.Select(Function(p As Project) p.Id)
@@ -58,7 +62,7 @@ Namespace Usage
             Return sol
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As CodeFixes.FixAllContext, ByVal project As Project) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal project As Project) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim newSolution As Solution = project.Solution
             For Each document As Document In project.Documents
@@ -71,7 +75,7 @@ Namespace Usage
             Return sol
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As CodeFixes.FixAllContext, ByVal document As Document) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal document As Document) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim doc As DiagnosticsInDoc = Await GetDiagnosticsInDocAsync(fixAllContext, document)
             docs.Add(doc)
@@ -80,14 +84,14 @@ Namespace Usage
             Return sol
         End Function
 
-        Public Overrides Function GetFixAsync(ByVal fixAllContext As CodeFixes.FixAllContext) As Task(Of CodeAction)
-            Select Case (fixAllContext.Scope)
+        Public Overrides Function GetFixAsync(ByVal fixAllContext As FixAllContext) As Task(Of CodeAction)
+            Select Case fixAllContext.Scope
                 Case FixAllScope.Document
-                    Return Task.FromResult(CodeAction.Create(message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Document)))))
+                    Return Task.FromResult(CodeAction.Create(Message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Document)))))
                 Case FixAllScope.Project
-                    Return Task.FromResult(CodeAction.Create(message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Project)))))
+                    Return Task.FromResult(CodeAction.Create(Message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Project)))))
                 Case FixAllScope.Solution
-                    Return Task.FromResult(CodeAction.Create(message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Solution)))))
+                    Return Task.FromResult(CodeAction.Create(Message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Solution)))))
             End Select
 
             Return Nothing

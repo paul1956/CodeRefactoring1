@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
@@ -43,7 +45,7 @@ It can be either specified directly or using nameof()."
         End Function
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim objectCreationExpression As ObjectCreationExpressionSyntax = DirectCast(context.Node, ObjectCreationExpressionSyntax)
             Dim type As IdentifierNameSyntax = TryCast(objectCreationExpression.Type, IdentifierNameSyntax)
             If type Is Nothing Then Exit Sub
@@ -108,7 +110,7 @@ It can be either specified directly or using nameof()."
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.ObjectCreationExpression)
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.ObjectCreationExpression)
         End Sub
 
     End Class

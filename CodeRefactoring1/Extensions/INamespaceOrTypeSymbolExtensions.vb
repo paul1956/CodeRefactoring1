@@ -2,6 +2,8 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports Microsoft.CodeAnalysis
+
 Friend Module INamespaceOrTypeSymbolExtensions
 
     Private Sub GetNameParts(ByVal namespaceOrTypeSymbol As INamespaceOrTypeSymbol, ByVal result As List(Of String))

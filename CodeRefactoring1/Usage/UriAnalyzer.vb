@@ -3,10 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
-Imports CodeRefactoring1.Usage.MethodAnalyzers
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports VBRefactorings
+Imports VBRefactorings.Usage.MethodAnalyzers
 
 Namespace Usage
 
@@ -48,7 +49,7 @@ Namespace Usage
                                                                "Public Overloads Sub New(uriString As String, uriKind As System.UriKind)",
                                                                Sub(args)
                                                                    If args(0) Is Nothing Then Return
-                                                                   Dim a As Uri = New Uri(args(0).ToString(), DirectCast(args(1), UriKind))
+                                                                   Dim a As Uri = New Uri(args(0).ToString(), CType(args(1), UriKind))
                                                                End Sub)
             Dim checker As MethodChecker = New MethodChecker(context, Rule)
             checker.AnalyzeConstructor(mainConstrutor)
@@ -58,7 +59,7 @@ Namespace Usage
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Analyzer, SyntaxKind.ObjectCreationExpression)
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.ObjectCreationExpression)
         End Sub
 
     End Class

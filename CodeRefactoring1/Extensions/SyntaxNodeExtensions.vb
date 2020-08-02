@@ -3,6 +3,8 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Runtime.CompilerServices
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.VisualBasic
 
 Public Module SyntaxNodeExtensions
 
@@ -28,7 +30,7 @@ Public Module SyntaxNodeExtensions
     End Function
 
     <Extension>
-    Public Function IsKind(token As SyntaxToken, kind1 As VisualBasic.SyntaxKind, kind2 As VisualBasic.SyntaxKind) As Boolean
+    Public Function IsKind(token As SyntaxToken, kind1 As SyntaxKind, kind2 As SyntaxKind) As Boolean
         Return Kind(token) = kind1 OrElse Kind(token) = kind2
     End Function
 

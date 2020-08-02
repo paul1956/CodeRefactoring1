@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Design
 
@@ -36,14 +38,14 @@ Exception thrown in this context forces callers to use 'try' block around any us
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 
         Private Sub Analyzer(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim ctor As SubNewStatementSyntax = DirectCast(context.Node, SubNewStatementSyntax)
             If Not ctor.Modifiers.Any(SyntaxKind.SharedKeyword) Then Exit Sub
 
-            Dim constructorBlock As Syntax.ConstructorBlockSyntax = DirectCast(ctor.Parent, Syntax.ConstructorBlockSyntax)
+            Dim constructorBlock As ConstructorBlockSyntax = DirectCast(ctor.Parent, ConstructorBlockSyntax)
             If Not constructorBlock.Statements.Any() Then Exit Sub
 
-            Dim throwBlock As ThrowStatementSyntax = constructorBlock.ChildNodes.OfType(Of Syntax.ThrowStatementSyntax).FirstOrDefault()
+            Dim throwBlock As ThrowStatementSyntax = constructorBlock.ChildNodes.OfType(Of ThrowStatementSyntax).FirstOrDefault()
             If throwBlock Is Nothing Then Exit Sub
 
             context.ReportDiagnostic(Diagnostic.Create(Rule, throwBlock.GetLocation, Title))
@@ -52,7 +54,7 @@ Exception thrown in this context forces callers to use 'try' block around any us
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf Analyzer, SyntaxKind.SubNewStatement)
+            context.RegisterSyntaxNodeAction(AddressOf Me.Analyzer, SyntaxKind.SubNewStatement)
         End Sub
 
     End Class

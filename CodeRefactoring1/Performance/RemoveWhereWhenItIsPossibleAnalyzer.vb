@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Performance
 
@@ -33,7 +35,7 @@ Namespace Performance
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim whereInvoke As InvocationExpressionSyntax = DirectCast(context.Node, InvocationExpressionSyntax)
             If GetNameOfTheInvokeMethod(whereInvoke) <> "Where" Then Exit Sub
 
@@ -61,7 +63,7 @@ Namespace Performance
         End Function
 
         Friend Shared Function GetNameOfTheInvokeMethod(invoke As InvocationExpressionSyntax) As String
-            If (invoke Is Nothing) Then Return Nothing
+            If invoke Is Nothing Then Return Nothing
             Dim memberAccess As MemberAccessExpressionSyntax = invoke.ChildNodes.
             OfType(Of MemberAccessExpressionSyntax).
             FirstOrDefault()
@@ -72,7 +74,7 @@ Namespace Performance
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.InvocationExpression)
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.InvocationExpression)
         End Sub
 
     End Class

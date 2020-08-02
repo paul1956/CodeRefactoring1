@@ -3,15 +3,22 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.Simplification
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis.VisualBasic.VisualBasicExtensions
+Imports Microsoft.VisualBasic
 
 Namespace Usage
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(DisposableFieldNotDisposedCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(DisposableFieldNotDisposedCodeFixProvider)), [Shared]>
     Public Class DisposableFieldNotDisposedCodeFixProvider
         Inherits CodeFixProvider
 
@@ -102,7 +109,7 @@ Namespace Usage
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic As Diagnostic = context.Diagnostics.First
             context.RegisterCodeFix(CodeAction.Create($"Dispose field '{diagnostic.Properties!variableIdentifier}",
-                                              Function(c As CancellationToken) DisposeField(context.Document, diagnostic, c),
+                                              Function(c As CancellationToken) Me.DisposeField(context.Document, diagnostic, c),
                                               NameOf(DisposableFieldNotDisposedCodeFixProvider)),
                             diagnostic)
             Return Task.FromResult(0)

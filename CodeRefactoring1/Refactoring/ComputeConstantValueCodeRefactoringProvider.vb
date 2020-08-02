@@ -2,7 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeRefactorings
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.Text
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Refactoring
 
@@ -10,7 +17,7 @@ Namespace Refactoring
     Public Class ComputeConstantValueCodeRefactoringProvider
         Inherits CodeRefactoringProvider
 
-        Friend Shared Function GetLiteralExpression(ByVal value As Object) As ExpressionSyntax
+        Friend Shared Function GetLiteralExpression(value As Object) As ExpressionSyntax
             If TypeOf value Is Boolean Then
                 Return If(DirectCast(value, Boolean), SyntaxFactory.TrueLiteralExpression(SyntaxFactory.Token(SyntaxKind.TrueKeyword)), SyntaxFactory.FalseLiteralExpression(SyntaxFactory.Token(SyntaxKind.FalseKeyword)))
             End If
@@ -64,7 +71,7 @@ Namespace Refactoring
             Return Nothing
         End Function
 
-        Public Overrides Async Function ComputeRefactoringsAsync(ByVal context As CodeRefactoringContext) As Task
+        Public Overrides Async Function ComputeRefactoringsAsync(context As CodeRefactoringContext) As Task
             Dim document As Document = context.Document
             If document.Project.Solution.Workspace.Kind = WorkspaceKind.MiscellaneousFiles Then
                 Return
@@ -83,7 +90,7 @@ Namespace Refactoring
             End If
             Dim root As SyntaxNode = Await model.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(False)
 
-            Dim expr As ExpressionSyntax = root.FindNode(span).FirstAncestorOrSelf(Of ExpressionSyntax)(Function(n As ExpressionSyntax) TypeOf n Is BinaryExpressionSyntax OrElse TypeOf n Is UnaryExpressionSyntax)
+            Dim expr As ExpressionSyntax = root.FindNode(span).FirstAncestorOrSelf(Function(n As ExpressionSyntax) TypeOf n Is BinaryExpressionSyntax OrElse TypeOf n Is UnaryExpressionSyntax)
             If expr Is Nothing Then
                 Return
             End If

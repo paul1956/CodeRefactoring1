@@ -3,8 +3,10 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Usage
 
@@ -44,16 +46,16 @@ Namespace Usage
                 For Each attribute As AttributeSyntax In attributeList.Attributes
                     Dim identifierName As IdentifierNameSyntax = TryCast(attribute.Name, IdentifierNameSyntax)
                     Dim nameText As String = Nothing
-                    If (identifierName IsNot Nothing) Then
+                    If identifierName IsNot Nothing Then
                         nameText = identifierName?.Identifier.Text
                     Else
                         Dim qualifiedName As QualifiedNameSyntax = TryCast(attribute.Name, QualifiedNameSyntax)
-                        If (qualifiedName IsNot Nothing) Then
+                        If qualifiedName IsNot Nothing Then
                             nameText = qualifiedName.Right?.Identifier.Text
                         End If
                     End If
-                    If (nameText Is Nothing) Then Continue For
-                    If (IsExcludedAttributeName(nameText)) Then Return True
+                    If nameText Is Nothing Then Continue For
+                    If IsExcludedAttributeName(nameText) Then Return True
                 Next
             Next
             Return False
@@ -77,16 +79,16 @@ Namespace Usage
 
         Private Shared Function IsMethodUsed(methodTarget As MethodStatementSyntax, typeDeclaration As SyntaxNode) As Boolean
             Dim hasIdentifier As IEnumerable(Of IdentifierNameSyntax) = typeDeclaration?.DescendantNodes()?.OfType(Of IdentifierNameSyntax)()
-            If (hasIdentifier Is Nothing OrElse Not hasIdentifier.Any()) Then Return False
+            If hasIdentifier Is Nothing OrElse Not hasIdentifier.Any() Then Return False
             Return hasIdentifier.Any(Function(a) a IsNot Nothing AndAlso a.Identifier.ValueText.Equals(methodTarget?.Identifier.ValueText))
         End Function
 
         Private Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim methodStatement As MethodStatementSyntax = DirectCast(context.Node, MethodStatementSyntax)
             If methodStatement.HandlesClause IsNot Nothing Then Exit Sub
             If Not methodStatement.Modifiers.Any(Function(a) a.ValueText = SyntaxFactory.Token(SyntaxKind.PrivateKeyword).ValueText) Then Exit Sub
-            If (IsMethodAttributeAnException(methodStatement)) Then Return
+            If IsMethodAttributeAnException(methodStatement) Then Return
             If IsMethodUsed(methodStatement, context.SemanticModel) Then Exit Sub
             Dim props As ImmutableDictionary(Of String, String) = New Dictionary(Of String, String) From {{"identifier", methodStatement.Identifier.Text}}.ToImmutableDictionary()
             Dim diag As Diagnostic = Diagnostic.Create(Rule, methodStatement.GetLocation(), props)
@@ -96,7 +98,7 @@ Namespace Usage
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSyntaxNodeAction(AddressOf AnalyzeNode, SyntaxKind.SubStatement, SyntaxKind.FunctionStatement)
+            context.RegisterSyntaxNodeAction(AddressOf Me.AnalyzeNode, SyntaxKind.SubStatement, SyntaxKind.FunctionStatement)
         End Sub
 
     End Class

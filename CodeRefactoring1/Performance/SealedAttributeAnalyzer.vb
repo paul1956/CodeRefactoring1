@@ -3,6 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
+Imports Microsoft.CodeAnalysis
 
 Imports Microsoft.CodeAnalysis.Diagnostics
 
@@ -32,12 +33,12 @@ Namespace Performance
         Public Overrides ReadOnly Property SupportedDiagnostics() As ImmutableArray(Of DiagnosticDescriptor) = ImmutableArray.Create(Rule)
 
         Private Sub Analyze(context As SymbolAnalysisContext)
-            If (context.IsGenerated) Then Return
+            If context.IsGenerated Then Return
             Dim type As INamedTypeSymbol = DirectCast(context.Symbol, INamedTypeSymbol)
             If type.TypeKind <> TypeKind.Class Then Exit Sub
 
             If Not IsAttribute(type) Then Exit Sub
-            If (type.IsAbstract OrElse type.IsSealed) Then Exit Sub
+            If type.IsAbstract OrElse type.IsSealed Then Exit Sub
             context.ReportDiagnostic(Diagnostic.Create(Rule, type.Locations(0), type.Name))
         End Sub
 
@@ -54,7 +55,7 @@ Namespace Performance
         Public Overrides Sub Initialize(context As AnalysisContext)
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze Or GeneratedCodeAnalysisFlags.ReportDiagnostics)
             context.EnableConcurrentExecution()
-            context.RegisterSymbolAction(AddressOf Analyze, SymbolKind.NamedType)
+            context.RegisterSymbolAction(AddressOf Me.Analyze, SymbolKind.NamedType)
         End Sub
 
     End Class

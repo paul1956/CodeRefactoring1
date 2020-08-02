@@ -2,6 +2,14 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
+Imports Microsoft.CodeAnalysis.CodeRefactorings
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+
 <ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name:=NameOf(ReverseTernaryConditionalRefactoringProvider)), [Shared]>
 Friend Class ReverseTernaryConditionalRefactoringProvider
     Inherits CodeRefactoringProvider
@@ -16,7 +24,7 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
         End If
         If invocation.Condition.Kind = SyntaxKind.IsExpression OrElse invocation.Condition.Kind = SyntaxKind.IsNotExpression Then
             context.RegisterRefactoring(New ReverseIfOperatorCodeAction("Reverse Is/IsNot Nothing, If Operator",
-                                                Function(c) CreateReverseTernaryOperatorAsync(invocation, context.Document, c)))
+                                                Function(c) Me.CreateReverseTernaryOperatorAsync(invocation, context.Document, c)))
         Else
             Exit Function
         End If
@@ -33,7 +41,7 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
                 Exit Function
             End If
             context.RegisterRefactoring(New ReverseIfOperatorCodeAction("Simplify Is/IsNot Nothing, to Access Expression",
-                                            Function(c) CreateConditionalAccessExpressionAsync(invocation, context.Document, c)))
+                                            Function(c) Me.CreateConditionalAccessExpressionAsync(invocation, context.Document, c)))
         Else
             If Condition?.Left?.Kind <> SyntaxKind.NothingLiteralExpression Then
                 Exit Function
@@ -44,11 +52,11 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
                 Return
             End If
             context.RegisterRefactoring(New ReverseIfOperatorCodeAction("Simplify Is/IsNot Nothing, to Access Expression",
-                                        Function(c) CreateConditionalAccessExpressionAsync(invocation, context.Document, c)))
+                                        Function(c) Me.CreateConditionalAccessExpressionAsync(invocation, context.Document, c)))
         End If
     End Function
 
-    Private Async Function CreateReverseTernaryOperatorAsync(ByVal invocation As TernaryConditionalExpressionSyntax, ByVal document As Document, ByVal cancellationToken As CancellationToken) As Task(Of Document)
+    Private Async Function CreateReverseTernaryOperatorAsync(invocation As TernaryConditionalExpressionSyntax, document As Document, cancellationToken As CancellationToken) As Task(Of Document)
         Try
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken)
@@ -70,7 +78,7 @@ Friend Class ReverseTernaryConditionalRefactoringProvider
         Return Nothing
     End Function
 
-    Private Async Function CreateConditionalAccessExpressionAsync(ByVal invocation As TernaryConditionalExpressionSyntax, ByVal document As Document, ByVal cancellationToken As CancellationToken) As Task(Of Document)
+    Private Async Function CreateConditionalAccessExpressionAsync(invocation As TernaryConditionalExpressionSyntax, document As Document, cancellationToken As CancellationToken) As Task(Of Document)
         Try
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationToken)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationToken)

@@ -4,6 +4,7 @@
 
 'Namespace Microsoft.CodeAnalysis.Shared.Extensions
 Imports System.Runtime.CompilerServices
+Imports Microsoft.CodeAnalysis
 
 Public Module MethodKindExtensions
 

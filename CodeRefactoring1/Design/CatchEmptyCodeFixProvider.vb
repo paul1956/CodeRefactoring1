@@ -3,13 +3,18 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Design
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(CatchEmptyCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(CatchEmptyCodeFixProvider)), [Shared]>
     Public Class CatchEmptyCodeFixProvider
         Inherits CodeFixProvider
 
@@ -21,17 +26,17 @@ Namespace Design
 
         Public Overrides Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diag As Diagnostic = context.Diagnostics.First()
-            context.RegisterCodeFix(CodeAction.Create("Add an Exception class", Function(c As CancellationToken) MakeCatchEmptyAsync(context.Document, diag, c), NameOf(CatchEmptyCodeFixProvider)), diag)
+            context.RegisterCodeFix(CodeAction.Create("Add an Exception class", Function(c As CancellationToken) Me.MakeCatchEmptyAsync(context.Document, diag, c), NameOf(CatchEmptyCodeFixProvider)), diag)
             Return Task.FromResult(0)
         End Function
 
         Private Async Function MakeCatchEmptyAsync(document As Document, diag As Diagnostic, cancellationtoken As CancellationToken) As Task(Of Document)
             Dim root As SyntaxNode = Await document.GetSyntaxRootAsync(cancellationtoken).ConfigureAwait(False)
             Dim diagSpan As Text.TextSpan = diag.Location.SourceSpan
-            Dim catchStatement As VisualBasic.Syntax.CatchBlockSyntax = root.FindToken(diagSpan.Start).Parent.AncestorsAndSelf.OfType(Of CatchBlockSyntax).First()
+            Dim catchStatement As CatchBlockSyntax = root.FindToken(diagSpan.Start).Parent.AncestorsAndSelf.OfType(Of CatchBlockSyntax).First()
             Dim semanticModel As SemanticModel = Await document.GetSemanticModelAsync(cancellationtoken)
 
-            Dim newCatch As VisualBasic.Syntax.CatchBlockSyntax = SyntaxFactory.CatchBlock(
+            Dim newCatch As CatchBlockSyntax = SyntaxFactory.CatchBlock(
             SyntaxFactory.CatchStatement(
                 SyntaxFactory.IdentifierName("ex"),
                 SyntaxFactory.SimpleAsClause(SyntaxFactory.IdentifierName(NameOf(Exception))),

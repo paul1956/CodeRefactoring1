@@ -2,6 +2,11 @@
 ' The .NET Foundation licenses this file to you under the MIT license.
 ' See the LICENSE file in the project root for more information.
 
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
+
 Namespace Style
 
     Partial Public Class AddAsClauseCodeFixProvider
@@ -13,12 +18,14 @@ Namespace Style
             Private ReadOnly _newNode As SyntaxNode
             Private ReadOnly _node As SyntaxNode
             Private ReadOnly _title As String
+            Private ReadOnly _equivalenceKey As String
 
-            Public Sub New(key As String, document As Document, node As SyntaxNode, newNode As SyntaxNode)
+            Public Sub New(key As String, document As Document, node As SyntaxNode, newNode As SyntaxNode, UniqueID As String)
                 _document = document
                 _newNode = newNode
                 _node = node
                 _title = key
+                _equivalenceKey = $"{key}{UniqueID}"
             End Sub
 
             Public Overrides ReadOnly Property Title As String
@@ -29,7 +36,7 @@ Namespace Style
 
             Public Overrides ReadOnly Property EquivalenceKey As String
                 Get
-                    Return _title
+                    Return _equivalenceKey
                 End Get
             End Property
 

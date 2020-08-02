@@ -3,12 +3,19 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
+Imports System.Threading
+Imports System.Threading.Tasks
+Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Imports Microsoft.CodeAnalysis.CodeFixes
+Imports Microsoft.CodeAnalysis.Text
 
 Namespace Usage
 
-    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(ArgumentExceptionCodeFixProvider)), Composition.Shared>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic, Name:=NameOf(ArgumentExceptionCodeFixProvider)), [Shared]>
     Public Class ArgumentExceptionCodeFixProvider
         Inherits CodeFixProvider
 
@@ -42,7 +49,7 @@ Namespace Usage
             Dim parameters As IEnumerable(Of KeyValuePair(Of String, String)) = diagnostic.Properties.Where(Function(p) p.Key.StartsWith("param"))
             For Each param As KeyValuePair(Of String, String) In parameters
                 Dim message As String = $"Use '{param}'"
-                context.RegisterCodeFix(CodeAction.Create(message, Function(c) FixParamAsync(context.Document, diagnostic, param.Value, c), NameOf(ArgumentExceptionCodeFixProvider)), diagnostic)
+                context.RegisterCodeFix(CodeAction.Create(message, Function(c) Me.FixParamAsync(context.Document, diagnostic, param.Value, c), NameOf(ArgumentExceptionCodeFixProvider)), diagnostic)
             Next
             Return Task.FromResult(0)
         End Function

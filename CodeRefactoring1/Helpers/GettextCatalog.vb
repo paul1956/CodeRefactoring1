@@ -3,9 +3,7 @@
 ' See the LICENSE file in the project root for more information.
 
 Public Module GettextCatalog
-
-    Friend Function GetString(ByVal str As String) As String
+    Friend Function GetString(str As String) As String
         Return str
     End Function
-
 End Module

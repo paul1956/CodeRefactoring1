@@ -3,8 +3,11 @@
 ' See the LICENSE file in the project root for more information.
 
 Imports System.Collections.Immutable
-
+Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.Diagnostics
+Imports Microsoft.CodeAnalysis.VisualBasic
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports VBRefactorings
 
 Namespace Reliability
 
@@ -35,7 +38,7 @@ Namespace Reliability
         End Property
 
         Private Shared Sub AnalyzeNode(context As SyntaxNodeAnalysisContext)
-            If (context.Node.IsGenerated()) Then Return
+            If context.Node.IsGenerated() Then Return
             Dim awaitExpression As AwaitExpressionSyntax = DirectCast(context.Node, AwaitExpressionSyntax)
             Dim awaitedExpression As ExpressionSyntax = awaitExpression.Expression
             If Not IsTask(awaitedExpression, context) Then Exit Sub
