@@ -84,6 +84,7 @@
     <Import Include="System" />
     <Import Include="System.Collections" />
     <Import Include="System.Collections.Generic" />
+    <Import Include="System.Collections.Immutable" />
     <Import Include="System.Composition" />
     <Import Include="System.Diagnostics" />
     <Import Include="System.Linq" />
@@ -134,7 +135,12 @@
     <Compile Include="Helpers\GettextCatalog.vb" />
     <Compile Include="Helpers\InsertionResult.vb" />
     <Compile Include="Helpers\KeyVlauePair.vb" />
-    <Compile Include="Helpers\Matcher.vb" />
+    <Compile Include="Helpers\Matcher\ChoiceMatcher.vb" />
+    <Compile Include="Helpers\Matcher\Matcher.vb" />
+    <Compile Include="Helpers\Matcher\MatcherOfT.vb" />
+    <Compile Include="Helpers\Matcher\RepeatMatcher.vb" />
+    <Compile Include="Helpers\Matcher\SequenceMatcher.vb" />
+    <Compile Include="Helpers\Matcher\SingleMatcher.vb" />
     <Compile Include="Helpers\MemoryUsage.vb" />
     <Compile Include="Helpers\SupportedCategories.vb" />
     <Compile Include="Helpers\VBUtil.vb" />

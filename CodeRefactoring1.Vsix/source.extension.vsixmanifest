@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CodeRefactoring1..d94a646d-1d14-4f95-be35-bcd7da5d8c74" Version="2.1" Language="en-US" Publisher="Paul M Cohen"/>
+        <Identity Id="CodeRefactoring1..d94a646d-1d14-4f95-be35-bcd7da5d8c74" Version="2.15" Language="en-US" Publisher="Paul M Cohen"/>
         <DisplayName>ASClauseRefactoring</DisplayName>
         <Description xml:space="preserve">This is a Code Refactoring written in Visual Basic by Paul M Cohen, it can add or remove type information from Dim Statement and Lambda expressions. </Description>
         <License>LICENSE.txt</License>
@@ -17,11 +17,10 @@
         <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Enterprise" />
     </Installation>
     <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7,)" />
     </Dependencies>
     <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
-    <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.LanguageServices" Version="[17.0,)" DisplayName="Roslyn Language Services" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="CodeRefactoring1" Path="|CodeRefactoring1|" />
