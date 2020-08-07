@@ -15,12 +15,12 @@ Namespace Roslyn.UnitTestFramework
     Friend Module EnumerableExtensions
 
         <Extension>
-        Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), ByVal comparer As IComparer(Of T)) As IEnumerable(Of T)
+        Public Function OrderBy(Of T)(source As IEnumerable(Of T), comparer As IComparer(Of T)) As IEnumerable(Of T)
             Return source.OrderBy(Function(t_) t_, comparer)
         End Function
 
         <Extension>
-        Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), ByVal compare As Comparison(Of T)) As IEnumerable(Of T)
+        Public Function OrderBy(Of T)(source As IEnumerable(Of T), compare As Comparison(Of T)) As IEnumerable(Of T)
             Return source.OrderBy(New ComparisonComparer(Of T)(compare))
         End Function
 
@@ -29,11 +29,11 @@ Namespace Roslyn.UnitTestFramework
 
             Private ReadOnly _compare As Comparison(Of T)
 
-            Public Sub New(ByVal compare As Comparison(Of T))
+            Public Sub New(compare As Comparison(Of T))
                 _compare = compare
             End Sub
 
-            Public Overrides Function Compare(ByVal x As T, ByVal y As T) As Integer
+            Public Overrides Function Compare(x As T, y As T) As Integer
                 Return _compare(x, y)
             End Function
 

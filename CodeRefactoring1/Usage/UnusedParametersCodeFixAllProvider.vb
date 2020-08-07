@@ -24,7 +24,7 @@ Namespace Usage
 
         End Sub
 
-        Private Shared Async Function GetDiagnosticsInDocAsync(ByVal fixAllContext As FixAllContext, ByVal document As Document) As Task(Of DiagnosticsInDoc)
+        Private Shared Async Function GetDiagnosticsInDocAsync(fixAllContext As FixAllContext, document As Document) As Task(Of DiagnosticsInDoc)
             Dim diagnostics As Immutable.ImmutableArray(Of Diagnostic) = Await fixAllContext.GetDocumentDiagnosticsAsync(document).ConfigureAwait(False)
             If Not diagnostics.Any Then
                 Return DiagnosticsInDoc.Empty
@@ -34,7 +34,7 @@ Namespace Usage
             Return doc
         End Function
 
-        Private Shared Async Function GetFixedSolutionAsync(ByVal fixAllContext As FixAllContext, ByVal sol As SolutionWithDocs) As Task(Of Solution)
+        Private Shared Async Function GetFixedSolutionAsync(fixAllContext As FixAllContext, sol As SolutionWithDocs) As Task(Of Solution)
             Dim newSolution As Solution = sol.Solution
             For Each doc As DiagnosticsInDoc In sol.Docs
                 For Each node As SyntaxNode In doc.Nodes
@@ -51,7 +51,7 @@ Namespace Usage
             Return newSolution
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal solution As Solution) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(fixAllContext As FixAllContext, solution As Solution) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim sol As SolutionWithDocs = New SolutionWithDocs() With {.Docs = docs, .Solution = solution}
             For Each pId As ProjectId In solution.Projects.Select(Function(p As Project) p.Id)
@@ -62,7 +62,7 @@ Namespace Usage
             Return sol
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal project As Project) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(fixAllContext As FixAllContext, project As Project) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim newSolution As Solution = project.Solution
             For Each document As Document In project.Documents
@@ -75,7 +75,7 @@ Namespace Usage
             Return sol
         End Function
 
-        Private Overloads Shared Async Function GetSolutionWithDocsAsync(ByVal fixAllContext As FixAllContext, ByVal document As Document) As Task(Of SolutionWithDocs)
+        Private Overloads Shared Async Function GetSolutionWithDocsAsync(fixAllContext As FixAllContext, document As Document) As Task(Of SolutionWithDocs)
             Dim docs As List(Of DiagnosticsInDoc) = New List(Of DiagnosticsInDoc)
             Dim doc As DiagnosticsInDoc = Await GetDiagnosticsInDocAsync(fixAllContext, document)
             docs.Add(doc)
@@ -84,7 +84,7 @@ Namespace Usage
             Return sol
         End Function
 
-        Public Overrides Function GetFixAsync(ByVal fixAllContext As FixAllContext) As Task(Of CodeAction)
+        Public Overrides Function GetFixAsync(fixAllContext As FixAllContext) As Task(Of CodeAction)
             Select Case fixAllContext.Scope
                 Case FixAllScope.Document
                     Return Task.FromResult(CodeAction.Create(Message, Async Function(ct As CancellationToken) Await GetFixedSolutionAsync(fixAllContext, (Await GetSolutionWithDocsAsync(fixAllContext, fixAllContext.Document)))))
@@ -106,7 +106,7 @@ Namespace Usage
 
             Public Shared Property Empty As DiagnosticsInDoc = New DiagnosticsInDoc()
 
-            Public Shared Function Create(ByVal documentId As DocumentId, ByVal diagnostics As IList(Of Diagnostic), ByVal root As SyntaxNode) As DiagnosticsInDoc
+            Public Shared Function Create(documentId As DocumentId, diagnostics As IList(Of Diagnostic), root As SyntaxNode) As DiagnosticsInDoc
                 Dim nodes As List(Of SyntaxNode) = diagnostics.Select(Function(d As Diagnostic) root.FindNode(d.Location.SourceSpan)).Where(Function(n As SyntaxNode) Not n.IsMissing).ToList()
                 Dim diagnosticsInDoc As DiagnosticsInDoc = New DiagnosticsInDoc() With {.DocumentId = documentId, .TrackedRoot = root.TrackNodes(nodes), .Nodes = nodes}
                 Return diagnosticsInDoc
@@ -119,7 +119,7 @@ Namespace Usage
             Public Docs As List(Of DiagnosticsInDoc)
             Public Solution As Solution
 
-            Public Sub Merge(ByVal sol As SolutionWithDocs)
+            Public Sub Merge(sol As SolutionWithDocs)
                 Solution = sol.Solution
                 Docs.AddRange(sol.Docs)
             End Sub

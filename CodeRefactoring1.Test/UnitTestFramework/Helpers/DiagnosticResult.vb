@@ -31,7 +31,9 @@ Namespace TestHelper
             End Get
         End Property
 
+#Disable Warning CA1819 ' Properties should not return arrays
         Public Property Locations As DiagnosticResultLocation()
+#Enable Warning CA1819 ' Properties should not return arrays
             Get
                 If _innerlocations Is Nothing Then
                     _innerlocations = Array.Empty(Of DiagnosticResultLocation)()

@@ -168,9 +168,6 @@
     <Compile Include="Style\AddAsClause\AddAsClauseAsObjectAnalyzer.vb" />
     <Compile Include="Style\AddAsClause\AddAsClauseRefactoringProvider.vb" />
     <Compile Include="Style\ConvertIfStatementToSelectCase\ConvertIfStatementToSelectCaseCodeRefactoringProvider.vb" />
-    <Compile Include="Style\RemoveByVal\ByValAnalyzerFixAnalyzer.vb" />
-    <Compile Include="Style\RemoveByVal\ByValAnalyzerFixCodeFixProvider.CodeAction.vb" />
-    <Compile Include="Style\RemoveByVal\ByValAnalyzerFixCodeFixProvider.vb" />
     <Compile Include="Refactoring\ParameterRefactoryAnalyzer.vb" />
     <Compile Include="Refactoring\ParameterRefactoryCodeFixProvider.vb" />
     <Compile Include="Refactoring\ReverseTernaryConditionalRefactoringProvider.vb" />
@@ -189,9 +186,6 @@
     <Compile Include="Style\AddAsClause\AddAsClauseUtilities.vb" />
     <Compile Include="Style\ConstStringToXMLLiteral\ConstStringToXMLLiteralRefactoring.vb" />
     <Compile Include="Style\ConvertIfStatementToSelectCase\ConvertIfStatementToSelectCaseStatementCodeRefactoringProvider.vb" />
-    <Compile Include="Style\RemoveByVal\ByValCodeRefactoringProvider.Rewriter.vb" />
-    <Compile Include="Style\RemoveByVal\ByValCodeRefactoringProvider.vb" />
-    <Compile Include="Style\RemoveByVal\RemoveByValCodeRefactoringProvider.vb" />
     <Compile Include="Style\RemoveAsClause\RemoveAsClauseRefactoringProvider.vb" />
     <Compile Include="Usage\ArgumentExceptionAnalyzer.vb" />
     <Compile Include="Usage\ArgumentExceptionCodeFixProvider.vb" />

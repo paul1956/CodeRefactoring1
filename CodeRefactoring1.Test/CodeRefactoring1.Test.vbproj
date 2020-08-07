@@ -223,7 +223,6 @@
     <Compile Include="Extensions.vb" />
     <Compile Include="SharedReferences.vb" />
     <Compile Include="Style\AddAsClauseAnalyzer.vb" />
-    <Compile Include="Tests\ByValAnalyzer_FixUnitTests.vb" />
     <Compile Include="Tests\SymbolsAndSemantics.vb" />
     <Compile Include="UnitTestFramework\Helpers\DiagnosticResultLocation.vb" />
     <Compile Include="UnitTestFramework\Helpers\TestCodeContainer.vb" />

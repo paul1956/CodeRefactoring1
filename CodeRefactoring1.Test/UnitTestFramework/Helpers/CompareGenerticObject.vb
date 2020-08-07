@@ -14,7 +14,7 @@ Imports Microsoft.CodeAnalysis.Text
 Public Module CompareGenerticObject
 
     <Extension>
-    Public Function CompareT(Of T)(ByVal Left As T, ByVal Right As T, ByRef MismatchedPropertyName As String) As Boolean
+    Public Function CompareT(Of T)(Left As T, Right As T, ByRef MismatchedPropertyName As String) As Boolean
         Dim properties() As PropertyInfo = Left.GetType().GetProperties(BindingFlags.Public Or BindingFlags.Instance)
         For Each _property As PropertyInfo In properties
             Try
@@ -54,7 +54,7 @@ Public Module CompareGenerticObject
     End Function
 
     <Extension>
-    Public Function CompareTextSpan(ByVal Left As TextSpan, ByVal Right As TextSpan, ByRef MismatchedPropertyName As String) As Boolean
+    Public Function CompareTextSpan(Left As TextSpan, Right As TextSpan, ByRef MismatchedPropertyName As String) As Boolean
         Dim properties() As PropertyInfo = Left.GetType().GetProperties(BindingFlags.Public Or BindingFlags.Instance)
         For Each _property As PropertyInfo In properties
             Try

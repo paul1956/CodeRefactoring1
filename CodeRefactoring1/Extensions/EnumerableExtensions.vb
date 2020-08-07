@@ -8,7 +8,7 @@ Namespace Utilities
     Public Module EnumerableExtensions
 
         <Extension>
-        Public Function Contains(Of T)(ByVal sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
+        Public Function Contains(Of T)(sequence As IEnumerable(Of T), predicate As Func(Of T, Boolean)) As Boolean
             Return sequence.Any(predicate)
         End Function
 

@@ -17,7 +17,7 @@ Namespace Roslyn.UnitTestFramework
 
     Public MustInherit Class CodeActionProviderTestFixture
 
-        Protected Function CreateDocument(ByVal code As String) As Document
+        Protected Function CreateDocument(code As String) As Document
             Dim fileExtension As String = If(LanguageName = LanguageNames.CSharp, ".cs", ".vb")
 
             Dim projectId As ProjectId = ProjectId.CreateNewId(debugName:="TestProject")
@@ -28,7 +28,7 @@ Namespace Roslyn.UnitTestFramework
             End Using
         End Function
 
-        Protected Sub VerifyDocument(ByVal expected As String, ByVal compareTokens As Boolean, ByVal document As Document)
+        Protected Sub VerifyDocument(expected As String, compareTokens As Boolean, document As Document)
             If compareTokens Then
                 Me.VerifyTokens(expected, Format(document).ToString())
             Else
@@ -36,16 +36,16 @@ Namespace Roslyn.UnitTestFramework
             End If
         End Sub
 
-        Private Shared Function Format(ByVal document As Document) As SyntaxNode
+        Private Shared Function Format(document As Document) As SyntaxNode
             Dim updatedDocument As Document = document.WithSyntaxRoot(document.GetSyntaxRootAsync().Result)
             Return Formatter.FormatAsync(Simplifier.ReduceAsync(updatedDocument, Simplifier.Annotation).Result, Formatter.Annotation).Result.GetSyntaxRootAsync().Result
         End Function
 
-        Private Function ParseTokens(ByVal text As String) As IList(Of SyntaxToken)
+        Private Function ParseTokens(text As String) As IList(Of SyntaxToken)
             Return Me.ParseTokens(text).Select(Function(t As SyntaxToken) t).ToList()
         End Function
 
-        Private Function VerifyTokens(ByVal expected As String, ByVal actual As String) As Boolean
+        Private Function VerifyTokens(expected As String, actual As String) As Boolean
             Dim expectedNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(expected)
             Dim actualNewTokens As IList(Of SyntaxToken) = Me.ParseTokens(actual)
 
@@ -62,7 +62,7 @@ Namespace Roslyn.UnitTestFramework
             Return True
         End Function
 
-        Private Shared Function VerifyText(ByVal expected As String, ByVal document As Document) As Boolean
+        Private Shared Function VerifyText(expected As String, document As Document) As Boolean
             Dim actual As String = Format(document).ToString()
             Assert.Equal(expected, actual, ignoreWhiteSpaceDifferences:=True)
             Return True

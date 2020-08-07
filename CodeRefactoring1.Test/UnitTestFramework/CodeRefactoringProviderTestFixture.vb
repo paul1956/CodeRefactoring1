@@ -21,7 +21,7 @@ Namespace Roslyn.UnitTestFramework
     Public MustInherit Class CodeRefactoringProviderTestFixture
         Inherits CodeActionProviderTestFixture
 
-        Private Function GetRefactoring(ByVal document As Document, ByVal span As TextSpan) As IEnumerable(Of CodeAction)
+        Private Function GetRefactoring(document As Document, span As TextSpan) As IEnumerable(Of CodeAction)
             Dim provider As CodeRefactoringProvider = Me.CreateCodeRefactoringProvider()
             Dim actions As New List(Of CodeAction)()
             Dim context As New CodeRefactoringContext(document, span, Sub(a) actions.Add(a), CancellationToken.None)
@@ -29,7 +29,7 @@ Namespace Roslyn.UnitTestFramework
             Return actions
         End Function
 
-        Protected Sub TestNoActions(ByVal markup As String)
+        Protected Sub TestNoActions(markup As String)
             If Not markup.Contains(ControlChars.Cr) Then
                 markup = markup.Replace(vbLf, vbCrLf)
             End If
@@ -44,7 +44,7 @@ Namespace Roslyn.UnitTestFramework
             Assert.True(actions Is Nothing OrElse actions.Count() = 0)
         End Sub
 
-        Protected Sub Test(ByVal markup As String, ByVal expected As String, Optional ByVal actionIndex As Integer = 0, Optional ByVal compareTokens As Boolean = False)
+        Protected Sub Test(markup As String, expected As String, Optional actionIndex As Integer = 0, Optional compareTokens As Boolean = False)
             If Not markup.Contains(ControlChars.Cr) Then
                 markup = markup.Replace(vbLf, vbCrLf)
             End If

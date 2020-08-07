@@ -24,4 +24,3 @@ VBF0092 | Refactoring | Hidden | ChangeAnyToAllAnalyzer
 VBF0101 | Style | Error | AddAsClauseAnalyzer
 VBF0103 | Style | Warning | AddAsClauseForLambdasAnalyzer
 VBF0104 | Style | Error | AddAsClauseAsObjectAnalyzer
-VBF0999 | Style | Info | ByValAnalyzerFixAnalyzer

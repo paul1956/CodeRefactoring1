@@ -42,7 +42,7 @@ Namespace Roslyn.UnitTestFramework
 
         Private ReadOnly s_namedSpanStartRegex As New Regex("\{\| ([^:]+) \:", RegexOptions.Compiled Or RegexOptions.Multiline Or RegexOptions.IgnorePatternWhitespace)
 
-        Private Sub Parse(ByVal input As String, ByRef output As String, ByRef position? As Integer, ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
+        Private Sub Parse(input As String, ByRef output As String, ByRef position? As Integer, ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
             position = Nothing
             spans = New Dictionary(Of String, IList(Of TextSpan))()
 
@@ -154,95 +154,95 @@ Namespace Roslyn.UnitTestFramework
             output = outputBuilder.ToString()
         End Sub
 
-        Private Sub PopSpan(ByVal spanStartStack As Stack(Of Tuple(Of Integer, String)), ByVal spans As IDictionary(Of String, IList(Of TextSpan)), ByVal finalIndex As Integer)
+        Private Sub PopSpan(spanStartStack As Stack(Of Tuple(Of Integer, String)), spans As IDictionary(Of String, IList(Of TextSpan)), finalIndex As Integer)
             Dim spanStartTuple As Tuple(Of Integer, String) = spanStartStack.Pop()
 
             Dim span As TextSpan = TextSpan.FromBounds(spanStartTuple.Item1, finalIndex)
             spans.GetOrAdd(spanStartTuple.Item2, Function() New List(Of TextSpan)()).Add(span)
         End Sub
 
-        Private Sub AddMatch(ByVal input As String, ByVal value As String, ByVal currentIndex As Integer, ByVal matches As List(Of Tuple(Of Integer, String)))
+        Private Sub AddMatch(input As String, value As String, currentIndex As Integer, matches As List(Of Tuple(Of Integer, String)))
             Dim index As Integer = input.IndexOf(value, currentIndex)
             If index >= 0 Then
                 matches.Add(Tuple.Create(index, value))
             End If
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
             Parse(input, output, cursorPositionOpt, spans)
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
             Dim output As String = Nothing
             GetPositionAndSpans(input, output, cursorPositionOpt, spans)
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
             Dim cursorPositionOpt? As Integer = Nothing
             GetPositionAndSpans(input, output, cursorPositionOpt, spans)
 
             cursorPosition = cursorPositionOpt.Value
         End Sub
 
-        Public Sub GetSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
+        Public Sub GetSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef spans As IDictionary(Of String, IList(Of TextSpan)))
             Dim cursorPositionOpt? As Integer = Nothing
             GetPositionAndSpans(input, output, cursorPositionOpt, spans)
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
             Dim dictionary As IDictionary(Of String, IList(Of TextSpan)) = Nothing
             Parse(input, output, cursorPositionOpt, dictionary)
 
             spans = dictionary.GetOrAdd(String.Empty, Function() New List(Of TextSpan)())
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef cursorPositionOpt? As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
             Dim output As String = Nothing
             GetPositionAndSpans(input, output, cursorPositionOpt, spans)
         End Sub
 
-        Public Sub GetPositionAndSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
+        Public Sub GetPositionAndSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
             Dim pos? As Integer = Nothing
             GetPositionAndSpans(input, output, pos, spans)
 
             cursorPosition = If(pos, 0)
         End Sub
 
-        Public Sub GetPosition(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer)
+        Public Sub GetPosition(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer)
             Dim spans As IList(Of TextSpan) = Nothing
             GetPositionAndSpans(input, output, cursorPosition, spans)
         End Sub
 
-        Public Sub GetPositionAndSpan(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef span As TextSpan)
+        Public Sub GetPositionAndSpan(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef cursorPosition As Integer, <System.Runtime.InteropServices.Out()> ByRef span As TextSpan)
             Dim spans As IList(Of TextSpan) = Nothing
             GetPositionAndSpans(input, output, cursorPosition, spans)
 
             span = spans.Single()
         End Sub
 
-        Public Sub GetSpans(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
+        Public Sub GetSpans(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef spans As IList(Of TextSpan))
             Dim pos? As Integer = Nothing
             GetPositionAndSpans(input, output, pos, spans)
         End Sub
 
-        Public Sub GetSpan(ByVal input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef span As TextSpan)
+        Public Sub GetSpan(input As String, <System.Runtime.InteropServices.Out()> ByRef output As String, <System.Runtime.InteropServices.Out()> ByRef span As TextSpan)
             Dim spans As IList(Of TextSpan) = Nothing
             GetSpans(input, output, spans)
             span = spans.Single()
         End Sub
 
-        Public Function CreateTestFile(ByVal code As String, ByVal cursor As Integer) As String
+        Public Function CreateTestFile(code As String, cursor As Integer) As String
             Return CreateTestFile(code, DirectCast(Nothing, IDictionary(Of String, IList(Of TextSpan))), cursor)
         End Function
 
-        Public Function CreateTestFile(ByVal code As String, ByVal spans As IList(Of TextSpan), Optional ByVal cursor As Integer = -1) As String
+        Public Function CreateTestFile(code As String, spans As IList(Of TextSpan), Optional cursor As Integer = -1) As String
             Return CreateTestFile(code, New Dictionary(Of String, IList(Of TextSpan)) From {
             {String.Empty, spans}
         },
         cursor)
         End Function
 
-        Public Function CreateTestFile(ByVal code As String, ByVal spans As IDictionary(Of String, IList(Of TextSpan)), Optional ByVal cursor As Integer = -1) As String
+        Public Function CreateTestFile(code As String, spans As IDictionary(Of String, IList(Of TextSpan)), Optional cursor As Integer = -1) As String
             Dim sb As New StringBuilder()
             Dim anonymousSpans As IList(Of TextSpan) = spans.GetOrAdd(String.Empty, Function() New List(Of TextSpan)())
 
@@ -264,7 +264,7 @@ Namespace Roslyn.UnitTestFramework
             Return sb.ToString()
         End Function
 
-        Private Sub AddSpanString(ByVal sb As StringBuilder, ByVal items As IEnumerable(Of KeyValuePair(Of String, IList(Of TextSpan))), ByVal position As Integer, ByVal start As Boolean)
+        Private Sub AddSpanString(sb As StringBuilder, items As IEnumerable(Of KeyValuePair(Of String, IList(Of TextSpan))), position As Integer, start As Boolean)
             For Each kvp As KeyValuePair(Of String, IList(Of TextSpan)) In items
                 For Each span As TextSpan In kvp.Value
                     If start AndAlso span.Start = position Then

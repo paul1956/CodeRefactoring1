@@ -54,9 +54,7 @@ namespace Utilities
                 }
 
                 // Should end up with a constrained virtual call to object.GetHashCode (i.e. avoid boxing where possible).
-#pragma warning disable RECS0017 // Possible compare of value type with 'null'
                 if (value != null)
-#pragma warning restore RECS0017 // Possible compare of value type with 'null'
                 {
                     hashCode = CodeRefactoringHash.Combine(value.GetHashCode(), hashCode);
                 }
